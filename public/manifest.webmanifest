@@ -1,0 +1,17 @@
+{
+  "name": "FairBets",
+  "short_name": "FairBets",
+  "description": "A private, local-first tracker for automatic sequences of bets.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f5f5ef",
+  "theme_color": "#10231e",
+  "icons": [
+    {
+      "src": "/app-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
