@@ -12,6 +12,37 @@ pnpm dev
 
 Open the local URL printed by Vite in a browser.
 
+## Run the end-to-end scenarios
+
+The E2E suite lives in this repository under `e2e/`; it is not a separate package. Feature files
+use Gherkin language and are executed by Cucumber with Playwright step definitions. Install the
+browser once, then run the suite from the repository root:
+
+```bash
+pnpm exec playwright install chromium
+pnpm test:e2e
+```
+
+The test command starts the Vite app automatically and writes Cucumber HTML and JSON reports to
+`dist/e2e/`. Run the Cucumber scenarios with a visible browser:
+
+```bash
+pnpm test:e2e:headed
+```
+
+The project also retains a direct Playwright Test suite for Playwright UI mode and Inspector
+workflows:
+
+```bash
+pnpm test:e2e:playwright
+pnpm test:e2e:ui
+pnpm test:e2e:debug
+```
+
+The workbook-import scenarios are available in Playwright UI mode at
+`e2e/tests/workbook-import.spec.js` and in natural-language form at
+`e2e/features/workbook-import.feature`.
+
 ## Enable Supabase cloud storage
 
 Cloud storage is optional until a Supabase project is configured. It uses email magic-link authentication and row-level security so each user can only access their own FairBets ledger.

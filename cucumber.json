@@ -1,0 +1,15 @@
+{
+  "default": {
+    "paths": ["e2e/features/**/*.feature"],
+    "import": ["e2e/steps/**/*.js", "e2e/support/**/*.js"],
+    "formatOptions": {
+      "snippetInterface": "async-await"
+    },
+    "format": [
+      "progress",
+      "summary",
+      "html:dist/e2e/cucumber-report.html",
+      "json:dist/e2e/cucumber-report.json"
+    ]
+  }
+}
