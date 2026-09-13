@@ -380,19 +380,71 @@ function SectionTitle({
   );
 }
 
+function InlineDeleteAction({
+  pending,
+  onRequest,
+  onConfirm,
+  label = "Delete",
+}: {
+  pending: boolean;
+  onRequest: () => void;
+  onConfirm: () => void;
+  label?: string;
+}) {
+  const actionRef = useRef<HTMLSpanElement>(null);
+
+  useEffect(() => {
+    if (!pending) {
+      return;
+    }
+
+    function handlePointerDown(event: PointerEvent) {
+      if (!actionRef.current?.contains(event.target as Node)) {
+        onRequest();
+      }
+    }
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    return () => document.removeEventListener("pointerdown", handlePointerDown);
+  }, [onRequest, pending]);
+
+  if (pending) {
+    return (
+      <span ref={actionRef} onPointerDown={(event) => event.stopPropagation()}>
+        <button type="button" className="compact-action compact-delete" onClick={onConfirm}>
+          Confirm deletion
+        </button>
+      </span>
+    );
+  }
+
+  return (
+    <span ref={actionRef} onPointerDown={(event) => event.stopPropagation()}>
+      <button type="button" className="compact-action compact-delete" onClick={onRequest}>
+        {label}
+      </button>
+    </span>
+  );
+}
+
 function SequenceBetRow({
   bet,
   currency,
   onSettle,
   onEdit,
-  onDelete,
+  pendingDeleteKey,
+  onRequestDelete,
+  onConfirmDelete,
 }: {
   bet: CalculatedBet;
   currency: Currency;
   onSettle: (id: string, outcome: SettledOutcome) => void;
   onEdit: (bet: CalculatedBet) => void;
-  onDelete: (id: string) => void;
+  pendingDeleteKey: string | null;
+  onRequestDelete: (key: string) => void;
+  onConfirmDelete: (key: string) => void;
 }) {
+  const deleteKey = `bet:${bet.id}`;
   return (
     <article className={`single-bet-card nested-sequence-bet nested-bet-${bet.outcome}`}>
       <div className="single-bet-state">
@@ -437,12 +489,16 @@ function SequenceBetRow({
             </button>
           </>
         ) : null}
-        <button type="button" className="compact-action" onClick={() => onEdit(bet)}>
-          Edit
-        </button>
-        <button type="button" className="compact-action compact-delete" onClick={() => onDelete(bet.id)}>
-          Delete
-        </button>
+        <span className="compact-sequence-actions">
+          <button type="button" className="compact-action" onClick={() => onEdit(bet)}>
+            Edit
+          </button>
+          <InlineDeleteAction
+            pending={pendingDeleteKey === deleteKey}
+            onRequest={() => onRequestDelete(deleteKey)}
+            onConfirm={() => onConfirmDelete(deleteKey)}
+          />
+        </span>
       </div>
     </article>
   );
@@ -453,13 +509,17 @@ function SingleBetSequenceCard({
   currency,
   onSettle,
   onEdit,
-  onDelete,
+  pendingDeleteKey,
+  onRequestSequenceDelete,
+  onConfirmSequenceDelete,
 }: {
   sequence: BetSequence;
   currency: Currency;
   onSettle: (id: string, outcome: SettledOutcome) => void;
   onEdit: (bet: CalculatedBet) => void;
-  onDelete: (id: string) => void;
+  pendingDeleteKey: string | null;
+  onRequestSequenceDelete: (key: string) => void;
+  onConfirmSequenceDelete: (key: string) => void;
 }) {
   const bet = sequence.bets[0];
   if (!bet) {
@@ -512,12 +572,17 @@ function SingleBetSequenceCard({
             </button>
           </>
         ) : null}
-        <button type="button" className="compact-action" onClick={() => onEdit(bet)}>
-          Edit
-        </button>
-        <button type="button" className="compact-action compact-delete" onClick={() => onDelete(bet.id)}>
-          Delete
-        </button>
+        <span className="compact-sequence-actions">
+          <button type="button" className="compact-action" onClick={() => onEdit(bet)}>
+            Edit
+          </button>
+          <InlineDeleteAction
+            label="Delete"
+            pending={pendingDeleteKey === `sequence:${sequence.id}`}
+            onRequest={() => onRequestSequenceDelete(`sequence:${sequence.id}`)}
+            onConfirm={() => onConfirmSequenceDelete(`sequence:${sequence.id}`)}
+          />
+        </span>
       </div>
     </article>
   );
@@ -528,14 +593,23 @@ function MultiBetSequenceCard({
   currency,
   onSettle,
   onEdit,
-  onDelete,
+  pendingDeleteKey,
+  onRequestDelete,
+  onConfirmDelete,
+  onRequestSequenceDelete,
+  onConfirmSequenceDelete,
 }: {
   sequence: BetSequence;
   currency: Currency;
   onSettle: (id: string, outcome: SettledOutcome) => void;
   onEdit: (bet: CalculatedBet) => void;
-  onDelete: (id: string) => void;
+  pendingDeleteKey: string | null;
+  onRequestDelete: (key: string) => void;
+  onConfirmDelete: (key: string) => void;
+  onRequestSequenceDelete: (key: string) => void;
+  onConfirmSequenceDelete: (key: string) => void;
 }) {
+  const sequenceDeleteKey = `sequence:${sequence.id}`;
   const sequenceStatusLabel = sequence.status === "closed" ? "Closed" : "Active";
   const dateRange = sequence.endedAt
     ? `${formatDateTime(sequence.startedAt)} to ${formatDateTime(sequence.endedAt)}`
@@ -561,7 +635,28 @@ function MultiBetSequenceCard({
             {formatSignedMoney(sequence.profit, currency)}
           </strong>
         </span>
-        <span className="compact-sequence-toggle">View bets</span>
+        <span className="compact-sequence-actions">
+          <button
+            type="button"
+            className="compact-action compact-sequence-view"
+            onClick={(event) => {
+              event.preventDefault();
+              event.stopPropagation();
+              const details = event.currentTarget.closest("details");
+              if (details) {
+                details.open = !details.open;
+              }
+            }}
+          >
+            View
+          </button>
+          <InlineDeleteAction
+            label="Delete"
+            pending={pendingDeleteKey === sequenceDeleteKey}
+            onRequest={() => onRequestSequenceDelete(sequenceDeleteKey)}
+            onConfirm={() => onConfirmSequenceDelete(sequenceDeleteKey)}
+          />
+        </span>
       </summary>
       <div className="compact-sequence-details">
         <div className="sequence-bet-list">
@@ -572,7 +667,9 @@ function MultiBetSequenceCard({
               currency={currency}
               onSettle={onSettle}
               onEdit={onEdit}
-              onDelete={onDelete}
+              pendingDeleteKey={pendingDeleteKey}
+              onRequestDelete={onRequestDelete}
+              onConfirmDelete={onConfirmDelete}
             />
           ))}
         </div>
@@ -586,14 +683,23 @@ function ActiveSequenceCard({
   currency,
   onSettle,
   onEdit,
-  onDelete,
+  pendingDeleteKey,
+  onRequestDelete,
+  onConfirmDelete,
+  onRequestSequenceDelete,
+  onConfirmSequenceDelete,
 }: {
   sequence: BetSequence;
   currency: Currency;
   onSettle: (id: string, outcome: SettledOutcome) => void;
   onEdit: (bet: CalculatedBet) => void;
-  onDelete: (id: string) => void;
+  pendingDeleteKey: string | null;
+  onRequestDelete: (key: string) => void;
+  onConfirmDelete: (key: string) => void;
+  onRequestSequenceDelete: (key: string) => void;
+  onConfirmSequenceDelete: (key: string) => void;
 }) {
+  const sequenceDeleteKey = `sequence:${sequence.id}`;
   return (
     <article className="sequence-card sequence-active">
       <div className="sequence-card-heading">
@@ -602,7 +708,15 @@ function ActiveSequenceCard({
           <h3>In progress</h3>
           <span>Started {formatDateTime(sequence.startedAt)}</span>
         </div>
-        <span className="status-badge status-active">Active</span>
+        <div className="sequence-card-actions">
+          <span className="status-badge status-active">Active</span>
+          <InlineDeleteAction
+            label="Delete"
+            pending={pendingDeleteKey === sequenceDeleteKey}
+            onRequest={() => onRequestSequenceDelete(sequenceDeleteKey)}
+            onConfirm={() => onConfirmSequenceDelete(sequenceDeleteKey)}
+          />
+        </div>
       </div>
       <div className="sequence-stats">
         <div>
@@ -632,7 +746,9 @@ function ActiveSequenceCard({
             currency={currency}
             onSettle={onSettle}
             onEdit={onEdit}
-            onDelete={onDelete}
+            pendingDeleteKey={pendingDeleteKey}
+            onRequestDelete={onRequestDelete}
+            onConfirmDelete={onConfirmDelete}
           />
         ))}
       </div>
@@ -649,6 +765,7 @@ function App() {
   const [activeTab, setActiveTab] = useState<Tab>("overview");
   const [historyFilter, setHistoryFilter] = useState<HistoryFilter>("all");
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [pendingDeleteKey, setPendingDeleteKey] = useState<string | null>(null);
   const [editingBetId, setEditingBetId] = useState<string | null>(null);
   const [draft, setDraft] = useState<BetDraft>(createBetDraft);
   const [formError, setFormError] = useState<string | null>(null);
@@ -1076,9 +1193,19 @@ function App() {
     }
   }
 
-  function deleteBet(id: string) {
+  function requestDelete(key: string) {
+    setPendingDeleteKey((currentKey) => (currentKey === key ? null : key));
+  }
+
+  function confirmDelete(key: string) {
+    if (!pendingDeleteKey || pendingDeleteKey !== key) {
+      return;
+    }
+
+    const [, id] = key.split(":");
     const bet = tracker.bets.find((item) => item.id === id);
-    if (!bet || !window.confirm(`Delete "${bet.label}" from this ledger?`)) {
+    if (!bet) {
+      setPendingDeleteKey(null);
       return;
     }
 
@@ -1089,6 +1216,30 @@ function App() {
     if (saved) {
       setFeedback({ tone: "success", text: "Bet removed and sequences recalculated." });
     }
+    setPendingDeleteKey(null);
+  }
+
+  function confirmDeleteSequence(key: string) {
+    if (!pendingDeleteKey || pendingDeleteKey !== key) {
+      return;
+    }
+
+    const [, sequenceId] = key.split(":");
+    const sequence = calculation.sequences.find((item) => item.id === sequenceId);
+    if (!sequence) {
+      setPendingDeleteKey(null);
+      return;
+    }
+
+    const sequenceBetIds = new Set(sequence.bets.map((bet) => bet.id));
+    const saved = commitTracker({
+      ...tracker,
+      bets: tracker.bets.filter((bet) => !sequenceBetIds.has(bet.id)),
+    });
+    if (saved) {
+      setFeedback({ tone: "success", text: "Sequence removed and ledger recalculated." });
+    }
+    setPendingDeleteKey(null);
   }
 
   async function handleWorkbookImport(event: ChangeEvent<HTMLInputElement>) {
@@ -1461,7 +1612,9 @@ function App() {
                         currency={tracker.settings.currency}
                         onSettle={settleBet}
                         onEdit={openEditBetForm}
-                        onDelete={deleteBet}
+                        pendingDeleteKey={pendingDeleteKey}
+                        onRequestSequenceDelete={requestDelete}
+                        onConfirmSequenceDelete={confirmDeleteSequence}
                       />
                     );
                   }
@@ -1474,7 +1627,11 @@ function App() {
                         currency={tracker.settings.currency}
                         onSettle={settleBet}
                         onEdit={openEditBetForm}
-                        onDelete={deleteBet}
+                        pendingDeleteKey={pendingDeleteKey}
+                        onRequestDelete={requestDelete}
+                        onConfirmDelete={confirmDelete}
+                        onRequestSequenceDelete={requestDelete}
+                        onConfirmSequenceDelete={confirmDeleteSequence}
                       />
                     );
                   }
@@ -1486,7 +1643,11 @@ function App() {
                       currency={tracker.settings.currency}
                       onSettle={settleBet}
                       onEdit={openEditBetForm}
-                      onDelete={deleteBet}
+                      pendingDeleteKey={pendingDeleteKey}
+                      onRequestDelete={requestDelete}
+                      onConfirmDelete={confirmDelete}
+                      onRequestSequenceDelete={requestDelete}
+                      onConfirmSequenceDelete={confirmDeleteSequence}
                     />
                   );
                 })}

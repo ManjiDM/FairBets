@@ -923,6 +923,12 @@ h3 {
   cursor: pointer;
 }
 
+.sequence-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 10px;
+}
+
 .single-bet-card {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto auto;
@@ -1048,6 +1054,33 @@ h3 {
 .compact-action {
   border-color: var(--line);
   color: var(--forest);
+}
+
+.compact-sequence-actions {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-width: max-content;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.compact-sequence-actions .compact-action {
+  min-width: 54px;
+  border: 0;
+  border-radius: 0;
+}
+
+.compact-sequence-actions .compact-action + .compact-action,
+.compact-sequence-actions .compact-action + span {
+  border-left: 1px solid var(--line);
+}
+
+.compact-sequence-actions .compact-delete {
+  border-color: transparent;
+  background: #fff8f7;
 }
 
 .compact-delete {
@@ -1589,6 +1622,10 @@ h3 {
   }
 
   .compact-sequence-toggle {
+    grid-area: toggle;
+  }
+
+  .compact-sequence-actions {
     grid-area: toggle;
   }
 
