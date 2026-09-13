@@ -22,9 +22,77 @@ Then("I should see the {string} section", async function (sectionName) {
   await expect(this.page.getByText(sectionName, { exact: true })).toBeVisible();
 });
 
+Then("I see the available balance as {string}", async function (balance) {
+  const metric = this.page.locator(".metric-card").filter({
+    has: this.page.getByText("Available balance", { exact: true }),
+  });
+  await expect(metric.locator("strong")).toHaveText(balance);
+});
+
+
+When("I navigate to the Sequences view", async function () {
+  await expect(this.page.getByText("Sequences", { exact: true }).first()).toBeVisible();
+  await this.page.getByText("Sequences", { exact: true }).first().click();
+});
+
 When("I navigate to the sequences view", async function () {
   await expect(this.page.getByText("Sequences", { exact: true }).first()).toBeVisible();
   await this.page.getByText("Sequences", { exact: true }).first().click();
+});
+
+Then("I should see the existing demo sequences", async function () {
+  await expect(this.page.locator(".sequence-list article").first()).toBeVisible();
+});
+
+Then("I should see {int} sequences", async function (sequenceCount) {
+  await expect(
+    this.page.getByRole("heading", { name: `${sequenceCount} sequences` }),
+  ).toBeVisible();
+});
+
+When("I press the Add Bet button", async function () {
+  await this.page.getByRole("button", { name: "Add bet", exact: true }).click();
+});
+
+Then("the Add Bet button should be enabled", async function () {
+  await expect(
+    this.page.getByRole("button", { name: "Add bet", exact: true }),
+  ).toBeEnabled();
+});
+
+Then("the Add Bet button should be disabled", async function () {
+  await expect(
+    this.page.getByRole("button", { name: "Add bet", exact: true }),
+  ).toBeDisabled();
+});
+
+Then("I see the new bet dialog", async function () {
+  await expect(this.page.getByRole("dialog")).toBeVisible();
+  await expect(this.page.getByRole("heading", { name: "Add a bet" })).toBeVisible();
+});
+
+When("I input the label {string}", async function (label) {
+  await this.page.getByLabel("Label").fill(label);
+});
+
+When("I input the date and time {string}", async function (dateTime) {
+  await this.page.getByLabel("Date and time").fill(dateTime);
+});
+
+When("I input {string} in the odds field", async function (odds) {
+  await this.page.getByLabel("Decimal odds").fill(odds);
+});
+
+When("I input {string} in the Odds field", async function (odds) {
+  await this.page.getByLabel("Decimal odds").fill(odds);
+});
+
+When("I input {string} in the Manual Stake field", async function (stake) {
+  await this.page.getByLabel("Manual stake (optional)").fill(stake);
+});
+
+When("I press the Add button", async function () {
+  await this.page.getByRole("button", { name: "Add bet", exact: true }).last().click();
 });
 
 When("I add a bet labeled {string} with odds {string}", async function (label, odds) {
@@ -36,6 +104,50 @@ When("I add a bet labeled {string} with odds {string}", async function (label, o
 
 Then("the ledger should show the bet {string}", async function (label) {
   await expect(this.page.getByText(label, { exact: true })).toBeVisible();
+});
+
+Then("the bet {string} should be {string}", async function (label, outcome) {
+  const normalizedOutcome = outcome.toLowerCase();
+  const sequence = this.page.locator(".sequence-list > *").filter({
+    has: this.page.getByText(label, { exact: true }),
+  });
+
+  if (normalizedOutcome === "open") {
+    await expect(sequence.getByRole("button", { name: "Won", exact: true })).toBeVisible();
+    return;
+  }
+
+  if (normalizedOutcome === "won") {
+    await expect(sequence.locator(".status-closed").first()).toBeVisible();
+    return;
+  }
+
+  await expect(sequence.locator(`.status-${normalizedOutcome}`).first()).toBeVisible();
+});
+
+Then(
+  "the sequence containing the bet {string} should be {string}",
+  async function (label, status) {
+    const sequenceCard = this.page.locator(".sequence-list > *").filter({
+      has: this.page.getByText(label, { exact: true }),
+    });
+    await expect(sequenceCard.locator(`.status-${status.toLowerCase()}`).first()).toBeVisible();
+  },
+);
+
+When("I mark the bet {string} as {string}", async function (label, outcome) {
+  const betCard = this.page.locator(".single-bet-card").filter({
+    has: this.page.getByText(label, { exact: true }),
+  }).first();
+  await betCard.getByRole("button", { name: outcome, exact: true }).click();
+});
+
+Then("I should see the bet settlement message", async function () {
+  await expect(this.page.getByRole("status")).toContainText("Bet marked as won.");
+});
+
+When("I navigate the Overview view", async function () {
+  await this.page.getByText("Overview", { exact: true }).first().click();
 });
 
 Given("the user is on the Settings screen", async function () {

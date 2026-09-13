@@ -32,12 +32,11 @@ select {
   font: inherit;
 }
 
-button {
+button:not(:disabled) {
   cursor: pointer;
 }
 
 button:disabled {
-  cursor: wait;
   opacity: 0.65;
 }
 

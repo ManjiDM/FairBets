@@ -30,18 +30,24 @@ The test command starts the Vite app automatically and writes Cucumber HTML and 
 pnpm test:e2e:headed
 ```
 
-The project also retains a direct Playwright Test suite for Playwright UI mode and Inspector
-workflows:
+Playwright is used by Cucumber for browser automation; there is no separate Playwright Test
+suite. The single E2E suite is organized according to the Playwright-Cucumber structure:
 
 ```bash
-pnpm test:e2e:playwright
-pnpm test:e2e:ui
-pnpm test:e2e:debug
+e2e/features/       # Gherkin feature files
+e2e/steps/          # Playwright-backed Cucumber step definitions
+e2e/support/        # Browser lifecycle, World, and hooks
+cucumber.json       # Cucumber paths and report configuration
 ```
 
-The workbook-import scenarios are available in Playwright UI mode at
-`e2e/tests/workbook-import.spec.js` and in natural-language form at
-`e2e/features/workbook-import.feature`.
+The workbook-import and bet-management scenarios are defined in
+`e2e/features/workbook-import.feature` and `e2e/features/bets.feature`. Their browser actions
+are implemented by the Playwright-backed steps in `e2e/steps/fairbets.steps.js`; each scenario
+therefore runs through the same Cucumber suite rather than being duplicated as a separate
+Playwright spec.
+
+Use `pnpm test:e2e:headed` to launch the same Cucumber/Playwright suite with a visible browser
+and Playwright debugging enabled. Use `pnpm test:e2e` for the normal headless run.
 
 ## Enable Supabase cloud storage
 

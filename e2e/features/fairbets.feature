@@ -8,6 +8,6 @@ Feature: FairBets app overview
     And I should see the "Current ledger" section
 
   Scenario: A user can add a new bet
-    When I navigate to the sequences view
+    When I navigate to the Sequences view
     And I add a bet labeled "Test selection" with odds "2.00"
     Then the ledger should show the bet "Test selection"

@@ -674,6 +674,7 @@ function App() {
     () => calculateLedger(tracker.bets, tracker.settings),
     [tracker.bets, tracker.settings],
   );
+  const hasOpenBet = tracker.bets.some((bet) => bet.outcome === "open");
   const draftOdds = Number(draft.odds);
   const draftSuggestion = useMemo(
     () => suggestStakeForOdds(calculation.recoveryGap, draftOdds, tracker.settings),
@@ -962,6 +963,9 @@ function App() {
   }
 
   function openNewBetForm() {
+    if (hasOpenBet) {
+      return;
+    }
     setEditingBetId(null);
     setDraft(createBetDraft());
     setFormError(null);
@@ -1398,7 +1402,12 @@ function App() {
                 <div className="empty-state">
                   <strong>No bets recorded yet.</strong>
                   <p>Add a bet to calculate the first suggested stake.</p>
-                  <button type="button" className="button button-primary" onClick={openNewBetForm}>
+                  <button
+                    type="button"
+                    className="button button-primary"
+                    onClick={openNewBetForm}
+                    disabled={hasOpenBet}
+                  >
                     Add the first bet
                   </button>
                 </div>
@@ -1413,7 +1422,12 @@ function App() {
               eyebrow="Sequences"
               title={`${calculation.sequences.length} sequences`}
               action={
-                <button type="button" className="button button-primary" onClick={openNewBetForm}>
+                <button
+                  type="button"
+                  className="button button-primary"
+                  onClick={openNewBetForm}
+                  disabled={hasOpenBet}
+                >
                   <span aria-hidden="true">+</span> Add bet
                 </button>
               }

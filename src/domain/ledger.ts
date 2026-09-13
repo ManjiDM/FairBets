@@ -457,7 +457,7 @@ export function createDemoLedger(): LedgerState {
         placedAt: "2026-09-08T10:00",
         label: "Selection 08",
         odds: 1.38,
-        outcome: "open",
+        outcome: "won",
       },
     ],
   };
