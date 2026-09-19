@@ -1,5 +1,11 @@
 const CACHE_NAME = "fairbets-v3";
-const APP_SHELL = ["/", "/index.html", "/manifest.webmanifest", "/app-icon.svg"];
+const APP_ROOT = self.registration.scope;
+const APP_SHELL = [
+  APP_ROOT,
+  new URL("index.html", APP_ROOT).toString(),
+  new URL("manifest.webmanifest", APP_ROOT).toString(),
+  new URL("app-icon.svg", APP_ROOT).toString(),
+];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_SHELL)));
@@ -42,8 +48,8 @@ self.addEventListener("fetch", (event) => {
         return response;
       })
       .catch(() =>
-        caches.match(event.request).then(
-          (cached) => cached ?? caches.match("/index.html"),
+        caches.match(event.request).then((cached) =>
+          cached ?? caches.match(new URL("index.html", APP_ROOT).toString()),
         ),
       ),
   );

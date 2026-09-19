@@ -12,7 +12,7 @@ createRoot(document.getElementById('root')!).render(
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
     navigator.serviceWorker
-      .register("/sw.js", { updateViaCache: "none" })
+      .register(`${import.meta.env.BASE_URL}sw.js`, { updateViaCache: "none" })
       .then((registration) => registration.update())
       .catch((error: unknown) => {
         console.error("Service worker registration failed.", error);

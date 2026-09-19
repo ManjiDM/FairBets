@@ -12,6 +12,19 @@ pnpm dev
 
 Open the local URL printed by Vite in a browser.
 
+## Publish on GitHub Pages
+
+The repository includes a GitHub Actions workflow at
+`.github/workflows/deploy-pages.yml`. It builds and deploys the app automatically
+when changes are pushed to `main`. In the repository settings, enable **Pages** with
+**GitHub Actions** as the source. The site will be available at
+`https://<github-user>.github.io/FairBets/`.
+
+The app works without cloud configuration because the ledger is local-first. To
+enable Supabase cloud backup on the deployed site, add `VITE_SUPABASE_URL` and
+`VITE_SUPABASE_ANON_KEY` as repository Actions secrets, then add the deployed URL
+to Supabase Authentication's redirect URL allow list.
+
 ## Run the end-to-end scenarios
 
 The E2E suite lives in this repository under `e2e/`; it is not a separate package. Feature files
@@ -33,7 +46,7 @@ pnpm test:e2e:headed
 Playwright is used by Cucumber for browser automation; there is no separate Playwright Test
 suite. The single E2E suite is organized according to the Playwright-Cucumber structure:
 
-```bash
+```text
 e2e/features/       # Gherkin feature files
 e2e/steps/          # Playwright-backed Cucumber step definitions
 e2e/support/        # Browser lifecycle, World, and hooks
