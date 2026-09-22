@@ -1,5 +1,4 @@
 create extension if not exists pgcrypto;
-
 create table if not exists public.ledgers (
   id uuid primary key default gen_random_uuid(),
   owner_id uuid not null references auth.users (id) on delete cascade default auth.uid(),
