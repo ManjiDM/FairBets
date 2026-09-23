@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | Spec | [`spec.md`](./spec.md) |
-| Status | Approved |
+| Status | Done |
 | Updated | 2026-09-23 |
 
 ## Approach

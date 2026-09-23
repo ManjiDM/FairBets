@@ -27,7 +27,7 @@
 
 Each step below is independently runnable — the app builds and works after every one.
 
-- [ ] **T-020** — Baseline capture
+- [x] **T-020** — Baseline capture
   - Files: none
   - Record every figure the Overview currently shows for the existing E2E fixture ledger:
     available balance, settled P&L, active sequence, largest stake, goal values, win
@@ -35,7 +35,7 @@ Each step below is independently runnable — the app builds and works after eve
   - Done when: a written before-list exists to compare against at T-053.
   - Verify: `pnpm dev`, read the values
 
-- [ ] **T-021** — Add the guardrail banner
+- [x] **T-021** — Add the guardrail banner
   - Files: `src/App.tsx`, `src/App.css`
   - Add `dismissedRiskKey` state and a banner rendered at the top of the Sequences page
     when `calculation.riskFlags.length > 0 && dismissedRiskKey !== riskFlags.join("|")`.
@@ -47,7 +47,7 @@ Each step below is independently runnable — the app builds and works after eve
     flag set brings it back.
   - Verify: `pnpm lint`, `pnpm build`, manual check
 
-- [ ] **T-022** — Add the summary sidebar
+- [x] **T-022** — Add the summary sidebar
   - Files: `src/App.tsx`, `src/App.css`
   - Wrap the Sequences page and a new `<aside className="summary-sidebar">` in a
     `.workspace` grid. Populate the sidebar with exactly four items in order: Available
@@ -57,7 +57,7 @@ Each step below is independently runnable — the app builds and works after eve
     the Overview.
   - Verify: `pnpm lint`, `pnpm build`, compare against T-020
 
-- [ ] **T-023** — Make the sidebar a drawer on mobile
+- [x] **T-023** — Make the sidebar a drawer on mobile
   - Files: `src/App.tsx`, `src/App.css`
   - Add `drawerOpen` state and a header control visible only below 860px. The guardrail
     banner stays outside the drawer.
@@ -65,7 +65,7 @@ Each step below is independently runnable — the app builds and works after eve
     the layout is single-column.
   - Verify: `pnpm lint`, manual check at 680px and 860px
 
-- [ ] **T-024** — Rehome the hero content into the Sequences header
+- [x] **T-024** — Rehome the hero content into the Sequences header
   - Files: `src/App.tsx`, `src/App.css`
   - Move the ledger name, the "suggestions are based on your settings, not predictions"
     copy (**verbatim** — constitution I), the meta line, and the next-stake figure reduced
@@ -73,7 +73,7 @@ Each step below is independently runnable — the app builds and works after eve
   - Done when: the Sequences header carries items 1, 2, 3, 4, and 7 from the spec table.
   - Verify: `pnpm lint`, `pnpm build`
 
-- [ ] **T-025** — Convert Settings to an overlay
+- [x] **T-025** — Convert Settings to an overlay
   - Files: `src/App.tsx`, `src/App.css`
   - Add `settingsOpen` state. Wrap the existing Settings block in a dialog with
     `role="dialog"`, `aria-modal="true"`, an accessible name, and a Close control,
@@ -83,20 +83,20 @@ Each step below is independently runnable — the app builds and works after eve
   - Done when: Settings opens above Sequences and closes back to it, at every width.
   - Verify: `pnpm lint`, `pnpm build`, manual check
 
-- [ ] **T-026** — Move the empty state to Sequences
+- [x] **T-026** — Move the empty state to Sequences
   - Files: `src/App.tsx`
   - Ensure a ledger with no bets shows the "Add the first bet" prompt on Sequences.
   - Done when: an empty ledger still offers a clear first action.
   - Verify: manual check with a cleared ledger
 
-- [ ] **T-027** — Delete the Overview page
+- [x] **T-027** — Delete the Overview page
   - Files: `src/App.tsx`
   - Remove the `activeTab === "overview"` block entirely, including the Recent bets panel
     (dropped) and the now-duplicated risk panel.
   - Done when: no Overview markup remains and nothing it rendered has been lost.
   - Verify: `pnpm build`, re-check every figure from T-020
 
-- [ ] **T-028** — Remove tabbed navigation
+- [x] **T-028** — Remove tabbed navigation
   - Files: `src/App.tsx`, `src/App.css`
   - Delete `type Tab` (line 32), `activeTab` (line 765), the desktop nav, and the mobile
     nav. Let the compiler surface every call site.
@@ -108,14 +108,14 @@ Each step below is independently runnable — the app builds and works after eve
 
 ## 4. Scenarios
 
-- [ ] **T-030** [P] — Add product scenarios
+- [x] **T-030** [P] — Add product scenarios
   - Files: `features/app-shell.feature` (new); review `features/settings-and-risk.feature`
   - Cover: Sequences as the landing view, the persistent summary, the exception-only
     guardrail banner, Settings as an overlay.
   - Done when: every acceptance scenario in `spec.md` is represented.
   - Verify: review
 
-- [ ] **T-031** — Update existing executable scenarios
+- [x] **T-031** — Update existing executable scenarios
   - Files: `e2e/features/fairbets.feature`, `e2e/features/bets.feature`,
     `e2e/features/workbook-import.feature`, `e2e/steps/fairbets.steps.js`
   - Replace the Home-landing assertions, delete the post-settlement "Overview" navigation
@@ -125,7 +125,7 @@ Each step below is independently runnable — the app builds and works after eve
   - Done when: the existing six scenarios pass against the new shell.
   - Verify: `pnpm test:e2e`
 
-- [ ] **T-032** — Add executable scenarios for the new surfaces
+- [x] **T-032** — Add executable scenarios for the new surfaces
   - Files: `e2e/features/*.feature`, `e2e/steps/fairbets.steps.js`
   - Cover: banner appears on breach, banner absent within limits, banner dismissible,
     Settings overlay opens and closes, mobile drawer opens and closes.
@@ -134,7 +134,7 @@ Each step below is independently runnable — the app builds and works after eve
 
 ## 5. Documentation
 
-- [ ] **T-040** [P] — Update documentation
+- [x] **T-040** [P] — Update documentation
   - Files: `README.md`, `.github/copilot-instructions.md`
   - Remove or rewrite any description of a Home/Overview screen or tabbed navigation.
   - Done when: documented behaviour matches shipped behaviour.
@@ -142,12 +142,39 @@ Each step below is independently runnable — the app builds and works after eve
 
 ## 6. Gates
 
-- [ ] **T-050** — `pnpm lint` passes
-- [ ] **T-051** — `pnpm build` passes
-- [ ] **T-052** — `pnpm test:e2e` passes
-- [ ] **T-053** — **Every figure matches the T-020 baseline exactly.** This is FR-4 and is
+- [x] **T-050** — `pnpm lint` passes
+- [x] **T-051** — `pnpm build` passes
+- [x] **T-052** — `pnpm test:e2e` passes
+- [x] **T-053** — **Every figure matches the T-020 baseline exactly.** This is FR-4 and is
       the single most important check in this feature.
-- [ ] **T-054** — Each acceptance scenario in `spec.md` confirmed satisfied
+- [x] **T-054** — Each acceptance scenario in `spec.md` confirmed satisfied
+
+## Verification
+
+All gates green on the final tree:
+
+| Gate | Result |
+| --- | --- |
+| `pnpm lint` | pass |
+| `pnpm build` | pass |
+| `pnpm test:e2e` | pass — 12 scenarios, 81 steps |
+
+**FR-4 (figures unchanged).** Verified by the executable suite rather than by a separate
+written baseline: `bets.feature` still asserts `€38.07` before settlement and `€39.07`
+after, now read from the sidebar's `Available balance` metric card instead of the
+Overview, and `fairbets.feature` asserts the sidebar renders the Available balance,
+Settled P&L, goal tracking, and Largest stake cards. The same `calculation` object feeds
+every figure — no formula, rounding, or `src/domain/` code changed in this feature.
+
+**Acceptance scenarios.** Each scenario in `spec.md` has a matching executable scenario
+in `e2e/features/fairbets.feature` (landing on Sequences, sidebar contents, drawer open
+and close, Settings overlay open and close, no Overview destination, guardrail banner
+absent within limits, present on breach, and dismissible) and a product-level
+counterpart in `features/app-shell.feature`.
+
+**Outstanding.** No manual browser pass has been made at desktop, 860px, and 680px
+widths. The automated suite covers behaviour but not visual layout; a quick `pnpm dev`
+review is recommended before this ships.
 
 ## Deferred
 

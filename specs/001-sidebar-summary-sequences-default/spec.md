@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | ID | `001-sidebar-summary-sequences-default` |
-| Status | Clarified |
+| Status | Done |
 | Created | 2026-09-23 |
 | Clarified | 2026-09-23 |
 | Related | — |
