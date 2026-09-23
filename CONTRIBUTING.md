@@ -29,8 +29,13 @@ Cloud sync is optional: copy `.env.example` to `.env.local` and fill in
 Full detail: [`specs/README.md`](./specs/README.md). Non-negotiables:
 [`specs/constitution.md`](./specs/constitution.md).
 
-Trivial changes — typos, dependency bumps, formatting, comments — may skip the spec.
-The gates still apply.
+**Bugfixes** use a shortened track and `specs/templates/bugfix-template.md`: reproduce
+the defect, establish whether the code or the expectation is wrong, write a regression
+scenario that fails first, name the root cause, check whether persisted ledgers hold
+incorrect values, then make a minimal fix.
+
+Trivial changes — typos, dependency bumps, formatting, comments, cosmetic defects — may
+skip the spec. The gates still apply.
 
 ## Gates
 

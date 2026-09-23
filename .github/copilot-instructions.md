@@ -21,6 +21,11 @@ Every non-trivial change starts with a spec, not with code:
 5. **Implement** — work the tasks in order, ticking them off as they land.
 6. **Verify** — `pnpm lint`, `pnpm build`, `pnpm test:e2e`, plus each acceptance scenario.
 
+Bugfixes use a shortened track with `specs/templates/bugfix-template.md`: reproduce,
+establish whether the code or the expectation is wrong, write a regression scenario that
+fails before the fix, name the root cause, check the blast radius on persisted ledgers,
+then fix minimally.
+
 Trivial changes (typos, dependency bumps, formatting) may skip the spec but still need
 green gates. Use one-line commit messages with no body, and do not push or open pull
 requests unless explicitly asked.

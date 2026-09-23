@@ -11,6 +11,8 @@ artifact, not as documentation written after the fact.
 
 - `spec.md` describes **what** and **why**. No file paths, function names, library
   choices, or code.
+- Bugfix specs use `bugfix-template.md` instead, and must record a reproduction, the
+  root cause, and evidence that the regression scenario failed before the fix.
 - `plan.md` describes **how**. It is written only after every `[NEEDS CLARIFICATION]`
   marker in the spec is resolved.
 - `tasks.md` is ordered, small, and individually verifiable, with a "done when" and a

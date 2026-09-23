@@ -66,6 +66,13 @@ Slash-style prompts for each stage are in `.github/prompts/`. The reusable skill
 Trivial changes (typo fixes, dependency bumps, comment edits) may skip the spec, but
 must still pass lint and build.
 
+**Bugfixes follow a shortened track**: reproduce → establish which side is wrong →
+failing regression scenario → root cause → blast radius → minimal fix → verify. Use
+`specs/templates/bugfix-template.md` and `.github/prompts/bugfix.prompt.md`. The rule
+that matters most: a failing test means the code is wrong *or* the expectation is stale
+— prove which before editing either, and never fix a defect without a scenario that
+failed first.
+
 ## Hard rules
 
 - **Financial logic belongs in `src/domain/`.** Never add stake or sequence math to

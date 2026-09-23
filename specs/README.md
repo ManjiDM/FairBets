@@ -20,6 +20,7 @@ specs/
     spec-template.md           # Stage 1 — what and why
     plan-template.md           # Stage 3 — how
     tasks-template.md          # Stage 4 — ordered steps
+    bugfix-template.md         # Shortened track for defects
     feature-template.feature   # Gherkin scaffold
   NNN-feature-slug/
     spec.md
@@ -28,8 +29,9 @@ specs/
 ```
 
 `NNN` is a zero-padded, incrementing number: `001-stake-rounding-modes`,
-`002-cloud-conflict-resolution`. One directory per feature, kept after it ships so the
-history of decisions stays readable.
+`002-cloud-conflict-resolution`. Bugfixes share the same numbering with a `fix-` slug,
+for example `003-fix-open-exposure-double-count`. One directory per change, kept after
+it ships so the history of decisions stays readable.
 
 ## The workflow
 
@@ -99,11 +101,65 @@ Prompt: `.github/prompts/verify.prompt.md`
 Acceptance scenarios in a spec should land in `features/` as behaviour of record, and in
 `e2e/features/` when they are automatable through the UI.
 
+## Bugfixes
+
+A defect follows a shortened track. The full six stages are overkill; skipping the
+process entirely is how a money bug comes back.
+
+Use `specs/templates/bugfix-template.md` at `specs/<NNN-fix-slug>/spec.md`. There is no
+separate `plan.md` or `tasks.md` unless the fix turns out to be large enough to need
+one — at which point it is really a feature and should switch to the full track.
+
+### 1. Reproduce before diagnosing
+
+Write the exact input state and observed output. For anything involving money, record
+settings, bets, the observed figure, and the expected figure.
+
+### 2. Establish which side is wrong
+
+A mismatch between code and test means **one of them is wrong, and you do not yet know
+which**. Do the arithmetic by hand and cite the rule — a function in `src/domain/`, a
+scenario in `features/`, or a principle in `constitution.md`.
+
+Changing the expectation to match the code turns a real bug into a permanently blessed
+one. Changing correct code to match a stale test breaks working behaviour. Prove it
+first.
+
+### 3. Write the failing scenario
+
+The regression scenario must **fail before the fix**. Record the red output in the spec.
+A fix whose test never failed has proven nothing.
+
+### 4. Name the root cause
+
+File, function, and the faulty assumption — plus why existing tests missed it.
+
+### 5. Assess blast radius
+
+Shared code paths, already-persisted ledgers holding wrong values, and whether an
+incorrect figure reached the cloud copy. A wrong number saved to a user's ledger is not
+fixed by correcting the formula alone.
+
+### 6. Fix, then verify
+
+Keep the change minimal and targeted; a bugfix is not a refactor. Confirm the scenario
+goes green, run the gates, and check that a pre-existing saved ledger still computes
+correctly.
+
+Prompt: `.github/prompts/bugfix.prompt.md`
+
+### Cosmetic defects
+
+Typos, misaligned layout, and wording fixes need no spec — just the gates. The moment a
+defect touches a displayed figure, persisted data, or a validation rule, it needs the
+track above.
+
 ## When a spec is not required
 
-Typo fixes, dependency bumps, comment edits, formatting. Everything else — new
-behaviour, changed money rules, changed persisted shapes, new UI surfaces — needs one.
-Lint and build gates still apply.
+Typo fixes, dependency bumps, comment edits, formatting, and cosmetic defects.
+Everything else — new behaviour, changed money rules, changed persisted shapes, new UI
+surfaces, and any defect affecting a figure, stored data, or validation — needs one.
+Lint and build gates always apply.
 
 ## Review checklist
 
