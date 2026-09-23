@@ -104,28 +104,25 @@ button:disabled {
   font-size: 11px;
 }
 
-.desktop-nav {
+.topbar-actions {
   display: flex;
-  gap: 4px;
-  margin-right: auto;
+  align-items: center;
+  gap: 10px;
+  margin-left: auto;
 }
 
-.desktop-nav button,
-.mobile-nav button {
+.topbar-button {
+  padding: 9px 14px;
   border: 0;
+  border-radius: 10px;
   color: #b6c7bd;
   background: transparent;
   font-size: 14px;
   font-weight: 700;
+  cursor: pointer;
 }
 
-.desktop-nav button {
-  padding: 9px 14px;
-  border-radius: 10px;
-}
-
-.desktop-nav button:hover,
-.desktop-nav button.active {
+.topbar-button:hover {
   color: var(--forest);
   background: #eaf0e9;
 }
@@ -228,6 +225,10 @@ button:disabled {
   margin-bottom: 24px;
 }
 
+.sequence-header .eyebrow {
+  color: var(--lime);
+}
+
 .sequence-header h1 {
   margin: 0 0 12px;
   color: #f4fbf6;
@@ -279,19 +280,6 @@ button:disabled {
   background: var(--coral-soft);
 }
 
-.hero-panel {
-  display: grid;
-  grid-template-columns: minmax(0, 1.5fr) minmax(265px, 0.75fr);
-  gap: 24px;
-  padding: clamp(28px, 5vw, 52px);
-  border-radius: 24px;
-  color: #f6fbf7;
-  background:
-    radial-gradient(circle at 85% 10%, rgba(217, 249, 157, 0.16), transparent 17rem),
-    var(--forest);
-  box-shadow: var(--shadow);
-}
-
 .eyebrow {
   margin: 0 0 7px;
   color: var(--lime-dark);
@@ -301,9 +289,7 @@ button:disabled {
   text-transform: uppercase;
 }
 
-.hero-panel .eyebrow {
-  color: var(--lime);
-}
+
 
 h1,
 h2,
@@ -356,66 +342,6 @@ h3 {
   color: #d9ebe1;
   font-size: 12px;
   font-weight: 700;
-}
-
-.next-stake-card {
-  align-self: end;
-  padding: 22px;
-  border: 1px solid rgba(217, 249, 157, 0.24);
-  border-radius: 18px;
-  color: var(--forest);
-  background: var(--lime);
-}
-
-.next-stake-card > p:first-child {
-  margin-bottom: 6px;
-  font-size: 12px;
-  font-weight: 850;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.next-stake-card > strong {
-  display: block;
-  font-size: 32px;
-  letter-spacing: -0.04em;
-}
-
-.next-stake-card > span {
-  display: block;
-  margin-top: 2px;
-  color: #385230;
-  font-size: 13px;
-  font-weight: 700;
-}
-
-.stake-breakdown {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 17px;
-  padding-top: 13px;
-  border-top: 1px solid rgba(16, 35, 30, 0.14);
-}
-
-.stake-breakdown span {
-  color: #385230;
-  font-size: 11px;
-  font-weight: 750;
-}
-
-.cap-note {
-  margin: 12px 0 0;
-  color: #754c0d;
-  font-size: 12px;
-  font-weight: 800;
-}
-
-.metrics-grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 14px;
-  margin: 22px 0;
 }
 
 .metric-card {
@@ -476,13 +402,6 @@ h3 {
   background: #fbfff6;
 }
 
-.content-grid {
-  display: grid;
-  grid-template-columns: 1.2fr 0.8fr;
-  gap: 18px;
-  margin-bottom: 18px;
-}
-
 .panel {
   border: 1px solid var(--line);
   border-radius: 18px;
@@ -490,9 +409,7 @@ h3 {
   box-shadow: 0 8px 20px rgba(20, 35, 31, 0.035);
 }
 
-.goal-panel,
-.risk-panel,
-.recent-panel {
+.goal-panel {
   padding: 24px;
 }
 
@@ -546,8 +463,7 @@ h3 {
 }
 
 .goal-values span,
-.panel-footnote,
-.risk-panel p {
+.panel-footnote {
   color: var(--muted);
   font-size: 13px;
   line-height: 1.55;
@@ -571,33 +487,6 @@ h3 {
 
 .panel-footnote {
   margin: 12px 0 0;
-}
-
-.risk-panel {
-  display: flex;
-  flex-direction: column;
-}
-
-.risk-panel .section-title {
-  margin-bottom: 12px;
-}
-
-.risk-panel p {
-  margin-bottom: 18px;
-}
-
-.risk-panel .text-button {
-  margin-top: auto;
-}
-
-.risk-safe {
-  border-color: #c5e8d1;
-  background: #fbfffc;
-}
-
-.risk-warning {
-  border-color: #efd79e;
-  background: #fffdf7;
 }
 
 .risk-list {
@@ -654,43 +543,6 @@ h3 {
   .risk-banner {
     flex-direction: column;
   }
-}
-
-.recent-panel {
-  padding-bottom: 4px;
-}
-
-.recent-list {
-  margin: 0 -24px;
-}
-
-.recent-row {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto 115px;
-  align-items: center;
-  gap: 16px;
-  padding: 15px 24px;
-  border-top: 1px solid var(--line);
-}
-
-.recent-row strong,
-.recent-row span {
-  display: block;
-}
-
-.recent-row > div > strong {
-  margin-bottom: 4px;
-  font-size: 14px;
-}
-
-.recent-row > div > span {
-  color: var(--muted);
-  font-size: 12px;
-}
-
-.recent-row > strong {
-  text-align: right;
-  font-size: 14px;
 }
 
 .status-badge {
@@ -1397,8 +1249,20 @@ h3 {
   margin-top: 14px;
 }
 
-.mobile-nav {
-  display: none;
+.settings-modal {
+  width: min(1000px, 100%);
+  max-height: min(860px, calc(100vh - 40px));
+  overflow-y: auto;
+  padding: 28px;
+  border-radius: 20px;
+  color: var(--ink);
+  background: #fff;
+  box-shadow: 0 28px 75px rgba(0, 0, 0, 0.3);
+}
+
+.settings-modal .modal-heading h2 {
+  margin: 0;
+  font-size: 22px;
 }
 
 .modal-backdrop {
@@ -1546,10 +1410,6 @@ h3 {
     align-items: stretch;
   }
 
-  .metrics-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
   .settings-layout {
     grid-template-columns: 1fr;
   }
@@ -1561,32 +1421,12 @@ h3 {
     padding: 10px 17px;
   }
 
-  .desktop-nav {
-    display: none;
-  }
-
   .main-content {
-    padding: 18px 16px 100px;
-  }
-
-  .hero-panel {
-    grid-template-columns: 1fr;
-    gap: 22px;
-    padding: 27px 22px;
-    border-radius: 19px;
+    padding: 18px 16px 48px;
   }
 
   .hero-description {
     font-size: 14px;
-  }
-
-  .next-stake-card {
-    padding: 18px;
-  }
-
-  .metrics-grid {
-    gap: 9px;
-    margin: 13px 0;
   }
 
   .metric-card {
@@ -1607,69 +1447,13 @@ h3 {
     font-size: 11px;
   }
 
-  .content-grid {
-    grid-template-columns: 1fr;
-    gap: 12px;
-    margin-bottom: 12px;
-  }
-
-  .goal-panel,
-  .risk-panel,
-  .recent-panel {
+  .goal-panel {
     padding: 19px;
     border-radius: 15px;
   }
 
   h2 {
     font-size: 21px;
-  }
-
-  .recent-list {
-    margin: 0 -19px;
-  }
-
-  .recent-row {
-    grid-template-columns: minmax(0, 1fr) auto;
-    gap: 10px;
-    padding: 14px 19px;
-  }
-
-  .recent-row > strong {
-    grid-column: 2;
-    grid-row: 2;
-    text-align: right;
-  }
-
-  .recent-row > div {
-    grid-row: span 2;
-  }
-
-  .mobile-nav {
-    position: fixed;
-    z-index: 11;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    min-height: 68px;
-    padding: 7px 9px max(7px, env(safe-area-inset-bottom));
-    border-top: 1px solid rgba(217, 249, 157, 0.14);
-    background: rgba(11, 24, 19, 0.96);
-    backdrop-filter: blur(14px);
-  }
-
-  .mobile-nav button {
-    display: grid;
-    min-height: 48px;
-    place-items: center;
-    border-radius: 10px;
-    font-size: 11px;
-  }
-
-  .mobile-nav button.active {
-    color: var(--forest);
-    background: #eaf1e9;
   }
 
   .sequence-page,

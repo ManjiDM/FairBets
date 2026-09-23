@@ -31,13 +31,51 @@ Then("I see the available balance as {string}", async function (balance) {
 
 
 When("I navigate to the Sequences view", async function () {
-  await expect(this.page.getByText("Sequences", { exact: true }).first()).toBeVisible();
-  await this.page.getByText("Sequences", { exact: true }).first().click();
+  await expect(this.page.locator(".sequence-page")).toBeVisible();
 });
 
 When("I navigate to the sequences view", async function () {
-  await expect(this.page.getByText("Sequences", { exact: true }).first()).toBeVisible();
-  await this.page.getByText("Sequences", { exact: true }).first().click();
+  await expect(this.page.locator(".sequence-page")).toBeVisible();
+});
+
+Then("the sequences view should be shown", async function () {
+  await expect(this.page.locator(".sequence-page")).toBeVisible();
+});
+
+Then("the summary sidebar should show the {string} metric", async function (label) {
+  const metric = this.page.locator(".summary-sidebar .metric-card").filter({
+    has: this.page.getByText(label, { exact: true }),
+  });
+  await expect(metric).toBeVisible();
+});
+
+When("I open the settings overlay", async function () {
+  await this.page.getByRole("button", { name: "Settings", exact: true }).click();
+});
+
+Then("the settings overlay should be shown", async function () {
+  await expect(
+    this.page.getByRole("dialog", { name: "Strategy and safety settings" }),
+  ).toBeVisible();
+});
+
+When("I close the settings overlay", async function () {
+  await this.page.getByRole("button", { name: "Back to sequences" }).click();
+});
+
+Then("the settings overlay should not be shown", async function () {
+  await expect(
+    this.page.getByRole("dialog", { name: "Strategy and safety settings" }),
+  ).toHaveCount(0);
+});
+
+Then("no guardrail warning should be shown", async function () {
+  await expect(this.page.locator(".risk-banner")).toHaveCount(0);
+});
+
+Then("no Overview destination should be offered", async function () {
+  await expect(this.page.getByRole("button", { name: "Overview" })).toHaveCount(0);
+  await expect(this.page.getByRole("button", { name: "Home" })).toHaveCount(0);
 });
 
 Then("I should see the existing demo sequences", async function () {
@@ -144,10 +182,6 @@ When("I mark the bet {string} as {string}", async function (label, outcome) {
 
 Then("I should see the bet settlement message", async function () {
   await expect(this.page.getByRole("status")).toContainText("Bet marked as won.");
-});
-
-When("I navigate the Overview view", async function () {
-  await this.page.getByText("Overview", { exact: true }).first().click();
 });
 
 Given("the user is on the Settings screen", async function () {

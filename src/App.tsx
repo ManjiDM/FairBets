@@ -29,7 +29,6 @@ import {
   supabaseConfigurationError,
 } from "./lib/supabase";
 
-type Tab = "overview" | "history" | "settings";
 type HistoryFilter = "all" | "active" | "closed";
 type SettledOutcome = Exclude<Outcome, "open">;
 type CloudStatus =
@@ -762,7 +761,7 @@ function ActiveSequenceCard({
 function App() {
   const [loadedLedger] = useState<LoadedLedger>(loadLedger);
   const [tracker, setTracker] = useState<LedgerState>(loadedLedger.state);
-  const [activeTab, setActiveTab] = useState<Tab>("overview");
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const [dismissedRiskKey, setDismissedRiskKey] = useState<string | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [historyFilter, setHistoryFilter] = useState<HistoryFilter>("all");
@@ -816,7 +815,6 @@ function App() {
 
     return [...matchingSequences].reverse();
   }, [calculation.sequences, historyFilter]);
-  const recentBets = calculation.bets.slice(-5).reverse();
   const goalProgress = Math.max(0, Math.min(calculation.goalProgress, 1));
   const riskKey = calculation.riskFlags.join("|");
   const showRiskBanner = calculation.riskFlags.length > 0 && dismissedRiskKey !== riskKey;
@@ -1172,7 +1170,6 @@ function App() {
       });
     }
     closeBetForm();
-    setActiveTab("history");
   }
 
   function settleBet(id: string, outcome: SettledOutcome) {
@@ -1263,7 +1260,7 @@ function App() {
         tone: "success",
         text: `${imported.bets.length} bets imported from ${file.name}.`,
       });
-      setActiveTab("overview");
+      setSettingsOpen(false);
     } catch (error) {
       console.error("Workbook import failed.", error);
       setFeedback({
@@ -1334,7 +1331,7 @@ function App() {
       return;
     }
     replaceTracker(createDemoLedger(), { tone: "success", text: "FairBets demo loaded." });
-    setActiveTab("overview");
+    setSettingsOpen(false);
   }
 
   function startFresh() {
@@ -1345,7 +1342,7 @@ function App() {
       tone: "success",
       text: "A new empty FairBets ledger is ready.",
     });
-    setActiveTab("overview");
+    setSettingsOpen(false);
   }
 
   return (
@@ -1354,8 +1351,8 @@ function App() {
         <button
           type="button"
           className="brand"
-          onClick={() => setActiveTab("overview")}
-          aria-label="Go to overview"
+          onClick={() => setSettingsOpen(true)}
+          aria-label="Open settings"
         >
           <span className="brand-mark">FB</span>
           <span>
@@ -1364,28 +1361,24 @@ function App() {
           </span>
         </button>
 
-        <nav className="desktop-nav" aria-label="Main navigation">
-          {(["overview", "history", "settings"] as Tab[]).map((tab) => (
-            <button
-              type="button"
-              key={tab}
-              className={activeTab === tab ? "active" : ""}
-              onClick={() => setActiveTab(tab)}
-            >
-              {tab === "overview" ? "Overview" : tab === "history" ? "Sequences" : "Settings"}
-            </button>
-          ))}
-        </nav>
-
-        <button
-          type="button"
-          className="drawer-toggle"
-          onClick={() => setDrawerOpen(true)}
-          aria-controls="summary-sidebar"
-          aria-expanded={drawerOpen}
-        >
-          Summary
-        </button>
+        <div className="topbar-actions">
+          <button
+            type="button"
+            className="drawer-toggle"
+            onClick={() => setDrawerOpen(true)}
+            aria-controls="summary-sidebar"
+            aria-expanded={drawerOpen}
+          >
+            Summary
+          </button>
+          <button
+            type="button"
+            className="topbar-button"
+            onClick={() => setSettingsOpen(true)}
+          >
+            Settings
+          </button>
+        </div>
 
         <input
           ref={fileInputRef}
@@ -1406,183 +1399,7 @@ function App() {
           </div>
         )}
 
-        {activeTab === "overview" && (
-          <>
-            <section className="hero-panel">
-              <div className="hero-copy">
-                <p className="eyebrow">Current ledger</p>
-                <h1>{tracker.ledgerName}</h1>
-                <p className="hero-description">
-                  Track decisions, exposure, and outcomes in one private ledger. Suggestions
-                  are based on your settings, not predictions.
-                </p>
-                <div className="hero-meta">
-                  <span>{calculation.sequences.length} sequences</span>
-                  <span>{formatPercent(calculation.winRate)} settled win rate</span>
-                  <span>
-                    {calculation.activeSequence
-                      ? `Sequence ${calculation.activeSequence.number} active`
-                      : "Ready for a new sequence"}
-                  </span>
-                </div>
-              </div>
-              <div className="next-stake-card">
-                <p>Next bet guide</p>
-                <strong>{formatMoney(calculation.nextSuggestion.amount, tracker.settings.currency)}</strong>
-                <span>At {formatOdds(calculation.nextOddsGuide)} odds</span>
-                <div className="stake-breakdown">
-                  <span>Base {formatMoney(calculation.nextSuggestion.baseStake, tracker.settings.currency)}</span>
-                  <span>
-                    Recovery {formatMoney(calculation.nextSuggestion.recoveryOffset, tracker.settings.currency)}
-                  </span>
-                </div>
-                {calculation.nextSuggestion.capped && (
-                  <p className="cap-note">Capped at your safety limit.</p>
-                )}
-              </div>
-            </section>
-
-            <section className="metrics-grid" aria-label="FairBets summary">
-              <MetricCard
-                label="Available balance"
-                value={formatMoney(calculation.availableBalance, tracker.settings.currency)}
-                hint={`${formatMoney(calculation.openExposure, tracker.settings.currency)} committed to open bets`}
-                tone="accent"
-              />
-              <MetricCard
-                label="Settled P&L"
-                value={formatSignedMoney(calculation.settledProfit, tracker.settings.currency)}
-                hint={`${calculation.wins} won and ${calculation.losses} lost`}
-                tone={calculation.settledProfit >= 0 ? "positive" : "negative"}
-              />
-              <MetricCard
-                label="Active sequence"
-                value={
-                  calculation.activeSequence
-                    ? `#${calculation.activeSequence.number}`
-                    : "Ready"
-                }
-                hint={
-                  calculation.activeSequence
-                    ? `${calculation.activeSequence.bets.length} bets, ${formatMoney(
-                        calculation.recoveryGap,
-                        tracker.settings.currency,
-                      )} recovery gap`
-                    : "The next bet begins a new sequence"
-                }
-              />
-              <MetricCard
-                label="Largest stake"
-                value={formatMoney(calculation.largestStake, tracker.settings.currency)}
-                hint={`Safety limit ${formatMoney(tracker.settings.maxStake, tracker.settings.currency)}`}
-                tone={calculation.largestStake >= tracker.settings.maxStake ? "negative" : "neutral"}
-              />
-            </section>
-
-            <section className="content-grid">
-              <article className="panel goal-panel">
-                <SectionTitle eyebrow="Goal tracking" title="Settled progress" />
-                <div className="goal-values">
-                  <div>
-                    <strong>{formatSignedMoney(calculation.settledProfit, tracker.settings.currency)}</strong>
-                    <span>settled result</span>
-                  </div>
-                  <div>
-                    <strong>{formatMoney(calculation.goal, tracker.settings.currency)}</strong>
-                    <span>{formatPercent(tracker.settings.goalRate)} of expected profit</span>
-                  </div>
-                </div>
-                <div
-                  className="progress-track"
-                  role="progressbar"
-                  aria-valuemin={0}
-                  aria-valuemax={100}
-                  aria-valuenow={Math.round(goalProgress * 100)}
-                  aria-label="Goal progress"
-                >
-                  <span style={{ width: `${goalProgress * 100}%` }} />
-                </div>
-                <p className="panel-footnote">
-                  {formatPercent(goalProgress)} of the current calculated goal.
-                </p>
-              </article>
-
-              <article
-                className={`panel risk-panel ${calculation.riskFlags.length ? "risk-warning" : "risk-safe"}`}
-              >
-                <SectionTitle
-                  eyebrow="Guardrails"
-                  title={calculation.riskFlags.length ? "Attention needed" : "Within your limits"}
-                />
-                {calculation.riskFlags.length ? (
-                  <ul className="risk-list">
-                    {calculation.riskFlags.map((flag) => (
-                      <li key={flag}>{flag}</li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p>
-                    Open exposure is below your limit of{" "}
-                    {formatMoney(tracker.settings.maxOpenExposure, tracker.settings.currency)}.
-                  </p>
-                )}
-                <button type="button" className="text-button" onClick={() => setActiveTab("settings")}>
-                  Review guardrails
-                </button>
-              </article>
-            </section>
-
-            <section className="panel recent-panel">
-              <SectionTitle
-                eyebrow="Latest activity"
-                title="Recent bets"
-                action={
-                  <button type="button" className="text-button" onClick={() => setActiveTab("history")}>
-                    View sequences
-                  </button>
-                }
-              />
-              {recentBets.length ? (
-                <div className="recent-list">
-                  {recentBets.map((bet) => (
-                    <div className="recent-row" key={bet.id}>
-                      <div>
-                        <strong>{bet.label}</strong>
-                        <span>
-                          {formatDateTime(bet.placedAt)} | {formatOdds(bet.odds)} odds
-                        </span>
-                      </div>
-                      <span className={`status-badge status-${bet.outcome}`}>
-                        {outcomeLabel(bet.outcome)}
-                      </span>
-                      <strong className={bet.profit < 0 ? "amount-negative" : "amount-positive"}>
-                        {bet.outcome === "open"
-                          ? formatMoney(bet.stake, tracker.settings.currency)
-                          : formatSignedMoney(bet.profit, tracker.settings.currency)}
-                      </strong>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="empty-state">
-                  <strong>No bets recorded yet.</strong>
-                  <p>Add a bet to calculate the first suggested stake.</p>
-                  <button
-                    type="button"
-                    className="button button-primary"
-                    onClick={openNewBetForm}
-                    disabled={hasOpenBet}
-                  >
-                    Add the first bet
-                  </button>
-                </div>
-              )}
-            </section>
-          </>
-        )}
-
-        {activeTab === "history" && (
-          <div className="workspace">
+        <div className="workspace">
             <section className="sequence-page">
             {showRiskBanner && (
               <div className="risk-banner" role="alert">
@@ -1598,7 +1415,7 @@ function App() {
                   <button
                     type="button"
                     className="text-button"
-                    onClick={() => setActiveTab("settings")}
+                    onClick={() => setSettingsOpen(true)}
                   >
                     Review guardrails
                   </button>
@@ -1622,7 +1439,6 @@ function App() {
                   are based on your settings, not predictions.
                 </p>
                 <div className="hero-meta">
-                  <span>{calculation.sequences.length} sequences</span>
                   <span>{formatPercent(calculation.winRate)} settled win rate</span>
                   <span>
                     {calculation.activeSequence
@@ -1653,6 +1469,11 @@ function App() {
                 <span aria-hidden="true">+</span> Add bet
               </button>
             </div>
+
+            <SectionTitle
+              eyebrow="Sequences"
+              title={`${calculation.sequences.length} sequences`}
+            />
 
             <div className="filter-bar" aria-label="Sequence filter">
               {(["all", "active", "closed"] as HistoryFilter[]).map((filter) => (
@@ -1807,11 +1628,28 @@ function App() {
               />
             </aside>
           </div>
-        )}
 
-        {activeTab === "settings" && (
-          <section className="settings-page">
-            <SectionTitle eyebrow="FairBets controls" title="Strategy and safety settings" />
+        {settingsOpen && (
+          <div className="modal-backdrop" role="presentation">
+            <section
+              className="settings-page settings-modal"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="settings-title"
+            >
+              <div className="modal-heading">
+                <div>
+                  <p className="eyebrow">FairBets controls</p>
+                  <h2 id="settings-title">Strategy and safety settings</h2>
+                </div>
+                <button
+                  type="button"
+                  className="close-button"
+                  onClick={() => setSettingsOpen(false)}
+                >
+                  Back to sequences
+                </button>
+              </div>
             <div className="settings-layout">
               <form className="panel settings-form" onSubmit={saveSettings}>
                 <div className="form-section">
@@ -2084,22 +1922,10 @@ function App() {
                 </article>
               </aside>
             </div>
-          </section>
+            </section>
+          </div>
         )}
       </main>
-
-      <nav className="mobile-nav" aria-label="Mobile navigation">
-        {(["overview", "history", "settings"] as Tab[]).map((tab) => (
-          <button
-            type="button"
-            key={tab}
-            className={activeTab === tab ? "active" : ""}
-            onClick={() => setActiveTab(tab)}
-          >
-            <span>{tab === "overview" ? "Home" : tab === "history" ? "Sequences" : "Settings"}</span>
-          </button>
-        ))}
-      </nav>
 
       {isFormOpen && (
         <div className="modal-backdrop" role="presentation">
