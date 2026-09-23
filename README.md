@@ -11,6 +11,15 @@ pnpm dev
 
 Open the local URL printed by Vite in a browser.
 
+## Application layout
+
+The app opens directly on the sequences view. Ledger totals — available balance,
+settled profit and loss, goal tracking, and the largest stake — live in a summary
+sidebar beside the sequences, which becomes a drawer on small screens. Settings open
+as an overlay above the sequences and close back to them. Guardrail breaches appear as
+a dismissible banner at the top of the sequences view; the banner returns when the set
+of breached guardrails changes or the app is reloaded.
+
 ## Publish on GitHub Pages
 
 The repository includes a GitHub Actions workflow at
@@ -99,5 +108,5 @@ pnpm test:e2e
 - Open bets are shown as exposure, not silently counted as settled losses.
 - Every winning bet closes its sequence; the following bet starts a fresh sequence at the base stake.
 - Suggested and manually entered stakes are limited by the configured maximum stake.
-- The dashboard warns when open exposure or recorded stakes exceed configured limits.
+- The sequences view warns with a banner when open exposure or recorded stakes exceed configured limits.
 - The application is a private tracker only. It does not place bets or claim to predict outcomes.

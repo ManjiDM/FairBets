@@ -36,7 +36,7 @@ This repo is a Vite + React + TypeScript app for a mobile-first, local-first bet
 
 The most important implementation boundary is between the UI layer and the deterministic finance logic:
 
-- `src/App.tsx` is the main UI/state container. It owns browser persistence (`localStorage`), migration from legacy saved data, and optional cloud sync flows.
+- `src/App.tsx` is the main UI/state container. It owns browser persistence (`localStorage`), migration from legacy saved data, and optional cloud sync flows. The app shell is sequences-first: there is no home or overview page and no tabbed navigation. Ledger totals live in a summary sidebar (a drawer below 860px), settings render as a modal overlay above the sequences, and guardrail breaches surface as a dismissible banner at the top of the sequences view.
 - `src/domain/ledger.ts` is the source of truth for the ledger model and all sequence/stake calculations. Financial rules live here (`Bet`, `StrategySettings`, `calculateLedger`, `suggestStakeForOdds`). If a change affects stake math or sequence behavior, start here.
 - `src/domain/workbookImport.ts` converts `.xlsx` imports into the app’s `LedgerState` shape. It expects workbook layouts with `DATETIME`, `ODD`/`ODDS`, and specific related columns.
 - `src/lib/cloudStore.ts` and `src/lib/supabase.ts` handle optional Supabase auth and backup/restore flows. `supabase/schema.sql` defines the RLS-protected cloud schema.

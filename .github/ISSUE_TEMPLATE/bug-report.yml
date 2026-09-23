@@ -27,7 +27,7 @@ body:
     attributes:
       label: Steps to reproduce
       placeholder: |
-        1. Open the overview tab
+        1. Open the app on the sequences view
         2. Record a bet at odds 2.0
         3. ...
     validations:
