@@ -1,5 +1,30 @@
 # Copilot instructions for FairBets
 
+## Start here
+
+- [`AGENTS.md`](../AGENTS.md) is the tool-agnostic entry point for any AI agent.
+- [`specs/README.md`](../specs/README.md) describes the spec-driven development workflow.
+- [`specs/constitution.md`](../specs/constitution.md) holds the non-negotiable principles.
+- Path-scoped rules live in [`.github/instructions/`](./instructions/); stage prompts live
+  in [`.github/prompts/`](./prompts/).
+
+## Spec-driven development
+
+Every non-trivial change starts with a spec, not with code:
+
+1. **Specify** — `specs/<NNN-slug>/spec.md` from `specs/templates/spec-template.md`.
+   Behaviour only; mark unknowns `[NEEDS CLARIFICATION: ...]`.
+2. **Clarify** — resolve every marker before planning. Never guess on money rules, data
+   shapes, or risk limits.
+3. **Plan** — `plan.md`. Approach, affected modules, data and migration impact, risks.
+4. **Tasks** — `tasks.md`. Small, ordered, individually verifiable steps.
+5. **Implement** — work the tasks in order, ticking them off as they land.
+6. **Verify** — `pnpm lint`, `pnpm build`, `pnpm test:e2e`, plus each acceptance scenario.
+
+Trivial changes (typos, dependency bumps, formatting) may skip the spec but still need
+green gates. Use one-line commit messages with no body, and do not push or open pull
+requests unless explicitly asked.
+
 ## Repository overview
 
 This repo is a Vite + React + TypeScript app for a mobile-first, local-first betting ledger. The product model is a FairBets tracker: a sequence starts at a base stake, continues through losses or open outcomes, and closes on the next win; the next sequence resets from the configured base stake.
@@ -60,6 +85,8 @@ Notes:
 
 ## Existing repo-specific guidance to retain
 
+- [`AGENTS.md`](../AGENTS.md) is the shared entry point for all AI agents; keep it in sync
+  with this file.
 - README is the operational source for local setup and cloud sync steps.
 - `supabase/schema.sql` is the authoritative schema for the optional cloud backup feature.
 - There is no convention of separate backend/API folders; the repo is a front-end domain model with optional Supabase persistence.

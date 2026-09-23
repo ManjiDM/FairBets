@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Spec-driven development guide
+    url: https://github.com/ManjiDM/FairBets/blob/main/specs/README.md
+    about: How features move from idea to spec, plan, tasks, and implementation.
+  - name: Project constitution
+    url: https://github.com/ManjiDM/FairBets/blob/main/specs/constitution.md
+    about: The non-negotiable principles every change is checked against.

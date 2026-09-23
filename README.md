@@ -5,7 +5,6 @@ A mobile-first, local-first tracker for automatic sequences of bets. A sequence 
 ## Run locally
 
 ```bash
-cd C:\Users\ctw01517\Desktop\betting-series-tracker
 pnpm install --frozen-lockfile
 pnpm dev
 ```
@@ -76,6 +75,24 @@ Do not put a Supabase service-role key in `.env.local` or in browser code. Once 
 ## Import the workbook
 
 Use **Import .xlsx** in Settings and choose `Betting2026.xlsx`. The importer recognizes the workbook's `DATETIME`, `BET`, and `ODD` columns, preserves recorded stakes where available, and automatically groups the imported bets into FairBets sequences.
+
+## Contributing
+
+FairBets follows spec-driven development: the specification is written, clarified, and
+planned before code is produced. See [`CONTRIBUTING.md`](./CONTRIBUTING.md) for the
+workflow, [`specs/README.md`](./specs/README.md) for the templates and stages, and
+[`specs/constitution.md`](./specs/constitution.md) for the principles every change is
+checked against.
+
+AI coding agents should start at [`AGENTS.md`](./AGENTS.md).
+
+Before opening a pull request:
+
+```bash
+pnpm lint
+pnpm build
+pnpm test:e2e
+```
 
 ## Included safeguards
 

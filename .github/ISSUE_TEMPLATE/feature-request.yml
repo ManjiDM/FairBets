@@ -1,0 +1,80 @@
+name: Feature request
+description: Propose a change that will be turned into a FairBets spec
+title: "[Feature]: "
+labels: ["enhancement", "needs-spec"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        FairBets follows spec-driven development. This issue becomes a spec under
+        `specs/` before any code is written, so focus on the outcome you want rather
+        than on how to build it.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What is wrong, missing, or painful today? Who feels it, and when?
+      placeholder: When I record a bet at high odds, ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Desired outcome
+      description: What should be true once this is done? Describe behaviour, not implementation.
+    validations:
+      required: true
+
+  - type: textarea
+    id: scenarios
+    attributes:
+      label: Acceptance scenarios
+      description: How would you confirm this works? Gherkin is welcome but plain steps are fine.
+      placeholder: |
+        Given a sequence with a base stake of 10
+        When I record a losing bet at odds 2.0
+        Then ...
+      render: gherkin
+    validations:
+      required: true
+
+  - type: textarea
+    id: money-rules
+    attributes:
+      label: Money rules and worked examples
+      description: If stakes or sequences are involved, give concrete numbers and the expected results.
+      placeholder: |
+        | Base stake | Odds | Expected suggested stake |
+        | --- | --- | --- |
+        | 10 | 2.0 | ... |
+
+  - type: dropdown
+    id: data-impact
+    attributes:
+      label: Does this change stored data?
+      options:
+        - "No — behaviour only"
+        - "Yes — the ledger or settings shape changes"
+        - "Yes — cloud backup data changes"
+        - "Not sure"
+    validations:
+      required: true
+
+  - type: textarea
+    id: non-goals
+    attributes:
+      label: Non-goals
+      description: What should this change explicitly not do?
+
+  - type: checkboxes
+    id: constitution
+    attributes:
+      label: Constitution
+      description: See `specs/constitution.md`.
+      options:
+        - label: This keeps FairBets a private tracker — it does not place bets or predict outcomes
+          required: true
+        - label: This does not require a network connection for core use
+          required: true

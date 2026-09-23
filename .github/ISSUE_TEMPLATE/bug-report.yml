@@ -1,0 +1,73 @@
+name: Bug report
+description: Report incorrect behaviour in FairBets
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Do not paste real ledger exports, Supabase keys, or auth tokens into this issue.
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open the overview tab
+        2. Record a bet at odds 2.0
+        3. ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: numbers
+    attributes:
+      label: Numbers involved
+      description: For stake or sequence bugs, give the settings and the bets that produce the wrong figure.
+      placeholder: |
+        Base stake: 10, max stake: 200, rounding: 0.5
+        Bets: loss @ 2.0, open @ 3.0, win @ 1.8
+        Shown: ... Expected: ...
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Stake or sequence calculation
+        - Bet recording or settlement
+        - Workbook import
+        - Cloud backup, restore, or sync
+        - Local storage or data migration
+        - UI or layout
+        - Other
+    validations:
+      required: true
+
+  - type: input
+    id: environment
+    attributes:
+      label: Browser and device
+      placeholder: Chrome 140 on Android
+
+  - type: checkboxes
+    id: hygiene
+    attributes:
+      label: Before submitting
+      options:
+        - label: I have not included any secrets, tokens, or personal ledger data
+          required: true
