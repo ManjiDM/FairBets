@@ -12,8 +12,8 @@ Create a new specification for: `${input:feature:Describe the feature or change}
 1. Read [`../../specs/constitution.md`](../../specs/constitution.md) and
    [`../../specs/README.md`](../../specs/README.md).
 2. Pick the next free number under `specs/` (`001`, `002`, ...) and a short kebab-case
-   slug. Create `specs/<NNN-slug>/`.
-3. Copy `specs/templates/spec-template.md` to `specs/<NNN-slug>/spec.md` and fill every
+   slug. Create `specs/<FG-NNN-slug>/`.
+3. Copy `specs/templates/spec-template.md` to `specs/<FG-NNN-slug>/spec.md` and fill every
    section.
 4. Read enough of the codebase to describe current behaviour accurately — `src/domain/ledger.ts`
    for money rules, `features/` for existing behaviour of record — but do **not** write

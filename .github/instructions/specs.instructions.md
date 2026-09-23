@@ -30,7 +30,7 @@ artifact, not as documentation written after the fact.
 
 ## Naming
 
-`specs/NNN-feature-slug/` with a zero-padded incrementing number and a short kebab-case
+`specs/FB-NNN-feature-slug/` with a zero-padded incrementing number and a short kebab-case
 slug, for example `001-stake-rounding-modes`.
 
 ## Templates

@@ -5,7 +5,7 @@ description: "Stage 2 — resolve open questions in a spec before planning"
 
 # Clarify
 
-Resolve the open questions in `specs/${input:spec:NNN-feature-slug}/spec.md`.
+Resolve the open questions in `specs/${input:spec:FG-NNN-feature-slug}/spec.md`.
 
 ## Steps
 

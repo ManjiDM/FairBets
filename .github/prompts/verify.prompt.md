@@ -5,7 +5,7 @@ description: "Stage 6 — verify an implementation against its spec"
 
 # Verify
 
-Verify the implementation of `specs/${input:spec:NNN-feature-slug}/spec.md`.
+Verify the implementation of `specs/${input:spec:FG-NNN-feature-slug}/spec.md`.
 
 ## Steps
 

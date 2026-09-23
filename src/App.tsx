@@ -763,6 +763,7 @@ function App() {
   const [loadedLedger] = useState<LoadedLedger>(loadLedger);
   const [tracker, setTracker] = useState<LedgerState>(loadedLedger.state);
   const [activeTab, setActiveTab] = useState<Tab>("overview");
+  const [dismissedRiskKey, setDismissedRiskKey] = useState<string | null>(null);
   const [historyFilter, setHistoryFilter] = useState<HistoryFilter>("all");
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [pendingDeleteKey, setPendingDeleteKey] = useState<string | null>(null);
@@ -816,6 +817,8 @@ function App() {
   }, [calculation.sequences, historyFilter]);
   const recentBets = calculation.bets.slice(-5).reverse();
   const goalProgress = Math.max(0, Math.min(calculation.goalProgress, 1));
+  const riskKey = calculation.riskFlags.join("|");
+  const showRiskBanner = calculation.riskFlags.length > 0 && dismissedRiskKey !== riskKey;
 
   useEffect(() => {
     if (!isSupabaseConfigured) {
@@ -1569,6 +1572,35 @@ function App() {
 
         {activeTab === "history" && (
           <section className="sequence-page">
+            {showRiskBanner && (
+              <div className="risk-banner" role="alert">
+                <div className="risk-banner-body">
+                  <p className="eyebrow">Guardrails</p>
+                  <ul className="risk-list">
+                    {calculation.riskFlags.map((flag) => (
+                      <li key={flag}>{flag}</li>
+                    ))}
+                  </ul>
+                </div>
+                <div className="risk-banner-actions">
+                  <button
+                    type="button"
+                    className="text-button"
+                    onClick={() => setActiveTab("settings")}
+                  >
+                    Review guardrails
+                  </button>
+                  <button
+                    type="button"
+                    className="text-button"
+                    onClick={() => setDismissedRiskKey(riskKey)}
+                  >
+                    Dismiss
+                  </button>
+                </div>
+              </div>
+            )}
+
             <SectionTitle
               eyebrow="Sequences"
               title={`${calculation.sequences.length} sequences`}

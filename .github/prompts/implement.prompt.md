@@ -5,7 +5,7 @@ description: "Stage 5 — execute a task list against the codebase"
 
 # Implement
 
-Execute `specs/${input:spec:NNN-feature-slug}/tasks.md`.
+Execute `specs/${input:spec:FG-NNN-feature-slug}/tasks.md`.
 
 ## Preconditions
 

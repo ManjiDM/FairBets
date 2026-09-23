@@ -11,7 +11,7 @@ Diagnose and fix: `${input:defect:Describe the defect, with the observed and exp
 
 ### 1. Reproduce
 
-Create `specs/<NNN-fix-slug>/spec.md` from `specs/templates/bugfix-template.md`. Record
+Create `specs/<FG-NNN-fix-slug>/spec.md` from `specs/templates/bugfix-template.md`. Record
 the exact input state and observed output before changing anything. For money defects,
 capture settings, bets, the observed figure, and the expected figure.
 

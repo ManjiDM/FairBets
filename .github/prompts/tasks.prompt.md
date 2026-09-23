@@ -5,7 +5,7 @@ description: "Stage 4 — break a plan into ordered, verifiable tasks"
 
 # Tasks
 
-Generate the task list for `specs/${input:spec:NNN-feature-slug}/plan.md`.
+Generate the task list for `specs/${input:spec:FG-NNN-feature-slug}/plan.md`.
 
 ## Preconditions
 
@@ -14,7 +14,7 @@ Generate the task list for `specs/${input:spec:NNN-feature-slug}/plan.md`.
 ## Steps
 
 1. Read the spec and the plan.
-2. Copy `specs/templates/tasks-template.md` to `specs/<NNN-slug>/tasks.md`.
+2. Copy `specs/templates/tasks-template.md` to `specs/<FG-NNN-slug>/tasks.md`.
 3. Derive tasks directly from the plan's affected-modules table and test strategy.
 
 ## Rules
