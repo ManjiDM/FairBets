@@ -49,6 +49,32 @@ Then("the summary sidebar should show the {string} metric", async function (labe
   await expect(metric).toBeVisible();
 });
 
+Then("the summary sidebar should show goal tracking", async function () {
+  await expect(
+    this.page.locator(".summary-sidebar .goal-panel"),
+  ).toBeVisible();
+});
+
+Given("the viewport is a small phone", async function () {
+  await this.page.setViewportSize({ width: 390, height: 844 });
+});
+
+When("I open the summary drawer", async function () {
+  await this.page.getByRole("button", { name: "Summary", exact: true }).click();
+});
+
+Then("the summary drawer should be open", async function () {
+  await expect(this.page.locator(".summary-sidebar.drawer-open")).toBeVisible();
+});
+
+When("I close the summary drawer", async function () {
+  await this.page.locator(".summary-sidebar .drawer-close").click();
+});
+
+Then("the summary drawer should be closed", async function () {
+  await expect(this.page.locator(".summary-sidebar.drawer-open")).toHaveCount(0);
+});
+
 When("I open the settings overlay", async function () {
   await this.page.getByRole("button", { name: "Settings", exact: true }).click();
 });
@@ -71,6 +97,36 @@ Then("the settings overlay should not be shown", async function () {
 
 Then("no guardrail warning should be shown", async function () {
   await expect(this.page.locator(".risk-banner")).toHaveCount(0);
+});
+
+When(
+  "I add a bet labeled {string} with odds {string} and a manual stake of {string}",
+  async function (label, odds, stake) {
+    await this.page.getByRole("button", { name: "Add bet" }).click();
+    await this.page.getByLabel("Label").fill(label);
+    await this.page.getByLabel("Decimal odds").fill(odds);
+    await this.page.getByLabel("Manual stake (optional)").fill(stake);
+    await this.page.getByRole("button", { name: "Add bet" }).last().click();
+    await expect(this.page.getByRole("dialog")).toHaveCount(0);
+  },
+);
+
+When("I set the maximum stake to {string}", async function (value) {
+  await this.page.getByRole("button", { name: "Settings", exact: true }).click();
+  const field = this.page.locator("label").filter({
+    has: this.page.getByText("Maximum stake", { exact: true }),
+  });
+  await field.locator("input").fill(value);
+  await this.page.getByRole("button", { name: "Save settings" }).click();
+  await this.page.getByRole("button", { name: "Back to sequences" }).click();
+});
+
+Then("a guardrail warning should be shown", async function () {
+  await expect(this.page.locator(".risk-banner")).toBeVisible();
+});
+
+When("I dismiss the guardrail warning", async function () {
+  await this.page.locator(".risk-banner").getByRole("button", { name: "Dismiss" }).click();
 });
 
 Then("no Overview destination should be offered", async function () {
