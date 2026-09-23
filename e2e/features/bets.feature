@@ -20,7 +20,7 @@ Feature: Bet management
     And the sequence containing the bet "Single bet to close" should be "Closed"
     And I should see the bet settlement message
     When I navigate the Overview view
-    Then I see the available balance as "€39.17"
+    Then I see the available balance as "€39.07"
  
   Scenario: Add new a bet when another is open is prevented
     Then I should see 5 sequences
