@@ -764,6 +764,7 @@ function App() {
   const [tracker, setTracker] = useState<LedgerState>(loadedLedger.state);
   const [activeTab, setActiveTab] = useState<Tab>("overview");
   const [dismissedRiskKey, setDismissedRiskKey] = useState<string | null>(null);
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const [historyFilter, setHistoryFilter] = useState<HistoryFilter>("all");
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [pendingDeleteKey, setPendingDeleteKey] = useState<string | null>(null);
@@ -1376,6 +1377,16 @@ function App() {
           ))}
         </nav>
 
+        <button
+          type="button"
+          className="drawer-toggle"
+          onClick={() => setDrawerOpen(true)}
+          aria-controls="summary-sidebar"
+          aria-expanded={drawerOpen}
+        >
+          Summary
+        </button>
+
         <input
           ref={fileInputRef}
           className="visually-hidden"
@@ -1571,7 +1582,8 @@ function App() {
         )}
 
         {activeTab === "history" && (
-          <section className="sequence-page">
+          <div className="workspace">
+            <section className="sequence-page">
             {showRiskBanner && (
               <div className="risk-banner" role="alert">
                 <div className="risk-banner-body">
@@ -1601,20 +1613,46 @@ function App() {
               </div>
             )}
 
-            <SectionTitle
-              eyebrow="Sequences"
-              title={`${calculation.sequences.length} sequences`}
-              action={
-                <button
-                  type="button"
-                  className="button button-primary"
-                  onClick={openNewBetForm}
-                  disabled={hasOpenBet}
-                >
-                  <span aria-hidden="true">+</span> Add bet
-                </button>
-              }
-            />
+            <div className="sequence-header">
+              <div className="sequence-header-copy">
+                <p className="eyebrow">Current ledger</p>
+                <h1>{tracker.ledgerName}</h1>
+                <p className="hero-description">
+                  Track decisions, exposure, and outcomes in one private ledger. Suggestions
+                  are based on your settings, not predictions.
+                </p>
+                <div className="hero-meta">
+                  <span>{calculation.sequences.length} sequences</span>
+                  <span>{formatPercent(calculation.winRate)} settled win rate</span>
+                  <span>
+                    {calculation.activeSequence
+                      ? `Sequence ${calculation.activeSequence.number} active, ${
+                          calculation.activeSequence.bets.length
+                        } bets, ${formatMoney(
+                          calculation.recoveryGap,
+                          tracker.settings.currency,
+                        )} recovery gap`
+                      : "Ready for a new sequence"}
+                  </span>
+                  <span>
+                    Next bet guide{" "}
+                    <strong>
+                      {formatMoney(calculation.nextSuggestion.amount, tracker.settings.currency)}
+                    </strong>{" "}
+                    at {formatOdds(calculation.nextOddsGuide)} odds
+                    {calculation.nextSuggestion.capped ? " (capped)" : ""}
+                  </span>
+                </div>
+              </div>
+              <button
+                type="button"
+                className="button button-primary"
+                onClick={openNewBetForm}
+                disabled={hasOpenBet}
+              >
+                <span aria-hidden="true">+</span> Add bet
+              </button>
+            </div>
 
             <div className="filter-bar" aria-label="Sequence filter">
               {(["all", "active", "closed"] as HistoryFilter[]).map((filter) => (
@@ -1684,13 +1722,91 @@ function App() {
                   );
                 })}
               </div>
+            ) : tracker.bets.length === 0 ? (
+              <div className="empty-state history-empty">
+                <strong>No bets recorded yet.</strong>
+                <p>Add a bet to calculate the first suggested stake.</p>
+                <button
+                  type="button"
+                  className="button button-primary"
+                  onClick={openNewBetForm}
+                  disabled={hasOpenBet}
+                >
+                  Add the first bet
+                </button>
+              </div>
             ) : (
               <div className="empty-state history-empty">
                 <strong>No sequences match this filter.</strong>
                 <p>Use a different filter or add a new bet.</p>
               </div>
             )}
-          </section>
+            </section>
+
+            <aside
+              id="summary-sidebar"
+              className={`summary-sidebar ${drawerOpen ? "drawer-open" : ""}`}
+              aria-label="FairBets summary"
+            >
+              <div className="summary-sidebar-heading">
+                <p className="eyebrow">Summary</p>
+                <button
+                  type="button"
+                  className="close-button drawer-close"
+                  onClick={() => setDrawerOpen(false)}
+                >
+                  Close
+                </button>
+              </div>
+
+              <MetricCard
+                label="Available balance"
+                value={formatMoney(calculation.availableBalance, tracker.settings.currency)}
+                hint={`${formatMoney(calculation.openExposure, tracker.settings.currency)} committed to open bets`}
+                tone="accent"
+              />
+              <MetricCard
+                label="Settled P&L"
+                value={formatSignedMoney(calculation.settledProfit, tracker.settings.currency)}
+                hint={`${calculation.wins} won and ${calculation.losses} lost`}
+                tone={calculation.settledProfit >= 0 ? "positive" : "negative"}
+              />
+
+              <article className="panel goal-panel">
+                <SectionTitle eyebrow="Goal tracking" title="Settled progress" />
+                <div className="goal-values">
+                  <div>
+                    <strong>{formatSignedMoney(calculation.settledProfit, tracker.settings.currency)}</strong>
+                    <span>settled result</span>
+                  </div>
+                  <div>
+                    <strong>{formatMoney(calculation.goal, tracker.settings.currency)}</strong>
+                    <span>{formatPercent(tracker.settings.goalRate)} of expected profit</span>
+                  </div>
+                </div>
+                <div
+                  className="progress-track"
+                  role="progressbar"
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                  aria-valuenow={Math.round(goalProgress * 100)}
+                  aria-label="Goal progress"
+                >
+                  <span style={{ width: `${goalProgress * 100}%` }} />
+                </div>
+                <p className="panel-footnote">
+                  {formatPercent(goalProgress)} of the current calculated goal.
+                </p>
+              </article>
+
+              <MetricCard
+                label="Largest stake"
+                value={formatMoney(calculation.largestStake, tracker.settings.currency)}
+                hint={`Safety limit ${formatMoney(tracker.settings.maxStake, tracker.settings.currency)}`}
+                tone={calculation.largestStake >= tracker.settings.maxStake ? "negative" : "neutral"}
+              />
+            </aside>
+          </div>
         )}
 
         {activeTab === "settings" && (
