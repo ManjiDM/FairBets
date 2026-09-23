@@ -2,7 +2,7 @@ Feature: Ledger management
 
   Background:
     Given the app is loaded with a valid FairBets ledger
-    And the user can view the overview, history, and settings tabs
+    And the user can view the sequences workspace, the summary sidebar, and settings
 
   Scenario: Load a demo ledger when no saved data exists
     Given no local ledger is stored in browser storage
@@ -11,11 +11,11 @@ Feature: Ledger management
     And it should display the demo data without an error
 
   Scenario: Record a new open bet
-    Given the user is on the overview or history screen
+    Given the user is in the sequences workspace
     When the user adds a bet with a label, a placed time, odds greater than 1, and no manual stake
     Then the new bet should be saved to the ledger
     And the sequence calculation should be recalculated immediately
-    And the app should show the updated overview metrics
+    And the app should show the updated summary metrics
 
   Scenario: Reject invalid bet input
     Given the user opens the bet form
