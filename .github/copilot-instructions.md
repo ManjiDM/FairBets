@@ -130,8 +130,9 @@ Notes:
 ## Domain and data conventions
 
 - Keep the app centered on `LedgerState`: `{ ledgerName, settings, bets }`.
-- Use `Bet` objects consistently with fields like `id`, `placedAt`, `label`, `odds`, `outcome`, and optional `stakeOverride`.
+- Use `Bet` objects consistently with fields like `id`, `placedAt`, `label`, `odds`, `outcome`, a required `strategy`, and optional `stakeOverride`.
 - Preserve the FairBets sequence model: open bets are exposure, not silently treated as settled losses; the next win closes the active sequence and starts a new one from the base stake.
+- Strategy values are pinned per bet. `BetStrategy` (`baseStake`, `threshold`, `recoveryWeight`, `stakeRounding`, `maxStake`) is stamped onto a bet when it is placed, imported, or restored, and `calculateLedger` prices each bet from `bet.strategy` rather than live settings. Changing those settings must never re-price existing bets. Guardrail warnings (over-stake, open exposure) intentionally stay on live settings. Every construction site must go through `pickStrategy`/`stampBets`.
 - When editing money logic, stay aligned with `StrategySettings` (`baseStake`, `goalRate`, `threshold`, `recoveryWeight`, `stakeRounding`, `maxStake`, `maxOpenExposure`, `currency`) and use the existing rounding/validation rules instead of introducing new assumptions.
 - The workbook importer intentionally expects the betting sheet layout described in the README and in `src/domain/workbookImport.ts`; changing it requires preserving compatibility with the expected `DATETIME` and `ODD`/`ODDS` fields and the legacy import logic.
 - Cloud data validation is strict in `src/lib/cloudStore.ts`; if the schema changes, update both the Supabase SQL schema and the Cloud row parsers together.

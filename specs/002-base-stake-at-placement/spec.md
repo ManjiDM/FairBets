@@ -118,7 +118,9 @@ only that bet is re-priced.
 - **FR-14** The strategy values recorded against a bet MUST be visible when viewing or
   editing that bet.
 - **FR-15** The user MUST be able to explicitly correct any recorded strategy value on a
-  past bet, and only that bet MUST be re-priced as a result.
+  past bet. Only that bet's own recorded values change; its stake is recalculated, and
+  later bets in the same sequence follow as normal because the running recovery gap
+  shifts. Bets in other sequences MUST be unaffected.
 - **FR-16** A corrected value MUST be subject to the same validation as the equivalent
   setting. An invalid correction MUST be rejected with a clear message and MUST NOT be
   saved.

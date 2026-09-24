@@ -107,6 +107,7 @@ pnpm test:e2e
 
 - Open bets are shown as exposure, not silently counted as settled losses.
 - Every winning bet closes its sequence; the following bet starts a fresh sequence at the base stake.
+- Strategy values are recorded on each bet when it is placed. Changing the base stake, threshold, recovery weight, stake rounding, or maximum stake in settings applies to bets placed from then on; bets already placed keep the values they were recorded with. Correct a past bet's recorded values from its edit form if they were captured wrongly.
 - Suggested and manually entered stakes are limited by the configured maximum stake.
 - The sequences view warns with a banner when open exposure or recorded stakes exceed configured limits.
 - The application is a private tracker only. It does not place bets or claim to predict outcomes.
