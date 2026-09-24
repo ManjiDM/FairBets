@@ -73,6 +73,7 @@ Cucumber is the only E2E runner; do not add a separate Playwright Test suite.
   co-authored section, imperative mood, 50 characters maximum for the subject. The
   allowed types and the ITEM ID rules are defined in
   [`.github/copilot-instructions.md`](./.github/copilot-instructions.md#commit-message-convention).
+  A `commit-msg` hook enforces this; `pnpm install` installs it.
 - Commit iteratively as tasks land.
 - Fill in the pull request template, including the spec link and the gate results.
 

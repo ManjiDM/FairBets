@@ -5,9 +5,11 @@
   "type": "module",
   "packageManager": "pnpm@12.4.1",
   "scripts": {
+    "prepare": "git config core.hooksPath .githooks",
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
+    "lint:commit": "node scripts/check-commit-msg.mjs",
     "preview": "vite preview",
     "test:e2e": "node ./e2e/run-cucumber.mjs",
     "test:e2e:headed": "node ./e2e/run-cucumber.mjs --headed"

@@ -77,6 +77,14 @@ spec(no-id): add bugfix track
 test(FB-432): cover guardrail banner
 ```
 
+### Enforcement
+
+A `commit-msg` hook in `.githooks/` runs `scripts/check-commit-msg.mjs` and rejects any
+message that breaks these rules. `pnpm install` points Git at that directory through the
+`prepare` script; run `git config core.hooksPath .githooks` by hand if hooks are not
+firing. Merge, revert, `fixup!`, and `squash!` messages are exempt. Check a message
+without committing with `pnpm lint:commit <file>`.
+
 ## Repository overview
 
 This repo is a Vite + React + TypeScript app for a mobile-first, local-first betting ledger. The product model is a FairBets tracker: a sequence starts at a base stake, continues through losses or open outcomes, and closes on the next win; the next sequence resets from the configured base stake.

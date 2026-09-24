@@ -91,7 +91,8 @@ failed first.
 - Follow the commit message convention: `<type>(<ITEM ID>): <subject>`, one line, no
   body. See
   [`.github/copilot-instructions.md`](./.github/copilot-instructions.md#commit-message-convention)
-  for the allowed types and the ITEM ID rules.
+  for the allowed types and the ITEM ID rules. A `commit-msg` hook rejects messages that
+  break the convention.
 - Do not push branches or open pull requests unless explicitly asked.
 
 ## Definition of done
