@@ -27,8 +27,55 @@ fails before the fix, name the root cause, check the blast radius on persisted l
 then fix minimally.
 
 Trivial changes (typos, dependency bumps, formatting) may skip the spec but still need
-green gates. Use one-line commit messages with no body, and do not push or open pull
-requests unless explicitly asked.
+green gates. Do not push or open pull requests unless explicitly asked.
+
+## Commit message convention
+
+Every commit message is a single line with no body and no co-authored section:
+
+```
+<type>(<ITEM ID>): <subject>
+```
+
+Rules for the `<subject>`:
+
+- **50 characters maximum.**
+- **Imperative mood** — `add sidebar`, not `added sidebar` or `adds sidebar`.
+- Lower case, no trailing punctuation.
+- A concise summary of the change.
+
+### ITEM ID
+
+The related issue, user story, or defect.
+
+- User stories and defects use the `FB-` prefix — `spec(FB-432): add sidebar spec`.
+- When no ID applies, use `no-id` — `spec(no-id): add sidebar spec`.
+
+### Types
+
+| Type | Use |
+| --- | --- |
+| `feat` | New or changed user-facing behaviour |
+| `fix` | Bugfix |
+| `spec` | Artifacts under `specs/` — spec, clarify, plan, or tasks |
+| `docs` | README, `AGENTS.md`, `CONTRIBUTING.md`, instructions, prompts |
+| `test` | Gherkin features, step definitions, fixtures |
+| `refactor` | Behaviour-preserving restructure |
+| `style` | Formatting only, no logic change |
+| `perf` | Performance only |
+| `build` | Vite, TypeScript config, dependencies |
+| `ci` | Workflows under `.github/workflows/` |
+| `chore` | Housekeeping that fits no other type |
+| `revert` | Reverts a previous commit |
+
+Examples:
+
+```
+feat(FB-432): show summary in a sidebar
+fix(FB-517): correct available balance
+spec(no-id): add bugfix track
+test(FB-432): cover guardrail banner
+```
 
 ## Repository overview
 

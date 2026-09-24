@@ -88,6 +88,10 @@ failed first.
 - Changing the cloud data shape means updating `supabase/schema.sql`, a new file in
   `supabase/migrations/`, and the parsers in `src/lib/cloudStore.ts` together.
 - Keep backward-compatible `localStorage` migration code in the UI layer.
+- Follow the commit message convention: `<type>(<ITEM ID>): <subject>`, one line, no
+  body. See
+  [`.github/copilot-instructions.md`](./.github/copilot-instructions.md#commit-message-convention)
+  for the allowed types and the ITEM ID rules.
 - Do not push branches or open pull requests unless explicitly asked.
 
 ## Definition of done
