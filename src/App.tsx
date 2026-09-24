@@ -6,13 +6,17 @@ import {
   calculateLedger,
   createBlankLedger,
   createDemoLedger,
+  pickStrategy,
+  stampBets,
   type Bet,
   type BetSequence,
+  type BetStrategy,
   type CalculatedBet,
   type Currency,
   type LedgerState,
   type Outcome,
   type StrategySettings,
+  type UnstampedBet,
   suggestStakeForOdds,
 } from "./domain/ledger";
 import { importWorkbook } from "./domain/workbookImport";
@@ -50,12 +54,21 @@ type NumericSetting =
   | "maxStake"
   | "maxOpenExposure";
 
+interface BetStrategyDraft {
+  baseStake: string;
+  threshold: string;
+  recoveryWeight: string;
+  stakeRounding: string;
+  maxStake: string;
+}
+
 interface BetDraft {
   label: string;
   placedAt: string;
   odds: string;
   outcome: Outcome;
   stakeOverride: string;
+  strategy: BetStrategyDraft;
 }
 
 interface Feedback {
@@ -77,6 +90,12 @@ const LEGACY_CLOUD_LINK_SERIES_KEY = "series-ledger-cloud-series-v1";
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
+}
+
+interface StoredLedgerState {
+  ledgerName: string;
+  settings: StrategySettings;
+  bets: UnstampedBet[];
 }
 
 function isOutcome(value: unknown): value is Outcome {
@@ -108,7 +127,18 @@ function isSettings(value: unknown): value is StrategySettings {
   );
 }
 
-function isBet(value: unknown): value is Bet {
+function isBetStrategy(value: unknown): value is BetStrategy {
+  return (
+    isRecord(value) &&
+    typeof value.baseStake === "number" &&
+    typeof value.threshold === "number" &&
+    typeof value.recoveryWeight === "number" &&
+    typeof value.stakeRounding === "number" &&
+    typeof value.maxStake === "number"
+  );
+}
+
+function isBet(value: unknown): value is UnstampedBet {
   return (
     isRecord(value) &&
     typeof value.id === "string" &&
@@ -116,11 +146,12 @@ function isBet(value: unknown): value is Bet {
     typeof value.label === "string" &&
     typeof value.odds === "number" &&
     isOutcome(value.outcome) &&
-    (value.stakeOverride === undefined || typeof value.stakeOverride === "number")
+    (value.stakeOverride === undefined || typeof value.stakeOverride === "number") &&
+    (value.strategy === undefined || isBetStrategy(value.strategy))
   );
 }
 
-function isLedgerState(value: unknown): value is LedgerState {
+function isLedgerState(value: unknown): value is StoredLedgerState {
   return (
     isRecord(value) &&
     typeof value.ledgerName === "string" &&
@@ -133,7 +164,7 @@ function isLedgerState(value: unknown): value is LedgerState {
 function isLegacyTrackerState(value: unknown): value is {
   seriesName: string;
   settings: StrategySettings;
-  bets: Bet[];
+  bets: UnstampedBet[];
 } {
   return (
     isRecord(value) &&
@@ -167,7 +198,13 @@ function loadLedger(): LoadedLedger {
 
     const currentValue = parseStoredValue(currentStoredValue, STORAGE_KEY);
     if (isLedgerState(currentValue)) {
-      return { state: currentValue, feedback: null };
+      return {
+        state: {
+          ...currentValue,
+          bets: stampBets(currentValue.bets, currentValue.settings),
+        },
+        feedback: null,
+      };
     }
 
     const legacyValue = parseStoredValue(legacyStoredValue, LEGACY_STORAGE_KEY);
@@ -175,7 +212,7 @@ function loadLedger(): LoadedLedger {
       const migratedLedger: LedgerState = {
         ledgerName: legacyValue.seriesName,
         settings: legacyValue.settings,
-        bets: legacyValue.bets,
+        bets: stampBets(legacyValue.bets, legacyValue.settings),
       };
       window.localStorage.setItem(STORAGE_KEY, JSON.stringify(migratedLedger));
       return {
@@ -211,14 +248,62 @@ function toDateTimeInput(date = new Date()): string {
   return localDate.toISOString().slice(0, 16);
 }
 
-function createBetDraft(): BetDraft {
+function toStrategyDraft(strategy: BetStrategy): BetStrategyDraft {
+  return {
+    baseStake: String(strategy.baseStake),
+    threshold: String(strategy.threshold),
+    recoveryWeight: String(strategy.recoveryWeight),
+    stakeRounding: String(strategy.stakeRounding),
+    maxStake: String(strategy.maxStake),
+  };
+}
+
+function createBetDraft(settings: StrategySettings): BetDraft {
   return {
     label: "",
     placedAt: toDateTimeInput(),
     odds: "1.30",
     outcome: "open",
     stakeOverride: "",
+    strategy: toStrategyDraft(pickStrategy(settings)),
   };
+}
+
+const STRATEGY_FIELDS: {
+  key: keyof BetStrategyDraft;
+  label: string;
+  min: string;
+  step: string;
+}[] = [
+  { key: "baseStake", label: "Recorded base stake", min: "0.01", step: "0.01" },
+  { key: "threshold", label: "Recorded threshold", min: "0.01", step: "0.01" },
+  { key: "recoveryWeight", label: "Recorded recovery weight", min: "0.01", step: "0.01" },
+  { key: "stakeRounding", label: "Recorded stake rounding", min: "0", step: "1" },
+  { key: "maxStake", label: "Recorded maximum stake", min: "0.01", step: "0.01" },
+];
+
+function readStrategyDraft(draft: BetStrategyDraft): BetStrategy | string {  const baseStake = Number(draft.baseStake);
+  const threshold = Number(draft.threshold);
+  const recoveryWeight = Number(draft.recoveryWeight);
+  const stakeRounding = Number(draft.stakeRounding);
+  const maxStake = Number(draft.maxStake);
+
+  if (
+    [baseStake, threshold, maxStake].some((value) => !Number.isFinite(value) || value <= 0)
+  ) {
+    return "Recorded strategy values must be positive numbers.";
+  }
+  if (!Number.isFinite(recoveryWeight) || recoveryWeight <= 0 || recoveryWeight > 1) {
+    return "Recorded recovery weight must be above 0 and no more than 1.";
+  }
+  if (!Number.isInteger(stakeRounding) || stakeRounding < 0 || stakeRounding > 4) {
+    return "Recorded stake rounding must be a whole number from 0 to 4.";
+  }
+  if (maxStake < baseStake) {
+    return "The recorded maximum stake cannot be below the recorded base stake.";
+  }
+
+  return { baseStake, threshold, recoveryWeight, stakeRounding, maxStake };
 }
 
 function createBetId(): string {
@@ -768,7 +853,9 @@ function App() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [pendingDeleteKey, setPendingDeleteKey] = useState<string | null>(null);
   const [editingBetId, setEditingBetId] = useState<string | null>(null);
-  const [draft, setDraft] = useState<BetDraft>(createBetDraft);
+  const [draft, setDraft] = useState<BetDraft>(() =>
+    createBetDraft(loadedLedger.state.settings),
+  );
   const [formError, setFormError] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<Feedback | null>(loadedLedger.feedback);
   const [isImporting, setIsImporting] = useState(false);
@@ -1086,7 +1173,7 @@ function App() {
       return;
     }
     setEditingBetId(null);
-    setDraft(createBetDraft());
+    setDraft(createBetDraft(tracker.settings));
     setFormError(null);
     setIsFormOpen(true);
   }
@@ -1099,6 +1186,7 @@ function App() {
       odds: String(bet.odds),
       outcome: bet.outcome,
       stakeOverride: bet.stakeOverride === undefined ? "" : String(bet.stakeOverride),
+      strategy: toStrategyDraft(bet.strategy),
     });
     setFormError(null);
     setIsFormOpen(true);
@@ -1144,6 +1232,12 @@ function App() {
       return;
     }
 
+    const strategy = readStrategyDraft(draft.strategy);
+    if (typeof strategy === "string") {
+      setFormError(strategy);
+      return;
+    }
+
     const bet: Bet = {
       id: editingBetId ?? createBetId(),
       label: draft.label.trim() || `Selection ${tracker.bets.length + 1}`,
@@ -1151,6 +1245,7 @@ function App() {
       odds,
       outcome: draft.outcome,
       ...(manualStake === undefined ? {} : { stakeOverride: manualStake }),
+      strategy,
     };
 
     const saved = commitTracker({
@@ -2022,6 +2117,55 @@ function App() {
                   . A win closes that sequence.
                 </p>
               </div>
+
+              <details className="recorded-strategy">
+                <summary>Recorded strategy</summary>
+                {editingBetId ? (
+                  <>
+                    <p className="hint">
+                      These were recorded when the bet was placed. Change them only to
+                      correct a mistake.
+                    </p>
+                    <div className="form-grid">
+                      {STRATEGY_FIELDS.map((field) => (
+                        <label className="form-field" key={field.key}>
+                          <span>{field.label}</span>
+                          <input
+                            type="number"
+                            min={field.min}
+                            step={field.step}
+                            value={draft.strategy[field.key]}
+                            onChange={(event) =>
+                              setDraft((current) => ({
+                                ...current,
+                                strategy: {
+                                  ...current.strategy,
+                                  [field.key]: event.target.value,
+                                },
+                              }))
+                            }
+                          />
+                        </label>
+                      ))}
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <p className="hint">
+                      These values will be recorded against this bet and will not change
+                      when the strategy changes later.
+                    </p>
+                    <dl className="recorded-strategy-values">
+                      {STRATEGY_FIELDS.map((field) => (
+                        <div key={field.key}>
+                          <dt>{field.label}</dt>
+                          <dd>{draft.strategy[field.key]}</dd>
+                        </div>
+                      ))}
+                    </dl>
+                  </>
+                )}
+              </details>
 
               {formError && <p className="form-error">{formError}</p>}
 

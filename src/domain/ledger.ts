@@ -3,6 +3,14 @@ export type Currency = "EUR" | "GBP" | "USD";
 export type Outcome = "open" | "won" | "lost";
 export type SequenceStatus = "active" | "closed";
 
+export interface BetStrategy {
+  baseStake: number;
+  threshold: number;
+  recoveryWeight: number;
+  stakeRounding: number;
+  maxStake: number;
+}
+
 export interface Bet {
   id: string;
   placedAt: string;
@@ -10,7 +18,10 @@ export interface Bet {
   odds: number;
   outcome: Outcome;
   stakeOverride?: number;
+  strategy: BetStrategy;
 }
+
+export type UnstampedBet = Omit<Bet, "strategy"> & { strategy?: BetStrategy };
 
 export interface StrategySettings {
   startingBalance: number;
@@ -199,14 +210,31 @@ function toBetSequence(sequence: SequenceAccumulator): BetSequence {
   };
 }
 
+export function pickStrategy(settings: StrategySettings): BetStrategy {
+  return {
+    baseStake: settings.baseStake,
+    threshold: settings.threshold,
+    recoveryWeight: settings.recoveryWeight,
+    stakeRounding: settings.stakeRounding,
+    maxStake: settings.maxStake,
+  };
+}
+
+export function stampBets(bets: UnstampedBet[], settings: StrategySettings): Bet[] {
+  return bets.map((bet) => ({
+    ...bet,
+    strategy: bet.strategy ? { ...bet.strategy } : pickStrategy(settings),
+  }));
+}
+
 export function suggestStakeForOdds(
   recoveryGap: number,
   odds: number,
-  settings: StrategySettings,
+  strategy: BetStrategy,
 ): StakeSuggestion {
-  const baseStakeUnits = toMoneyUnits(settings.baseStake);
-  const maxStakeUnits = Math.max(baseStakeUnits, toMoneyUnits(settings.maxStake));
-  const thresholdUnits = toMoneyUnits(settings.threshold);
+  const baseStakeUnits = toMoneyUnits(strategy.baseStake);
+  const maxStakeUnits = Math.max(baseStakeUnits, toMoneyUnits(strategy.maxStake));
+  const thresholdUnits = toMoneyUnits(strategy.threshold);
   const gapUnits = Math.max(0, toMoneyUnits(recoveryGap));
   const oddsMarginUnits = toOddsUnits(odds) - ODDS_SCALE;
 
@@ -222,9 +250,9 @@ export function suggestStakeForOdds(
 
   const requiredRecoveryUnits = roundUpMoneyUnits(
     ceilDivide(gapUnits * ODDS_SCALE, oddsMarginUnits),
-    settings.stakeRounding,
+    strategy.stakeRounding,
   );
-  const weight = requiredRecoveryUnits >= thresholdUnits ? settings.recoveryWeight : 1;
+  const weight = requiredRecoveryUnits >= thresholdUnits ? strategy.recoveryWeight : 1;
   const weightedRecoveryUnits = Math.max(0, Math.trunc(requiredRecoveryUnits * weight));
   const requestedStakeUnits = baseStakeUnits + weightedRecoveryUnits;
   const suggestedStakeUnits = Math.min(requestedStakeUnits, maxStakeUnits);
@@ -240,8 +268,10 @@ export function suggestStakeForOdds(
 
 export function calculateLedger(bets: Bet[], settings: StrategySettings): LedgerCalculation {
   const orderedBets = [...bets].sort(compareBets);
-  const baseStakeUnits = toMoneyUnits(settings.baseStake);
-  const maxStakeUnits = Math.max(baseStakeUnits, toMoneyUnits(settings.maxStake));
+  const currentMaxStakeUnits = Math.max(
+    toMoneyUnits(settings.baseStake),
+    toMoneyUnits(settings.maxStake),
+  );
   const sequenceAccumulators: SequenceAccumulator[] = [];
   const calculatedBets: CalculatedBet[] = [];
   let currentSequence: SequenceAccumulator | null = null;
@@ -261,6 +291,7 @@ export function calculateLedger(bets: Bet[], settings: StrategySettings): Ledger
     }
 
     const safeOdds = bet.odds > 1 && Number.isFinite(bet.odds) ? bet.odds : 1.01;
+    const baseStakeUnits = toMoneyUnits(bet.strategy.baseStake);
     const recoveryBeforeUnits = Math.max(
       0,
       currentSequence.expectedProfitUnits - currentSequence.profitUnits,
@@ -268,7 +299,7 @@ export function calculateLedger(bets: Bet[], settings: StrategySettings): Ledger
     const suggestion = suggestStakeForOdds(
       fromMoneyUnits(recoveryBeforeUnits),
       safeOdds,
-      settings,
+      bet.strategy,
     );
     const stakeUnits = validStakeOverride(bet.stakeOverride)
       ? toMoneyUnits(bet.stakeOverride)
@@ -327,7 +358,7 @@ export function calculateLedger(bets: Bet[], settings: StrategySettings): Ledger
       cumulativeProfit: fromMoneyUnits(currentSequence.profitUnits),
       recoveryGap: fromMoneyUnits(recoveryGapUnits),
       capped: suggestion.capped,
-      overStakeLimit: stakeUnits > maxStakeUnits,
+      overStakeLimit: stakeUnits > currentMaxStakeUnits,
     };
 
     currentSequence.bets.push(calculatedBet);
@@ -399,66 +430,68 @@ export function createBlankLedger(): LedgerState {
 }
 
 export function createDemoLedger(): LedgerState {
+  const demoBets: UnstampedBet[] = [
+    {
+      id: "demo-01",
+      placedAt: "2026-09-01T09:30",
+      label: "Selection 01",
+      odds: 1.28,
+      outcome: "won",
+    },
+    {
+      id: "demo-02",
+      placedAt: "2026-09-02T12:15",
+      label: "Selection 02",
+      odds: 1.35,
+      outcome: "lost",
+    },
+    {
+      id: "demo-03",
+      placedAt: "2026-09-03T15:45",
+      label: "Selection 03",
+      odds: 1.24,
+      outcome: "won",
+    },
+    {
+      id: "demo-04",
+      placedAt: "2026-09-04T18:00",
+      label: "Selection 04",
+      odds: 1.42,
+      outcome: "lost",
+    },
+    {
+      id: "demo-05",
+      placedAt: "2026-09-05T11:10",
+      label: "Selection 05",
+      odds: 1.31,
+      outcome: "won",
+    },
+    {
+      id: "demo-06",
+      placedAt: "2026-09-06T14:25",
+      label: "Selection 06",
+      odds: 1.27,
+      outcome: "won",
+    },
+    {
+      id: "demo-07",
+      placedAt: "2026-09-07T16:20",
+      label: "Selection 07",
+      odds: 1.23,
+      outcome: "lost",
+    },
+    {
+      id: "demo-08",
+      placedAt: "2026-09-08T10:00",
+      label: "Selection 08",
+      odds: 1.38,
+      outcome: "won",
+    },
+  ];
+
   return {
     ledgerName: "FairBets demo",
     settings: { ...defaultSettings },
-    bets: [
-      {
-        id: "demo-01",
-        placedAt: "2026-09-01T09:30",
-        label: "Selection 01",
-        odds: 1.28,
-        outcome: "won",
-      },
-      {
-        id: "demo-02",
-        placedAt: "2026-09-02T12:15",
-        label: "Selection 02",
-        odds: 1.35,
-        outcome: "lost",
-      },
-      {
-        id: "demo-03",
-        placedAt: "2026-09-03T15:45",
-        label: "Selection 03",
-        odds: 1.24,
-        outcome: "won",
-      },
-      {
-        id: "demo-04",
-        placedAt: "2026-09-04T18:00",
-        label: "Selection 04",
-        odds: 1.42,
-        outcome: "lost",
-      },
-      {
-        id: "demo-05",
-        placedAt: "2026-09-05T11:10",
-        label: "Selection 05",
-        odds: 1.31,
-        outcome: "won",
-      },
-      {
-        id: "demo-06",
-        placedAt: "2026-09-06T14:25",
-        label: "Selection 06",
-        odds: 1.27,
-        outcome: "won",
-      },
-      {
-        id: "demo-07",
-        placedAt: "2026-09-07T16:20",
-        label: "Selection 07",
-        odds: 1.23,
-        outcome: "lost",
-      },
-      {
-        id: "demo-08",
-        placedAt: "2026-09-08T10:00",
-        label: "Selection 08",
-        odds: 1.38,
-        outcome: "won",
-      },
-    ],
+    bets: stampBets(demoBets, defaultSettings),
   };
 }

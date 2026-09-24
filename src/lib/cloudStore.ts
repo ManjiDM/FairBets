@@ -1,11 +1,13 @@
 import type { Session, User } from "@supabase/supabase-js";
 import type {
-  Bet,
+  BetStrategy,
   Currency,
   LedgerState,
   Outcome,
   StrategySettings,
+  UnstampedBet,
 } from "../domain/ledger";
+import { stampBets } from "../domain/ledger";
 import { supabase } from "./supabase";
 
 interface CloudLedgerRow {
@@ -108,7 +110,31 @@ function settingsFromCloud(value: unknown): StrategySettings {
   };
 }
 
-function betFromCloud(value: unknown): Bet {
+function optionalPositiveNumber(value: unknown, label: string): number | undefined {
+  return value === null || value === undefined ? undefined : readPositiveNumber(value, label);
+}
+
+function strategyFromCloud(value: Record<string, unknown>): BetStrategy | undefined {
+  const baseStake = optionalPositiveNumber(value.base_stake, "recorded base stake");
+  const threshold = optionalPositiveNumber(value.threshold, "recorded threshold");
+  const maxStake = optionalPositiveNumber(value.max_stake, "recorded maximum stake");
+  const recoveryWeight = value.recovery_weight;
+  const stakeRounding = value.stake_rounding;
+
+  if (
+    baseStake === undefined ||
+    threshold === undefined ||
+    maxStake === undefined ||
+    typeof recoveryWeight !== "number" ||
+    typeof stakeRounding !== "number"
+  ) {
+    return undefined;
+  }
+
+  return { baseStake, threshold, recoveryWeight, stakeRounding, maxStake };
+}
+
+function betFromCloud(value: unknown): UnstampedBet {
   if (!isRecord(value)) {
     throw new Error("Cloud data contains an invalid bet.");
   }
@@ -122,14 +148,13 @@ function betFromCloud(value: unknown): Bet {
     throw new Error("Cloud data contains an incomplete bet.");
   }
 
-  const parsedStakeOverride =
-    stakeOverride === null || stakeOverride === undefined
-      ? undefined
-      : readPositiveNumber(stakeOverride, "stake override");
+  const parsedStakeOverride = optionalPositiveNumber(stakeOverride, "stake override");
   const odds = readPositiveNumber(value.odds, "odds");
   if (odds <= 1) {
     throw new Error("Cloud data contains invalid odds.");
   }
+
+  const strategy = strategyFromCloud(value);
 
   return {
     id,
@@ -138,6 +163,7 @@ function betFromCloud(value: unknown): Bet {
     odds,
     outcome: readOutcome(value.outcome),
     ...(parsedStakeOverride === undefined ? {} : { stakeOverride: parsedStakeOverride }),
+    ...(strategy === undefined ? {} : { strategy }),
   };
 }
 
@@ -240,7 +266,9 @@ export async function loadLatestCloudLedger(): Promise<CloudLedger | null> {
   const ledger = ledgerFromCloud(latestLedgerData);
   const { data: betData, error: betError } = await client
     .from("bets")
-    .select("id,placed_at,label,odds,outcome,stake_override")
+    .select(
+      "id,placed_at,label,odds,outcome,stake_override,base_stake,threshold,recovery_weight,stake_rounding,max_stake",
+    )
     .eq("ledger_id", ledger.id)
     .order("placed_at", { ascending: true });
 
@@ -251,12 +279,14 @@ export async function loadLatestCloudLedger(): Promise<CloudLedger | null> {
     throw new Error("Cloud bets could not be read.");
   }
 
+  const settings = settingsFromCloud(ledger.settings);
+
   return {
     ledgerId: ledger.id,
     ledger: {
       ledgerName: ledger.name,
-      settings: settingsFromCloud(ledger.settings),
-      bets: betData.map(betFromCloud),
+      settings,
+      bets: stampBets(betData.map(betFromCloud), settings),
     },
   };
 }
@@ -315,6 +345,11 @@ export async function saveLedgerToCloud(
         odds: bet.odds,
         outcome: bet.outcome,
         stake_override: bet.stakeOverride ?? null,
+        base_stake: bet.strategy.baseStake,
+        threshold: bet.strategy.threshold,
+        recovery_weight: bet.strategy.recoveryWeight,
+        stake_rounding: bet.strategy.stakeRounding,
+        max_stake: bet.strategy.maxStake,
       })),
       { onConflict: "id" },
     );

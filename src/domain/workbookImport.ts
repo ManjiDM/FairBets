@@ -1,6 +1,6 @@
 import { readSheet } from "read-excel-file/browser";
-import type { Bet, Outcome, StrategySettings } from "./ledger";
-import { defaultSettings } from "./ledger";
+import type { Bet, Outcome, StrategySettings, UnstampedBet } from "./ledger";
+import { defaultSettings, stampBets } from "./ledger";
 
 type SpreadsheetCell = string | number | boolean | Date | null;
 type SpreadsheetRows = SpreadsheetCell[][];
@@ -131,7 +131,7 @@ function settingsFromWorkbook(rows: SpreadsheetRows): StrategySettings {
   };
 }
 
-function betsFromWorkbook(rows: SpreadsheetRows, headerRow: number): Bet[] {
+function betsFromWorkbook(rows: SpreadsheetRows, headerRow: number): UnstampedBet[] {
   const headers = rows[headerRow] ?? [];
   const normalizedHeaders = headers.map((cell) => toText(cell).toLowerCase());
   const dateColumn = normalizedHeaders.findIndex((value) => value === "datetime" || value === "date");
@@ -162,7 +162,7 @@ function betsFromWorkbook(rows: SpreadsheetRows, headerRow: number): Bet[] {
 
       const stake = toNumber(row[calculatedStakeColumn]);
       const label = toText(row[sourceBetColumn]) || `Bet ${offset + 1}`;;
-      const bet: Bet = {
+      const bet: UnstampedBet = {
         id: `import-${headerRow + offset + 2}-${Date.now()}`,
         placedAt: dateFromCell(row[dateColumn], row[dateColumn + 1]),
         label,
@@ -192,9 +192,11 @@ export async function importWorkbook(file: File): Promise<ImportedWorkbook> {
     throw new Error("No active bets were found in the workbook.");
   }
 
+  const settings = settingsFromWorkbook(rows);
+
   return {
     ledgerName: file.name.replace(/\.xlsx$/i, ""),
-    settings: settingsFromWorkbook(rows),
-    bets,
+    settings,
+    bets: stampBets(bets, settings),
   };
 }

@@ -5,7 +5,7 @@
 | ID | `002-base-stake-at-placement` |
 | Status | Clarified |
 | Created | 2026-09-24 |
-| Related | — |
+| Related | FB-002 |
 
 ## Problem
 
