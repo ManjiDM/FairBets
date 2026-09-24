@@ -230,6 +230,7 @@ Then(
 );
 
 When("I mark the bet {string} as {string}", async function (label, outcome) {
+  await revealBet(this.page, label);
   const betCard = this.page.locator(".single-bet-card").filter({
     has: this.page.getByText(label, { exact: true }),
   }).first();
@@ -298,4 +299,114 @@ Then("the current ledger should still be displayed", async function () {
     this.page.getByRole("heading", { name: "Strategy and safety settings" }),
   ).toBeVisible();
   await expect(this.page.getByText("Imported selection", { exact: true })).toHaveCount(0);
+});
+
+function betCard(page, label) {
+  return page
+    .locator(".single-bet-card")
+    .filter({ has: page.getByText(label, { exact: true }) })
+    .first();
+}
+
+async function revealBet(page, label) {
+  const collapsed = page.locator("details.compact-sequence-card").filter({
+    has: page.getByText(label, { exact: true }),
+  });
+  if ((await collapsed.count()) > 0) {
+    await collapsed.first().evaluate((element) => {
+      element.open = true;
+    });
+  }
+}
+
+async function openBetEditor(page, label) {
+  await revealBet(page, label);
+  await betCard(page, label).getByRole("button", { name: "Edit", exact: true }).click();
+  await expect(page.getByRole("dialog")).toBeVisible();
+  await page.locator(".recorded-strategy summary").click();
+}
+
+Given("I note the available balance", async function () {
+  const metric = this.page.locator(".metric-card").filter({
+    has: this.page.getByText("Available balance", { exact: true }),
+  });
+  this.notedBalance = await metric.locator("strong").innerText();
+});
+
+Then("the available balance should be unchanged", async function () {
+  const metric = this.page.locator(".metric-card").filter({
+    has: this.page.getByText("Available balance", { exact: true }),
+  });
+  await expect(metric.locator("strong")).toHaveText(this.notedBalance);
+});
+
+When("I set the base stake to {string}", async function (value) {
+  await this.page.getByRole("button", { name: "Settings", exact: true }).click();
+  const field = this.page.locator("label").filter({
+    has: this.page.getByText("Base stake", { exact: true }),
+  });
+  await field.locator("input").fill(value);
+  await this.page.getByRole("button", { name: "Save settings" }).click();
+  await this.page.getByRole("button", { name: "Back to sequences" }).click();
+});
+
+Then("the bet {string} should have a stake of {string}", async function (label, stake) {
+  await revealBet(this.page, label);
+  const metrics = betCard(this.page, label).locator(".single-bet-metrics span").first();
+  await expect(metrics.locator("strong")).toHaveText(stake);
+});
+
+When(
+  "I add a bet labeled {string} with odds {string} placed at {string}",
+  async function (label, odds, placedAt) {
+    await this.page.getByRole("button", { name: "Add bet", exact: true }).click();
+    await this.page.getByLabel("Label").fill(label);
+    await this.page.getByLabel("Date and time").fill(placedAt);
+    await this.page.getByLabel("Decimal odds").fill(odds);
+    await this.page.getByRole("button", { name: "Add bet", exact: true }).last().click();
+    await expect(this.page.getByRole("dialog")).toHaveCount(0);
+  },
+);
+
+When("I rename the bet {string} to {string}", async function (label, newLabel) {
+  await revealBet(this.page, label);
+  await betCard(this.page, label).getByRole("button", { name: "Edit", exact: true }).click();
+  await expect(this.page.getByRole("dialog")).toBeVisible();
+  await this.page.getByLabel("Label").fill(newLabel);
+  await this.page.getByRole("button", { name: "Save changes" }).click();
+  await expect(this.page.getByRole("dialog")).toHaveCount(0);
+});
+
+Then(
+  "the bet {string} should show a recorded base stake of {string}",
+  async function (label, value) {
+    await openBetEditor(this.page, label);
+    const field = this.page.locator(".recorded-strategy label").filter({
+      has: this.page.getByText("Recorded base stake", { exact: true }),
+    });
+    await expect(field.locator("input")).toHaveValue(value);
+    await this.page.getByRole("button", { name: "Cancel", exact: true }).click();
+    await expect(this.page.getByRole("dialog")).toHaveCount(0);
+  },
+);
+
+When(
+  "I correct the recorded base stake of the bet {string} to {string}",
+  async function (label, value) {
+    await openBetEditor(this.page, label);
+    const field = this.page.locator(".recorded-strategy label").filter({
+      has: this.page.getByText("Recorded base stake", { exact: true }),
+    });
+    await field.locator("input").fill(value);
+    await this.page.getByRole("button", { name: "Save changes" }).click();
+  },
+);
+
+Then("the bet form should show a validation message", async function () {
+  await expect(this.page.getByRole("dialog").locator(".form-error")).toBeVisible();
+});
+
+When("I cancel the bet form", async function () {
+  await this.page.getByRole("button", { name: "Cancel", exact: true }).click();
+  await expect(this.page.getByRole("dialog")).toHaveCount(0);
 });

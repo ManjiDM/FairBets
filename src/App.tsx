@@ -272,14 +272,13 @@ function createBetDraft(settings: StrategySettings): BetDraft {
 const STRATEGY_FIELDS: {
   key: keyof BetStrategyDraft;
   label: string;
-  min: string;
   step: string;
 }[] = [
-  { key: "baseStake", label: "Recorded base stake", min: "0.01", step: "0.01" },
-  { key: "threshold", label: "Recorded threshold", min: "0.01", step: "0.01" },
-  { key: "recoveryWeight", label: "Recorded recovery weight", min: "0.01", step: "0.01" },
-  { key: "stakeRounding", label: "Recorded stake rounding", min: "0", step: "1" },
-  { key: "maxStake", label: "Recorded maximum stake", min: "0.01", step: "0.01" },
+  { key: "baseStake", label: "Recorded base stake", step: "0.01" },
+  { key: "threshold", label: "Recorded threshold", step: "0.01" },
+  { key: "recoveryWeight", label: "Recorded recovery weight", step: "0.01" },
+  { key: "stakeRounding", label: "Recorded stake rounding", step: "1" },
+  { key: "maxStake", label: "Recorded maximum stake", step: "0.01" },
 ];
 
 function readStrategyDraft(draft: BetStrategyDraft): BetStrategy | string {  const baseStake = Number(draft.baseStake);
@@ -2132,7 +2131,6 @@ function App() {
                           <span>{field.label}</span>
                           <input
                             type="number"
-                            min={field.min}
                             step={field.step}
                             value={draft.strategy[field.key]}
                             onChange={(event) =>
