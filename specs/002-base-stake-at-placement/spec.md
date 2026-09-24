@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | ID | `002-base-stake-at-placement` |
-| Status | Clarified |
+| Status | Done |
 | Created | 2026-09-24 |
 | Related | FB-002 |
 
@@ -355,3 +355,22 @@ different answer for the same historical bet depending on a setting changed mont
 - Showing "this bet was placed under an older strategy" markers in the sequence list.
 - Bulk re-pricing tools for correcting a stretch of history.
 - Pinning the goal rate or starting balance, which describe the ledger rather than a bet.
+
+## Verification
+
+| Gate | Result |
+| --- | --- |
+| `pnpm lint` | Pass |
+| `pnpm build` | Pass |
+| `pnpm test:e2e` | Pass — 21 scenarios, 147 steps |
+
+The nine acceptance scenarios live in `e2e/features/bet-strategy.feature` and cover
+pinning on placement, settled and open bets holding their values, a sequence spanning a
+strategy change, the pinned maximum stake, editing without re-stamping, correcting a
+mis-recorded value, and rejecting an invalid correction. The pre-existing demo figures
+(`€38.07` and `€39.07`) are unchanged, which is the regression test for the
+migration.
+
+Two checks are deferred to the maintainer because no automated gate can reach them:
+restoring a pre-change cloud backup, and loading a real pre-change ledger from browser
+storage.
