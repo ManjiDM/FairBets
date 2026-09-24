@@ -110,6 +110,7 @@ Each step below is independently runnable — the app builds and works after eve
 
 - [x] **T-030** [P] — Add product scenarios
   - Files: `features/app-shell.feature` (new); review `features/settings-and-risk.feature`
+    — both since removed with the `features/` tier
   - Cover: Sequences as the landing view, the persistent summary, the exception-only
     guardrail banner, Settings as an overlay.
   - Done when: every acceptance scenario in `spec.md` is represented.
@@ -169,8 +170,9 @@ every figure — no formula, rounding, or `src/domain/` code changed in this fea
 **Acceptance scenarios.** Each scenario in `spec.md` has a matching executable scenario
 in `e2e/features/fairbets.feature` (landing on Sequences, sidebar contents, drawer open
 and close, Settings overlay open and close, no Overview destination, guardrail banner
-absent within limits, present on breach, and dismissible) and a product-level
-counterpart in `features/app-shell.feature`.
+absent within limits, present on breach, and dismissible). The product-level
+`features/` tier was retired after this feature landed, so `e2e/features/` is now the
+single behaviour of record.
 
 **Outstanding.** No manual browser pass has been made at desktop, 860px, and 680px
 widths. The automated suite covers behaviour but not visual layout; a quick `pnpm dev`

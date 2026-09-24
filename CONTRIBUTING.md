@@ -61,9 +61,8 @@ follow-up task.
 
 ## Behaviour scenarios
 
-- `features/` — product-level Gherkin, not executed.
-- `e2e/features/` — executable Gherkin, run by Cucumber with Playwright steps in
-  `e2e/steps/`.
+- `e2e/features/` — Gherkin scenarios, the behaviour of record, run by Cucumber with
+  Playwright steps in `e2e/steps/`. Write them so a non-developer can read them.
 
 Cucumber is the only E2E runner; do not add a separate Playwright Test suite.
 

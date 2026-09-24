@@ -23,7 +23,6 @@ A short narrative of the technical solution. Name the alternative you rejected a
 | `src/App.tsx` | | |
 | `src/lib/cloudStore.ts` | | |
 | `supabase/schema.sql` | | |
-| `features/*.feature` | | |
 | `e2e/features/*.feature` | | |
 | `e2e/steps/fairbets.steps.js` | | |
 | `README.md` | | |
@@ -55,8 +54,7 @@ from `src/domain/` rather than calculating anything itself.
 
 ## Test strategy
 
-- Product scenarios added or changed in `features/`
-- Executable scenarios added or changed in `e2e/features/`
+- Scenarios added or changed in `e2e/features/`
 - New or changed steps in `e2e/steps/`
 - Manual checks that cannot be automated, and why
 

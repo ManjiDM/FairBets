@@ -21,7 +21,7 @@ Resolve the open questions in `specs/${input:spec:FG-NNN-feature-slug}/spec.md`.
 
 - Never resolve a money, data-shape, or risk-limit question by guessing.
 - Questions you can answer yourself from the codebase are not clarifications — answer
-  them from `src/domain/ledger.ts`, `src/lib/cloudStore.ts`, or `features/` and record
+  them from `src/domain/ledger.ts`, `src/lib/cloudStore.ts`, or `e2e/features/` and record
   the finding.
 - The spec must contain zero markers before planning starts.
 - If an answer contradicts [`../../specs/constitution.md`](../../specs/constitution.md),

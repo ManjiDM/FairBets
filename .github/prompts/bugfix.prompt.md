@@ -18,7 +18,7 @@ capture settings, bets, the observed figure, and the expected figure.
 ### 2. Establish which side is wrong
 
 Do the arithmetic by hand and cite the rule — a function in `src/domain/`, a scenario in
-`features/`, or a principle in `specs/constitution.md`.
+`e2e/features/`, or a principle in `specs/constitution.md`.
 
 **A failing test means the code is wrong or the expectation is stale. Determine which
 before editing either.** Never silence a failure by rewriting the expectation to match
@@ -26,9 +26,9 @@ current output, and never rewrite correct code to satisfy a stale test.
 
 ### 3. Write the failing scenario
 
-Add a regression scenario to `e2e/features/` (or `features/` when it is not automatable)
-that expresses the **correct** behaviour. Run it and confirm it **fails**. Paste the red
-output into the spec.
+Add a regression scenario to `e2e/features/` that expresses the **correct** behaviour.
+Run it and confirm it **fails**. Paste the red output into the spec. When the behaviour
+cannot be automated, record the manual check in the spec and say why.
 
 ### 4. Name the root cause
 

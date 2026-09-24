@@ -40,14 +40,9 @@
 
 ## 4. Scenarios
 
-- [ ] **T-030** [P] — Add product scenarios
-  - Files: `features/*.feature`
-  - Done when: every acceptance scenario in the spec is represented
-  - Verify: review
-
-- [ ] **T-031** — Add executable scenarios
+- [ ] **T-030** — Add scenarios
   - Files: `e2e/features/*.feature`, `e2e/steps/fairbets.steps.js`
-  - Done when: scenarios run green
+  - Done when: every acceptance scenario in the spec is represented and runs green
   - Verify: `pnpm test:e2e`
 
 ## 5. Documentation

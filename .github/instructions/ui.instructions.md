@@ -33,5 +33,4 @@ pnpm build
 pnpm test:e2e
 ```
 
-UI behaviour changes need matching scenarios in `features/` and, where automatable,
-`e2e/features/`.
+UI behaviour changes need matching scenarios in `e2e/features/`.

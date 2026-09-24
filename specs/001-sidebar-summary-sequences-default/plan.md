@@ -49,7 +49,7 @@ inline; extraction can be its own change later.
 | `e2e/features/bets.feature` | Update expectations | Drop the "Overview" navigation step; balance now updates in place |
 | `e2e/features/workbook-import.feature` | Check and update | Import currently lands on Home |
 | `e2e/steps/fairbets.steps.js` | Update and add steps | Remove the "Overview" click; add settings-overlay, drawer, and banner steps |
-| `features/app-shell.feature` | New file | Product-level description of the new shell |
+| `features/app-shell.feature` | Removed | Product-level Gherkin was retired; `e2e/features/` is now the single behaviour of record |
 | `README.md` | Update description | Any text describing a Home/Overview screen |
 
 `src/domain/ledger.ts`, `src/domain/workbookImport.ts`, `src/lib/cloudStore.ts`,
@@ -172,7 +172,10 @@ UI. `riskKey` is a string join for dismissal identity, not a calculation.
 
 ## Test strategy
 
-### Product scenarios (`features/`)
+### Product scenarios (`features/`) — since retired
+
+> The `features/` tier was removed after this feature landed. `e2e/features/` is now the
+> single behaviour of record. The section below is kept as a record of the original plan.
 
 Add `features/app-shell.feature` describing the app shell: Sequences as the landing view,
 the persistent summary, the exception-only guardrail banner, and Settings as an overlay.

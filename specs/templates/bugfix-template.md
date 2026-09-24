@@ -19,7 +19,7 @@ What actually happens. Exact figures, exact messages, exact screen.
 ## Expected behaviour
 
 What should happen instead, and the rule that says so. Cite the source of truth:
-a function in `src/domain/`, a scenario in `features/`, or a principle in
+a function in `src/domain/`, a scenario in `e2e/features/`, or a principle in
 [`../constitution.md`](../constitution.md).
 
 > If the observed and expected values disagree, first establish **which side is wrong**.
@@ -80,8 +80,7 @@ Scenario: [Defect description, phrased as correct behaviour]
 Where it lands:
 
 - [ ] `e2e/features/*.feature` — automatable through the UI
-- [ ] `features/*.feature` — behaviour of record
-- [ ] Neither is possible; the manual check is described below and the reason given
+- [ ] Not automatable; the manual check is described below and the reason given
 
 ## Fix
 

@@ -91,15 +91,15 @@ Then walk each acceptance scenario in `spec.md` and confirm it holds.
 
 Prompt: `.github/prompts/verify.prompt.md`
 
-## Gherkin lives in two places
+## Gherkin
 
 | Directory | Purpose | Executed |
 | --- | --- | --- |
-| `features/` | Product-level intent, readable by non-developers | No |
-| `e2e/features/` | Executable coverage, backed by `e2e/steps/` | Yes, via `pnpm test:e2e` |
+| `e2e/features/` | Behaviour of record, backed by `e2e/steps/` | Yes, via `pnpm test:e2e` |
 
-Acceptance scenarios in a spec should land in `features/` as behaviour of record, and in
-`e2e/features/` when they are automatable through the UI.
+Acceptance scenarios in a spec land in `e2e/features/`, written so a non-developer can
+read them. Behaviour that cannot be automated through the UI stays in the spec's
+acceptance scenarios and is checked by hand.
 
 ## Bugfixes
 
@@ -119,7 +119,7 @@ settings, bets, the observed figure, and the expected figure.
 
 A mismatch between code and test means **one of them is wrong, and you do not yet know
 which**. Do the arithmetic by hand and cite the rule — a function in `src/domain/`, a
-scenario in `features/`, or a principle in `constitution.md`.
+scenario in `e2e/features/`, or a principle in `constitution.md`.
 
 Changing the expectation to match the code turns a real bug into a permanently blessed
 one. Changing correct code to match a stale test breaks working behaviour. Prove it

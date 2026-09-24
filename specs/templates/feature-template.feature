@@ -1,6 +1,5 @@
 Feature: [Feature name]
-  # Product-level scenarios belong in features/.
-  # Automatable scenarios belong in e2e/features/ and need matching steps in
+  # Scenarios belong in e2e/features/ and need matching steps in
   # e2e/steps/fairbets.steps.js.
   #
   # Write observable outcomes only: what the user does and what the app shows.

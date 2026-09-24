@@ -72,10 +72,9 @@ every cloud table.
 
 ## IX. Behaviour is specified in Gherkin
 
-User-visible behaviour is described as Gherkin scenarios before implementation:
-product-level intent in `features/`, executable coverage in `e2e/features/` with
-Playwright-backed steps in `e2e/steps/`. A UI behaviour change without a scenario is
-incomplete.
+User-visible behaviour is described as Gherkin scenarios before implementation, in
+`e2e/features/` with Playwright-backed steps in `e2e/steps/`. Scenarios are written to
+be readable by non-developers. A UI behaviour change without a scenario is incomplete.
 
 ## X. Every change is gated
 

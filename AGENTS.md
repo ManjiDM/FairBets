@@ -24,8 +24,7 @@ outcomes. Do not add features that contradict this.
 | `src/lib/cloudStore.ts`, `src/lib/supabase.ts` | Optional Supabase auth, backup, restore |
 | `supabase/schema.sql`, `supabase/migrations/` | Authoritative cloud schema (RLS protected) |
 | `specs/` | Spec-driven development artifacts (constitution, specs, plans, tasks) |
-| `features/` | Product-level Gherkin behaviour specs (not executed) |
-| `e2e/features/`, `e2e/steps/`, `e2e/support/` | Executable Cucumber + Playwright suite |
+| `e2e/features/`, `e2e/steps/`, `e2e/support/` | Cucumber + Playwright behaviour suite |
 
 ## Commands
 

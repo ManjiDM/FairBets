@@ -1,5 +1,5 @@
 ---
-applyTo: "e2e/**,features/**"
+applyTo: "e2e/**"
 ---
 
 # Behaviour and E2E instructions
@@ -11,8 +11,7 @@ no separate Playwright Test suite — do not add one.
 
 | Path | Purpose |
 | --- | --- |
-| `features/` | Product-level Gherkin, readable by non-developers, not executed |
-| `e2e/features/` | Executable Gherkin |
+| `e2e/features/` | Gherkin scenarios, the behaviour of record |
 | `e2e/steps/` | Playwright-backed step definitions |
 | `e2e/support/` | World, hooks, browser lifecycle |
 | `cucumber.json` | Paths and report configuration |
@@ -29,8 +28,10 @@ no separate Playwright Test suite — do not add one.
   `.xlsx` files.
 - Service workers are blocked in tests on purpose: the app service worker navigates
   clients during activation and breaks deterministic assertions. Do not re-enable them.
-- New acceptance scenarios from a spec land in `features/` as behaviour of record, and in
-  `e2e/features/` when automatable through the UI.
+- Acceptance scenarios from a spec land in `e2e/features/`. Write them so a
+  non-developer can read them: observable behaviour, plain language, no implementation
+  detail. Behaviour that cannot be automated through the UI is recorded in the spec's
+  acceptance scenarios instead.
 
 ## Verify
 
