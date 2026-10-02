@@ -481,16 +481,12 @@ Then("the suggested stake should be {string}", async function (stake) {
   await expect(this.page.locator(".suggestion-preview strong").first()).toHaveText(stake);
 });
 
-Then(
-  "the sequence containing the bet {string} should have net profit {string}",
-  async function (label, profit) {
-    await revealBet(this.page, label);
-    const sequence = this.page.locator(".sequence-list details.compact-sequence-card").filter({
-      has: this.page.getByText(label, { exact: true }),
-    });
-    await expect(sequence.locator(".compact-sequence-pnl strong")).toHaveText(profit);
-  },
-);
+Then("the settled P&L should be {string}", async function (profit) {
+  const metric = this.page.locator(".metric-card").filter({
+    has: this.page.getByText("Settled P&L", { exact: true }),
+  });
+  await expect(metric.locator("strong")).toHaveText(profit);
+});
 
 When(
   "I add a bet labeled {string} with odds {string} placed at {string}",

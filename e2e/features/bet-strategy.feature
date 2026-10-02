@@ -38,7 +38,7 @@ Feature: Recorded strategy values
     And I submit the prepared bet
     And I mark the bet "Recovery win" as "Won"
     Then the sequence containing the bet "Recovery win" should be "Closed"
-    And the sequence containing the bet "Recovery win" should have net profit "+€1.00"
+    And the settled P&L should be "+€1.00"
     And I see the available balance as "€101.00"
 
   Scenario: A sequence that spans a strategy change stays one sequence
