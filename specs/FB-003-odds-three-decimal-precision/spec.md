@@ -15,16 +15,19 @@
 ## Observed behaviour
 
 The user reports that the app restricts decimal odds to two decimal places, preventing
-them from entering odds such as `1.234`.
+them from entering odds such as `1.234`. Source inspection confirms the manual field uses
+`step="0.01"` and all rendered odds are formatted with exactly two decimal places.
 
-This report has not yet been independently reproduced. The exact form response
-(rejection, truncation, or rounding) and affected entry surfaces remain to be confirmed.
+The exact browser response (rejection, truncation, or rounding) has not yet been
+independently reproduced. Existing paths also need regression coverage to ensure imported
+or cloud-restored odds retain their precision.
 
 ## Expected behaviour
 
-The user must be able to enter and save decimal odds with three fractional digits, such
-as `1.234`, without the value being rounded or truncated to two digits. Existing odds
-with two or fewer fractional digits must continue to work.
+The user must be able to enter and save decimal odds with up to three fractional digits,
+such as `1.234`, without the value being rounded or truncated to two digits. Odds
+precision must be retained when loading a workbook or restoring a cloud backup.
+Previously saved odds with two or fewer fractional digits must continue to work.
 
 The requested precision is a product requirement. No existing constitution principle
 sets a two-decimal limit for odds; the app should preserve an odds value consistently
@@ -32,7 +35,8 @@ through the affected input, calculation, persistence, and display paths.
 
 ## Reproduction
 
-User-reported reproduction; exact interaction details are pending confirmation.
+User-reported reproduction; a failing automated scenario still needs to confirm the
+browser's exact response.
 
 ```text
 Settings: not relevant to the reported input restriction
@@ -50,28 +54,32 @@ when calculating any derived values.
 
 ## Root cause
 
-Not yet diagnosed. Inspect the input constraints, validation, formatting, domain odds
-precision, and persistence/import paths after committing this reproduction spec.
+Source inspection identifies two causes: the manual decimal-odds input uses
+`step="0.01"`, which makes three-decimal values fail the browser's native step
+constraint, and `formatOdds` uses `toFixed(2)`, hiding any additional precision in the
+bet list and next-odds guide. The domain calculation and cloud `odds` column both use
+four-decimal precision; the workbook importer parses odds as numbers.
 
-- **Introduced by:** Unknown
-- **Why tests missed it:** Existing coverage uses odds with two decimal places; a
-  regression scenario for three-decimal odds is not yet present.
+- **Introduced by:** Existing two-decimal input and display assumptions
+- **Why tests missed it:** Existing UI scenarios use odds with two decimal places and do
+  not assert the rendered odds value.
 
 ## Blast radius
 
-- The manual bet-entry form is the reported surface; edit, workbook import, cloud restore,
-  display formatting, and ledger calculations need inspection.
-- No incorrect persisted data is reported. Determine whether previously entered odds can
-  have been rounded or truncated.
-- No cloud impact is known; check whether its numeric representation preserves three
-  fractional digits.
-- No stored-data migration is expected unless investigation finds previously lost
-  precision that can be recovered.
+- Manual bet entry and editing are in scope. The workbook importer and cloud restore are
+  also in scope for preserving up to three fractional digits.
+- The ledger calculation uses four-decimal odds units, so three-decimal values fit without
+  a calculation-scale migration.
+- The workbook importer parses odds numerically, and the cloud column is `numeric(12, 4)`;
+  verify with regression coverage that each path preserves the value.
+- No incorrect persisted data is reported. Existing values are not migrated; precision
+  already lost before this fix cannot be recovered.
 
 ## Regression scenario
 
 This scenario captures the reported behaviour. It must be run and confirmed failing
-before the fix; record the exact red output below.
+before the fix; record the exact red output below. Add coverage that imported and restored
+values retain their odds precision.
 
 ```gherkin
 Scenario: Save odds with three decimal places
@@ -116,3 +124,10 @@ two-decimal odds.
 Not yet independently reproduced. Capture the failing scenario output before changing
 the implementation.
 ```
+
+## Clarified decisions
+
+| Question | Decision |
+| --- | --- |
+| What precision should manual odds support? | Up to three fractional digits |
+| Which surfaces are in scope? | Manual entry and editing, workbook import, and cloud restore |
