@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | ID | `FB-003-odds-three-decimal-precision` |
-| Status | Reproducing |
+| Status | Diagnosed |
 | Severity | Broken flow |
 | Created | 2026-10-02 |
 | Related | — |
@@ -18,9 +18,9 @@ The user reports that the app restricts decimal odds to two decimal places, prev
 them from entering odds such as `1.234`. Source inspection confirms the manual field uses
 `step="0.01"` and all rendered odds are formatted with exactly two decimal places.
 
-The exact browser response (rejection, truncation, or rounding) has not yet been
-independently reproduced. Existing paths also need regression coverage to ensure imported
-or cloud-restored odds retain their precision.
+The regression scenario reproduces the defect: the browser prevents submission of a bet
+with odds `1.234`, so the bet is not added to the ledger. Existing paths also need
+regression coverage to ensure imported or cloud-restored odds retain their precision.
 
 ## Expected behaviour
 
@@ -54,10 +54,10 @@ when calculating any derived values.
 
 ## Root cause
 
-Source inspection identifies two causes: the manual decimal-odds input uses
-`step="0.01"`, which makes three-decimal values fail the browser's native step
-constraint, and `formatOdds` uses `toFixed(2)`, hiding any additional precision in the
-bet list and next-odds guide. The domain calculation and cloud `odds` column both use
+The manual decimal-odds input uses `step="0.01"`, so `1.234` fails the browser's native
+step constraint and form submission is blocked. Separately, `formatOdds` uses
+`toFixed(2)`, which would hide additional precision in the bet list and next-odds guide
+even if the value were saved. The domain calculation and cloud `odds` column both use
 four-decimal precision; the workbook importer parses odds as numbers.
 
 - **Introduced by:** Existing two-decimal input and display assumptions
@@ -111,7 +111,7 @@ two-decimal odds.
 
 ## Verification
 
-- [ ] Regression scenario failed before the fix (evidence recorded below)
+- [x] Regression scenario failed before the fix (evidence recorded below)
 - [ ] Regression scenario passes after the fix
 - [ ] `pnpm lint`
 - [ ] `pnpm build`
@@ -121,8 +121,13 @@ two-decimal odds.
 **Evidence of the red state:**
 
 ```text
-Not yet independently reproduced. Capture the failing scenario output before changing
-the implementation.
+pnpm test:e2e
+Scenario: Save and display odds with three decimal places
+Expected substring: "1.234 odds"
+Error: element(s) not found
+22 scenarios (1 failed, 21 passed)
+157 steps (1 failed, 156 passed)
+```
 ```
 
 ## Clarified decisions
