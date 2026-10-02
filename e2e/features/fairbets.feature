@@ -37,15 +37,17 @@ Feature: FairBets app overview
   Scenario: The summary is reachable as a drawer on a small screen
     Given the viewport is a small phone
     Then the mobile summary control should show an accessible sidebar icon
-    When I open the summary drawer
+    When I toggle the summary drawer
     Then the summary drawer should be open
+    And the toolbar summary toggle should be named "Close summary"
     And the toolbar should remain above the summary drawer
-    When I open the summary drawer
+    When I toggle the summary drawer
     Then the summary drawer should be closed
+    And the toolbar summary toggle should be named "Open summary"
 
   Scenario: The summary drawer has no separate Close button
     Given the viewport is a small phone
-    When I open the summary drawer
+    When I toggle the summary drawer
     Then the summary drawer should be open
     And there should be no separate drawer Close button
 

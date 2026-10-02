@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | ID | `FB-006-sidebar-toggle-dismissal` |
-| Status | Diagnosed |
+| Status | Verified |
 | Severity | Cosmetic |
 | Created | 2026-10-02 |
 | Related | — |
@@ -93,11 +93,14 @@ accessible name and `aria-expanded`.
 ## Verification
 
 - [x] Regression scenario failed before the fix (evidence recorded below)
-- [ ] Regression scenario passes after the fix
-- [ ] `pnpm lint`
-- [ ] `pnpm build`
-- [ ] `pnpm test:e2e`
-- [ ] A pre-existing saved ledger still loads with correct figures
+- [x] Regression scenarios pass after the fix; the toolbar toggle opens and closes the
+      drawer and its accessible name reflects the current state
+- [x] `pnpm lint` — pass
+- [x] `pnpm build` — pass
+- [x] `pnpm test:e2e` — pass, 24 scenarios and 177 steps
+- [x] A pre-existing saved ledger still loads with correct figures — existing E2E
+      scenarios pass; no data changes were made
+- [ ] Manual keyboard/visual review at mobile and small-tablet widths remains outstanding
 
 **Evidence of the red state:**
 
@@ -119,4 +122,5 @@ The summary drawer has no separate Close button:
 
 Check the open drawer at mobile and small-tablet widths to confirm the toolbar toggle
 remains visible, the drawer has no redundant Close control, and the toggle remains
-keyboard accessible.
+keyboard accessible. The E2E suite confirms the toggle's accessible name changes between
+"Open summary" and "Close summary".

@@ -63,8 +63,8 @@ Given("the viewport is a small phone", async function () {
   await this.page.setViewportSize({ width: 390, height: 844 });
 });
 
-When("I open the summary drawer", async function () {
-  await this.page.getByRole("button", { name: "Open summary", exact: true }).click();
+When("I toggle the summary drawer", async function () {
+  await this.page.locator(".drawer-toggle").click();
 });
 
 Then("the mobile summary control should show an accessible sidebar icon", async function () {
@@ -76,6 +76,10 @@ Then("the mobile summary control should show an accessible sidebar icon", async 
 
 Then("the summary drawer should be open", async function () {
   await expect(this.page.locator(".summary-sidebar.drawer-open")).toBeVisible();
+});
+
+Then("the toolbar summary toggle should be named {string}", async function (name) {
+  await expect(this.page.locator(".drawer-toggle")).toHaveAccessibleName(name);
 });
 
 Then("there should be no separate drawer Close button", async function () {

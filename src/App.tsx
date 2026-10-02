@@ -1463,10 +1463,10 @@ function App() {
           <button
             type="button"
             className="drawer-toggle"
-            onClick={() => setDrawerOpen(true)}
+            onClick={() => setDrawerOpen((open) => !open)}
             aria-controls="summary-sidebar"
             aria-expanded={drawerOpen}
-            aria-label="Open summary"
+            aria-label={drawerOpen ? "Close summary" : "Open summary"}
           >
             <svg
               className="sidebar-icon"
@@ -1671,13 +1671,6 @@ function App() {
             >
               <div className="summary-sidebar-heading">
                 <p className="eyebrow">Summary</p>
-                <button
-                  type="button"
-                  className="close-button drawer-close"
-                  onClick={() => setDrawerOpen(false)}
-                >
-                  Close
-                </button>
               </div>
 
               <MetricCard
