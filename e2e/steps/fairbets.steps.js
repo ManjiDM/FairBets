@@ -264,6 +264,16 @@ When("I add a bet labeled {string} with odds {string}", async function (label, o
   await this.page.getByRole("button", { name: "Add bet" }).last().click();
 });
 
+When("I prepare a bet labeled {string} with odds {string}", async function (label, odds) {
+  await this.page.getByRole("button", { name: "Add bet" }).click();
+  await this.page.getByLabel("Label").fill(label);
+  await this.page.getByLabel("Decimal odds").fill(odds);
+});
+
+When("I submit the prepared bet", async function () {
+  await this.page.getByRole("button", { name: "Add bet", exact: true }).last().click();
+});
+
 Then("the ledger should show the bet {string}", async function (label) {
   await expect(this.page.getByText(label, { exact: true })).toBeVisible();
 });
@@ -428,11 +438,59 @@ When("I set the base stake to {string}", async function (value) {
   await this.page.locator(".brand").click();
 });
 
+When("I set the starting balance to {string}", async function (value) {
+  await this.page.getByRole("button", { name: "Open settings", exact: true }).click();
+  const field = this.page.locator("label").filter({
+    has: this.page.getByText("Starting balance", { exact: true }),
+  });
+  await field.locator("input").fill(value);
+  await this.page.getByRole("button", { name: "Save settings" }).click();
+  await this.page.locator(".brand").click();
+});
+
+When("I start a fresh ledger", async function () {
+  await this.page.getByRole("button", { name: "Open settings", exact: true }).click();
+  const confirmation = this.page.waitForEvent("dialog").then((dialog) => dialog.accept());
+  await this.page.getByRole("button", { name: "Start fresh" }).click();
+  await confirmation;
+  await expect(this.page.locator("h1")).toHaveText("New FairBets ledger");
+});
+
+When("I set the goal rate to {string} with full recovery weighting", async function (value) {
+  await this.page.getByRole("button", { name: "Open settings", exact: true }).click();
+  for (const [label, setting] of [
+    ["Goal rate (%)", value],
+    ["Recovery weight (%)", "100"],
+  ]) {
+    const field = this.page.locator("label").filter({
+      has: this.page.getByText(label, { exact: true }),
+    });
+    await field.locator("input").fill(setting);
+  }
+  await this.page.getByRole("button", { name: "Save settings" }).click();
+  await this.page.locator(".brand").click();
+});
+
 Then("the bet {string} should have a stake of {string}", async function (label, stake) {
   await revealBet(this.page, label);
   const metrics = betCard(this.page, label).locator(".single-bet-metrics span").first();
   await expect(metrics.locator("strong")).toHaveText(stake);
 });
+
+Then("the suggested stake should be {string}", async function (stake) {
+  await expect(this.page.locator(".suggestion-preview strong").first()).toHaveText(stake);
+});
+
+Then(
+  "the sequence containing the bet {string} should have net profit {string}",
+  async function (label, profit) {
+    await revealBet(this.page, label);
+    const sequence = this.page.locator(".sequence-list details.compact-sequence-card").filter({
+      has: this.page.getByText(label, { exact: true }),
+    });
+    await expect(sequence.locator(".compact-sequence-pnl strong")).toHaveText(profit);
+  },
+);
 
 When(
   "I add a bet labeled {string} with odds {string} placed at {string}",

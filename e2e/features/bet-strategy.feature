@@ -25,6 +25,22 @@ Feature: Recorded strategy values
     And I add a bet labeled "Priced at the new base" with odds "2.00"
     Then the bet "Priced at the new base" should have a stake of "€0.20"
 
+  Scenario: Full goal rate recovers a loss and earns one euro net
+    When I start a fresh ledger
+    And I set the starting balance to "100"
+    And I set the base stake to "1"
+    And I set the goal rate to "100" with full recovery weighting
+    Then I see the available balance as "€100.00"
+    And I add a bet labeled "First loss" with odds "1.50" and a manual stake of "1"
+    And I mark the bet "First loss" as "Lost"
+    When I prepare a bet labeled "Recovery win" with odds "1.50"
+    Then the suggested stake should be "€4.00"
+    And I submit the prepared bet
+    And I mark the bet "Recovery win" as "Won"
+    Then the sequence containing the bet "Recovery win" should be "Closed"
+    And the sequence containing the bet "Recovery win" should have net profit "+€1.00"
+    And I see the available balance as "€101.00"
+
   Scenario: A sequence that spans a strategy change stays one sequence
     When I add a bet labeled "Before the change" with odds "2.00" placed at "2026-09-10T10:00"
     And I mark the bet "Before the change" as "Lost"
