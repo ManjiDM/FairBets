@@ -1001,6 +1001,27 @@ h3 {
   font-weight: 800;
 }
 
+.sequence-add-bet {
+  display: inline-grid;
+  width: 30px;
+  height: 30px;
+  flex: 0 0 30px;
+  place-items: center;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--forest);
+  background: #fff;
+  font-size: 20px;
+  font-weight: 650;
+  line-height: 1;
+}
+
+.sequence-add-bet:hover {
+  border-color: var(--forest);
+  background: #f3f8f5;
+}
+
 .compact-action {
   border-color: var(--line);
   color: var(--forest);

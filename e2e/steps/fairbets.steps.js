@@ -170,11 +170,11 @@ Then("no guardrail warning should be shown", async function () {
 When(
   "I add a bet labeled {string} with odds {string} and a manual stake of {string}",
   async function (label, odds, stake) {
-    await this.page.getByRole("button", { name: "Add bet" }).click();
+    await this.page.getByRole("button", { name: "Add bet", exact: true }).click();
     await this.page.getByLabel("Label").fill(label);
     await this.page.getByLabel("Decimal odds").fill(odds);
     await this.page.getByLabel("Manual stake (optional)").fill(stake);
-    await this.page.getByRole("button", { name: "Add bet" }).last().click();
+    await this.page.getByRole("button", { name: "Add bet", exact: true }).last().click();
     await expect(this.page.getByRole("dialog")).toHaveCount(0);
   },
 );
@@ -182,12 +182,12 @@ When(
 When(
   "I add a bet labeled {string} with odds {string} and a manual stake of {string} placed at {string}",
   async function (label, odds, stake, placedAt) {
-    await this.page.getByRole("button", { name: "Add bet" }).click();
+    await this.page.getByRole("button", { name: "Add bet", exact: true }).click();
     await this.page.getByLabel("Label").fill(label);
     await this.page.getByLabel("Date and time").fill(placedAt);
     await this.page.getByLabel("Decimal odds").fill(odds);
     await this.page.getByLabel("Manual stake (optional)").fill(stake);
-    await this.page.getByRole("button", { name: "Add bet" }).last().click();
+    await this.page.getByRole("button", { name: "Add bet", exact: true }).last().click();
     await expect(this.page.getByRole("dialog")).toHaveCount(0);
   },
 );
@@ -330,14 +330,14 @@ When("I press the Add button", async function () {
 });
 
 When("I add a bet labeled {string} with odds {string}", async function (label, odds) {
-  await this.page.getByRole("button", { name: "Add bet" }).click();
+  await this.page.getByRole("button", { name: "Add bet", exact: true }).click();
   await this.page.getByLabel("Label").fill(label);
   await this.page.getByLabel("Decimal odds").fill(odds);
-  await this.page.getByRole("button", { name: "Add bet" }).last().click();
+  await this.page.getByRole("button", { name: "Add bet", exact: true }).last().click();
 });
 
 When("I prepare a bet labeled {string} with odds {string}", async function (label, odds) {
-  await this.page.getByRole("button", { name: "Add bet" }).click();
+  await this.page.getByRole("button", { name: "Add bet", exact: true }).click();
   await this.page.getByLabel("Label").fill(label);
   await this.page.getByLabel("Decimal odds").fill(odds);
 });
@@ -345,7 +345,7 @@ When("I prepare a bet labeled {string} with odds {string}", async function (labe
 When(
   "I prepare a bet labeled {string} with odds {string} placed at {string}",
   async function (label, odds, placedAt) {
-    await this.page.getByRole("button", { name: "Add bet" }).click();
+    await this.page.getByRole("button", { name: "Add bet", exact: true }).click();
     await this.page.getByLabel("Label").fill(label);
     await this.page.getByLabel("Date and time").fill(placedAt);
     await this.page.getByLabel("Decimal odds").fill(odds);

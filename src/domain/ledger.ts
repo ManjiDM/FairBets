@@ -17,6 +17,7 @@ export interface Bet {
   label: string;
   odds: number;
   outcome: Outcome;
+  sequenceId?: string;
   stakeOverride?: number;
   sequenceStartRecoveryGap?: number;
   strategy: BetStrategy;
@@ -86,7 +87,7 @@ export interface BetSequence {
 export interface LedgerCalculation {
   bets: CalculatedBet[];
   sequences: BetSequence[];
-  activeSequence: BetSequence | null;
+  activeSequences: BetSequence[];
   settledProfit: number;
   expectedProfit: number;
   openExposure: number;
@@ -96,7 +97,6 @@ export interface LedgerCalculation {
   largestStake: number;
   goal: number;
   goalProgress: number;
-  recoveryGap: number;
   newSequenceRecoveryGap: number;
   nextOddsGuide: number;
   nextSuggestion: StakeSuggestion;
@@ -178,9 +178,9 @@ function compareBets(left: Bet, right: Bet): number {
   return left.id.localeCompare(right.id);
 }
 
-function createSequence(number: number, bet: Bet): SequenceAccumulator {
+function createSequence(number: number, bet: Bet, id: string): SequenceAccumulator {
   return {
-    id: `sequence-${number}-${bet.id}`,
+    id,
     number,
     status: "active",
     startedAt: bet.placedAt,
@@ -276,7 +276,37 @@ export function calculateLedger(bets: Bet[], settings: StrategySettings): Ledger
   );
   const sequenceAccumulators: SequenceAccumulator[] = [];
   const calculatedBets: CalculatedBet[] = [];
-  let currentSequence: SequenceAccumulator | null = null;
+  const sequencesById = new Map<string, SequenceAccumulator>();
+  const legacySequenceIds = new Map<string, string>();
+  const legacyBets = orderedBets.filter((bet) => !bet.sequenceId);
+  let legacyGroup: Bet[] = [];
+  let legacyGroupNumber = 0;
+
+  const addLegacyGroup = () => {
+    const firstBet = legacyGroup[0];
+    if (!firstBet) {
+      return;
+    }
+
+    legacyGroupNumber += 1;
+    const id = `sequence-${legacyGroupNumber}-${firstBet.id}`;
+    const sequence = createSequence(legacyGroupNumber, firstBet, id);
+    sequenceAccumulators.push(sequence);
+    sequencesById.set(id, sequence);
+    for (const bet of legacyGroup) {
+      legacySequenceIds.set(bet.id, id);
+    }
+    legacyGroup = [];
+  };
+
+  for (const bet of legacyBets) {
+    legacyGroup.push(bet);
+    if (bet.outcome === "won") {
+      addLegacyGroup();
+    }
+  }
+  addLegacyGroup();
+
   let totalExpectedUnits = 0;
   let totalProfitUnits = 0;
   let totalOpenExposureUnits = 0;
@@ -287,19 +317,29 @@ export function calculateLedger(bets: Bet[], settings: StrategySettings): Ledger
   let open = 0;
 
   for (const [index, bet] of orderedBets.entries()) {
-    if (!currentSequence) {
-      currentSequence = createSequence(sequenceAccumulators.length + 1, bet);
-      sequenceAccumulators.push(currentSequence);
+    const sequenceId = bet.sequenceId || legacySequenceIds.get(bet.id);
+    if (!sequenceId) {
+      throw new Error(`Bet ${bet.id} could not be assigned to a sequence.`);
+    }
+
+    let sequence = sequencesById.get(sequenceId);
+    if (!sequence) {
+      sequence = createSequence(sequenceAccumulators.length + 1, bet, sequenceId);
+      sequenceAccumulators.push(sequence);
+      sequencesById.set(sequenceId, sequence);
+    }
+    if (new Date(bet.placedAt).getTime() < new Date(sequence.startedAt).getTime()) {
+      sequence.startedAt = bet.placedAt;
     }
 
     const safeOdds = bet.odds > 1 && Number.isFinite(bet.odds) ? bet.odds : 1.01;
     const baseStakeUnits = toMoneyUnits(bet.strategy.baseStake);
     const recoveryBeforeUnits =
-      currentSequence.bets.length === 0
+      sequence.bets.length === 0
         ? toMoneyUnits(bet.sequenceStartRecoveryGap ?? 0)
         : Math.max(
             0,
-            currentSequence.expectedProfitUnits - currentSequence.profitUnits,
+            sequence.expectedProfitUnits - sequence.profitUnits,
           );
     const suggestion = suggestStakeForOdds(
       fromMoneyUnits(recoveryBeforeUnits),
@@ -321,11 +361,11 @@ export function calculateLedger(bets: Bet[], settings: StrategySettings): Ledger
 
     if (bet.outcome === "open") {
       open += 1;
-      currentSequence.openExposureUnits += stakeUnits;
+      sequence.openExposureUnits += stakeUnits;
       totalOpenExposureUnits += stakeUnits;
     } else {
-      currentSequence.expectedProfitUnits += expectedProfitUnits;
-      currentSequence.profitUnits += profitUnits;
+      sequence.expectedProfitUnits += expectedProfitUnits;
+      sequence.profitUnits += profitUnits;
       totalExpectedUnits += expectedProfitUnits;
       totalProfitUnits += profitUnits;
       if (bet.outcome === "won") {
@@ -335,49 +375,59 @@ export function calculateLedger(bets: Bet[], settings: StrategySettings): Ledger
       }
     }
 
-    currentSequence.totalStakedUnits += stakeUnits;
-    currentSequence.largestStakeUnits = Math.max(
-      currentSequence.largestStakeUnits,
-      stakeUnits,
-    );
+    sequence.totalStakedUnits += stakeUnits;
+    sequence.largestStakeUnits = Math.max(sequence.largestStakeUnits, stakeUnits);
     totalStakedUnits += stakeUnits;
     largestStakeUnits = Math.max(largestStakeUnits, stakeUnits);
     const recoveryGapUnits = Math.max(
       0,
-      currentSequence.expectedProfitUnits - currentSequence.profitUnits,
+      sequence.expectedProfitUnits - sequence.profitUnits,
     );
     const calculatedBet: CalculatedBet = {
       ...bet,
       odds: safeOdds,
       index: index + 1,
-      sequenceId: currentSequence.id,
-      sequenceNumber: currentSequence.number,
-      sequencePosition: currentSequence.bets.length + 1,
+      sequenceId: sequence.id,
+      sequenceNumber: sequence.number,
+      sequencePosition: sequence.bets.length + 1,
       baseStake: fromMoneyUnits(baseStakeUnits),
       recoveryOffset: suggestion.recoveryOffset,
       stake: fromMoneyUnits(stakeUnits),
       potentialProfit: fromMoneyUnits(potentialProfitUnits),
       profit: fromMoneyUnits(profitUnits),
       expectedProfit: fromMoneyUnits(expectedProfitUnits),
-      cumulativeExpected: fromMoneyUnits(currentSequence.expectedProfitUnits),
-      cumulativeProfit: fromMoneyUnits(currentSequence.profitUnits),
+      cumulativeExpected: fromMoneyUnits(sequence.expectedProfitUnits),
+      cumulativeProfit: fromMoneyUnits(sequence.profitUnits),
       recoveryGap: fromMoneyUnits(recoveryGapUnits),
       capped: suggestion.capped,
       overStakeLimit: stakeUnits > currentMaxStakeUnits,
     };
 
-    currentSequence.bets.push(calculatedBet);
+    sequence.bets.push(calculatedBet);
     calculatedBets.push(calculatedBet);
 
     if (bet.outcome === "won") {
-      currentSequence.status = "closed";
-      currentSequence.endedAt = bet.placedAt;
-      currentSequence = null;
+      sequence.status = "closed";
+      sequence.endedAt = bet.placedAt;
     }
   }
 
+  sequenceAccumulators.sort((left, right) => {
+    const leftTime = new Date(left.startedAt).getTime();
+    const rightTime = new Date(right.startedAt).getTime();
+    const dateDifference = leftTime - rightTime;
+    return Number.isFinite(dateDifference) && dateDifference !== 0
+      ? dateDifference
+      : left.id.localeCompare(right.id);
+  });
+  sequenceAccumulators.forEach((sequence, index) => {
+    sequence.number = index + 1;
+    sequence.bets.forEach((bet) => {
+      bet.sequenceNumber = sequence.number;
+    });
+  });
   const sequences = sequenceAccumulators.map(toBetSequence);
-  const activeSequence = sequences.findLast((sequence) => sequence.status === "active") ?? null;
+  const activeSequences = sequences.filter((sequence) => sequence.status === "active");
   const settledProfit = fromMoneyUnits(totalProfitUnits);
   const expectedProfit = fromMoneyUnits(totalExpectedUnits);
   const openExposure = fromMoneyUnits(totalOpenExposureUnits);
@@ -388,7 +438,7 @@ export function calculateLedger(bets: Bet[], settings: StrategySettings): Ledger
   );
   const nextOddsGuide = calculatedBets.at(-1)?.odds ?? 1.3;
   const nextSuggestion = suggestStakeForOdds(
-    activeSequence?.recoveryGap ?? newSequenceRecoveryGap,
+    newSequenceRecoveryGap,
     nextOddsGuide,
     settings,
   );
@@ -407,7 +457,7 @@ export function calculateLedger(bets: Bet[], settings: StrategySettings): Ledger
   return {
     bets: calculatedBets,
     sequences,
-    activeSequence,
+    activeSequences,
     settledProfit,
     expectedProfit,
     openExposure,
@@ -417,7 +467,6 @@ export function calculateLedger(bets: Bet[], settings: StrategySettings): Ledger
     largestStake: fromMoneyUnits(largestStakeUnits),
     goal,
     goalProgress: goal > 0 ? settledProfit / goal : 0,
-    recoveryGap: activeSequence?.recoveryGap ?? 0,
     newSequenceRecoveryGap,
     nextOddsGuide,
     nextSuggestion,

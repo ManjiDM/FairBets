@@ -35,7 +35,7 @@ Feature: Bet management
     When I press the Add Bet button
     Then I see the new bet dialog
     When I input the label "Second open sequence"
-    And I input the date and time "2026-09-13T13:00"
+    And I input the date and time "2026-09-13T11:00"
     And I input "2.00" in the odds field
     And I press the Add button
     Then I should see 2 sequences
@@ -43,7 +43,11 @@ Feature: Bet management
 
   Scenario: Continue only the lost sequence and keep membership after reload
     When I start a fresh ledger
-    And I add a bet labeled "Sequence A first bet" with odds "2.00" placed at "2026-09-13T12:00"
+    And I set the base stake to "1"
+    And I set the goal rate to "100" with full recovery weighting
+    And I add a bet labeled "Prior profit" with odds "2.00" and a manual stake of "10" placed at "2026-09-13T11:00"
+    And I mark the bet "Prior profit" as "Won"
+    And I add a bet labeled "Sequence A first bet" with odds "2.00" and a manual stake of "1" placed at "2026-09-13T12:00"
     Then the plus button for the sequence containing the bet "Sequence A first bet" should be hidden
     When I mark the bet "Sequence A first bet" as "Lost"
     Then the plus button for the sequence containing the bet "Sequence A first bet" should be visible
@@ -53,13 +57,18 @@ Feature: Bet management
     When I input the label "Sequence A recovery"
     And I input the date and time "2026-09-13T14:00"
     And I input "2.00" in the odds field
+    Then the suggested stake should be "€3.00"
     And I press the Add button
+    Then the bet "Sequence A recovery" should have a stake of "€3.00"
     Then the bets "Sequence A first bet" and "Sequence A recovery" should be in the same sequence
     And the bets "Sequence A recovery" and "Sequence B open bet" should be in different sequences
     And the plus button for the sequence containing the bet "Sequence A recovery" should be hidden
     When I reload the app
     Then the bets "Sequence A first bet" and "Sequence A recovery" should be in the same sequence
     And the bets "Sequence A recovery" and "Sequence B open bet" should be in different sequences
+    And the sequence containing the bet "Sequence A recovery" should be "Active"
+    And the sequence containing the bet "Sequence B open bet" should be "Active"
+    And the bet "Sequence A recovery" should have a stake of "€3.00"
 
   Scenario: A win closes only its own sequence
     When I start a fresh ledger
@@ -70,6 +79,12 @@ Feature: Bet management
     And the sequence containing the bet "Sequence B open bet" should be "Active"
     And the plus button for the sequence containing the bet "Sequence A open bet" should be hidden
     And the bet "Sequence B open bet" should be "Open"
+
+  Scenario: Open exposure from parallel sequences shares the configured limit
+    When I start a fresh ledger
+    And I add a bet labeled "First exposure" with odds "2.00" and a manual stake of "3" placed at "2026-09-13T12:00"
+    And I add a bet labeled "Second exposure" with odds "2.00" and a manual stake of "3" placed at "2026-09-13T13:00"
+    Then a guardrail warning should be shown
 
   Scenario: Save and display odds with three decimal places
     When I press the Add Bet button

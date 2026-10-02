@@ -146,6 +146,8 @@ function isBet(value: unknown): value is UnstampedBet {
     typeof value.label === "string" &&
     typeof value.odds === "number" &&
     isOutcome(value.outcome) &&
+    (value.sequenceId === undefined ||
+      (typeof value.sequenceId === "string" && value.sequenceId.length > 0)) &&
     (value.stakeOverride === undefined || typeof value.stakeOverride === "number") &&
     (value.sequenceStartRecoveryGap === undefined ||
       (typeof value.sequenceStartRecoveryGap === "number" &&
@@ -595,11 +597,32 @@ function SequenceBetRow({
   );
 }
 
+function SequenceAddBetButton({
+  sequence,
+  onAddToSequence,
+}: {
+  sequence: BetSequence;
+  onAddToSequence: (sequence: BetSequence) => void;
+}) {
+  return (
+    <button
+      type="button"
+      className="sequence-add-bet"
+      aria-label={`Add bet to sequence ${sequence.number}`}
+      title={`Add bet to sequence ${sequence.number}`}
+      onClick={() => onAddToSequence(sequence)}
+    >
+      <span aria-hidden="true">+</span>
+    </button>
+  );
+}
+
 function SingleBetSequenceCard({
   sequence,
   currency,
   onSettle,
   onEdit,
+  onAddToSequence,
   pendingDeleteKey,
   onRequestSequenceDelete,
   onConfirmSequenceDelete,
@@ -608,6 +631,7 @@ function SingleBetSequenceCard({
   currency: Currency;
   onSettle: (id: string, outcome: SettledOutcome) => void;
   onEdit: (bet: CalculatedBet) => void;
+  onAddToSequence: (sequence: BetSequence) => void;
   pendingDeleteKey: string | null;
   onRequestSequenceDelete: (key: string) => void;
   onConfirmSequenceDelete: (key: string) => void;
@@ -662,6 +686,9 @@ function SingleBetSequenceCard({
               Lost
             </button>
           </>
+        ) : null}
+        {bet.outcome === "lost" ? (
+          <SequenceAddBetButton sequence={sequence} onAddToSequence={onAddToSequence} />
         ) : null}
         <span className="compact-sequence-actions">
           <button type="button" className="compact-action" onClick={() => onEdit(bet)}>
@@ -774,6 +801,7 @@ function ActiveSequenceCard({
   currency,
   onSettle,
   onEdit,
+  onAddToSequence,
   pendingDeleteKey,
   onRequestDelete,
   onConfirmDelete,
@@ -784,6 +812,7 @@ function ActiveSequenceCard({
   currency: Currency;
   onSettle: (id: string, outcome: SettledOutcome) => void;
   onEdit: (bet: CalculatedBet) => void;
+  onAddToSequence: (sequence: BetSequence) => void;
   pendingDeleteKey: string | null;
   onRequestDelete: (key: string) => void;
   onConfirmDelete: (key: string) => void;
@@ -801,6 +830,10 @@ function ActiveSequenceCard({
         </div>
         <div className="sequence-card-actions">
           <span className="status-badge status-active">Active</span>
+          {sequence.bets.at(-1)?.outcome === "lost" &&
+          !sequence.bets.some((bet) => bet.outcome === "open") ? (
+            <SequenceAddBetButton sequence={sequence} onAddToSequence={onAddToSequence} />
+          ) : null}
           <InlineDeleteAction
             label="Delete"
             pending={pendingDeleteKey === sequenceDeleteKey}
@@ -860,6 +893,7 @@ function App() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [pendingDeleteKey, setPendingDeleteKey] = useState<string | null>(null);
   const [editingBetId, setEditingBetId] = useState<string | null>(null);
+  const [targetSequenceId, setTargetSequenceId] = useState<string | null>(null);
   const [draft, setDraft] = useState<BetDraft>(() =>
     createBetDraft(loadedLedger.state.settings),
   );
@@ -886,20 +920,26 @@ function App() {
     () => calculateLedger(tracker.bets, tracker.settings),
     [tracker.bets, tracker.settings],
   );
-  const hasOpenBet = tracker.bets.some((bet) => bet.outcome === "open");
+  const targetSequence = targetSequenceId
+    ? calculation.sequences.find((sequence) => sequence.id === targetSequenceId) ?? null
+    : null;
+  const editingBet = editingBetId
+    ? tracker.bets.find((bet) => bet.id === editingBetId) ?? null
+    : null;
+  const editingCalculatedBet = editingBetId
+    ? calculation.bets.find((bet) => bet.id === editingBetId) ?? null
+    : null;
+  const editingSequence = editingCalculatedBet
+    ? calculation.sequences.find((sequence) => sequence.id === editingCalculatedBet.sequenceId) ?? null
+    : null;
   const draftOdds = Number(draft.odds);
   const draftRecoveryGap = editingBetId
-    ? calculation.recoveryGap
-    : calculation.activeSequence
-      ? calculation.recoveryGap
-      : calculation.newSequenceRecoveryGap;
+    ? editingSequence?.recoveryGap ?? calculation.newSequenceRecoveryGap
+    : targetSequence?.recoveryGap ?? calculation.newSequenceRecoveryGap;
   const draftSuggestion = useMemo(
     () => suggestStakeForOdds(draftRecoveryGap, draftOdds, tracker.settings),
     [draftRecoveryGap, draftOdds, tracker.settings],
   );
-  const editingBet = editingBetId
-    ? tracker.bets.find((bet) => bet.id === editingBetId) ?? null
-    : null;
   const isEditingSettledBet = editingBet !== null && editingBet.outcome !== "open";
   const historySequences = useMemo(() => {
     const matchingSequences = calculation.sequences.filter((sequence) => {
@@ -1181,10 +1221,16 @@ function App() {
   }
 
   function openNewBetForm() {
-    if (hasOpenBet) {
-      return;
-    }
     setEditingBetId(null);
+    setTargetSequenceId(null);
+    setDraft(createBetDraft(tracker.settings));
+    setFormError(null);
+    setIsFormOpen(true);
+  }
+
+  function openSequenceBetForm(sequence: BetSequence) {
+    setEditingBetId(null);
+    setTargetSequenceId(sequence.id);
     setDraft(createBetDraft(tracker.settings));
     setFormError(null);
     setIsFormOpen(true);
@@ -1192,6 +1238,7 @@ function App() {
 
   function openEditBetForm(bet: CalculatedBet) {
     setEditingBetId(bet.id);
+    setTargetSequenceId(null);
     setDraft({
       label: bet.label,
       placedAt: bet.placedAt.slice(0, 16),
@@ -1207,6 +1254,7 @@ function App() {
   function closeBetForm() {
     setIsFormOpen(false);
     setEditingBetId(null);
+    setTargetSequenceId(null);
     setFormError(null);
   }
 
@@ -1227,6 +1275,29 @@ function App() {
     }
     if (isEditingSettledBet && draft.outcome === "open") {
       setFormError("A settled bet cannot be changed back to Open.");
+      return;
+    }
+    if (targetSequenceId) {
+      const latestBet = targetSequence?.bets.at(-1);
+      if (
+        !targetSequence ||
+        targetSequence.status !== "active" ||
+        latestBet?.outcome !== "lost" ||
+        targetSequence.bets.some((bet) => bet.outcome === "open")
+      ) {
+        setFormError("Only a sequence whose latest bet was lost can be continued.");
+        return;
+      }
+    }
+    if (
+      editingBetId &&
+      draft.outcome === "open" &&
+      editingCalculatedBet &&
+      calculation.sequences
+        .find((sequence) => sequence.id === editingCalculatedBet.sequenceId)
+        ?.bets.some((bet) => bet.id !== editingCalculatedBet.id && bet.outcome === "open")
+    ) {
+      setFormError("A sequence can have only one open bet at a time.");
       return;
     }
     if (
@@ -1252,7 +1323,7 @@ function App() {
 
     const sequenceStartRecoveryGap = editingBetId
       ? editingBet?.sequenceStartRecoveryGap
-      : calculation.activeSequence
+      : targetSequenceId
         ? undefined
         : calculation.newSequenceRecoveryGap;
     const bet: Bet = {
@@ -1261,6 +1332,11 @@ function App() {
       placedAt: draft.placedAt,
       odds,
       outcome: draft.outcome,
+      ...(editingBetId
+        ? editingBet?.sequenceId === undefined
+          ? {}
+          : { sequenceId: editingBet.sequenceId }
+        : { sequenceId: targetSequenceId ?? `parallel-${createBetId()}` }),
       ...(manualStake === undefined ? {} : { stakeOverride: manualStake }),
       ...(sequenceStartRecoveryGap === undefined ? {} : { sequenceStartRecoveryGap }),
       strategy,
@@ -1569,13 +1645,13 @@ function App() {
                 <div className="hero-meta">
                   <span>{formatPercent(calculation.winRate)} settled win rate</span>
                   <span>
-                    {calculation.activeSequence
-                      ? `Sequence ${calculation.activeSequence.number} active, ${
-                          calculation.activeSequence.bets.length
-                        } bets, ${formatMoney(
-                          calculation.recoveryGap,
+                    {calculation.activeSequences.length > 0
+                      ? `${calculation.activeSequences.length} sequences active · ${
+                          calculation.open
+                        } open bets · ${formatMoney(
+                          calculation.newSequenceRecoveryGap,
                           tracker.settings.currency,
-                        )} recovery gap`
+                        )} new-sequence recovery`
                       : "Ready for a new sequence"}
                   </span>
                   <span>
@@ -1592,7 +1668,6 @@ function App() {
                 type="button"
                 className="button button-primary"
                 onClick={openNewBetForm}
-                disabled={hasOpenBet}
               >
                 <span aria-hidden="true">+</span> Add bet
               </button>
@@ -1631,6 +1706,7 @@ function App() {
                         currency={tracker.settings.currency}
                         onSettle={settleBet}
                         onEdit={openEditBetForm}
+                        onAddToSequence={openSequenceBetForm}
                         pendingDeleteKey={pendingDeleteKey}
                         onRequestSequenceDelete={requestDelete}
                         onConfirmSequenceDelete={confirmDeleteSequence}
@@ -1646,6 +1722,7 @@ function App() {
                         currency={tracker.settings.currency}
                         onSettle={settleBet}
                         onEdit={openEditBetForm}
+                        onAddToSequence={openSequenceBetForm}
                         pendingDeleteKey={pendingDeleteKey}
                         onRequestDelete={requestDelete}
                         onConfirmDelete={confirmDelete}
@@ -1679,7 +1756,6 @@ function App() {
                   type="button"
                   className="button button-primary"
                   onClick={openNewBetForm}
-                  disabled={hasOpenBet}
                 >
                   Add the first bet
                 </button>
@@ -2124,10 +2200,12 @@ function App() {
                   <strong>{formatMoney(draftSuggestion.recoveryOffset, tracker.settings.currency)}</strong>
                 </div>
                 <p>
-                  This bet is assigned automatically to{" "}
-                  {calculation.activeSequence
-                    ? `sequence ${calculation.activeSequence.number}`
-                    : "a new sequence"}
+                  This bet will be added to{" "}
+                  {editingBet
+                    ? `sequence ${editingCalculatedBet?.sequenceNumber}`
+                    : targetSequence
+                      ? `sequence ${targetSequence.number}`
+                      : "a new sequence"}
                   . A win closes that sequence.
                 </p>
               </div>

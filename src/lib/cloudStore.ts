@@ -155,6 +155,7 @@ function betFromCloud(value: unknown): UnstampedBet {
   const id = value.id;
   const placedAt = value.placed_at;
   const label = value.label;
+  const sequenceId = value.sequence_id;
   const stakeOverride = value.stake_override;
   const sequenceStartRecoveryGap = optionalNonNegativeNumber(
     value.sequence_start_recovery_gap,
@@ -163,6 +164,13 @@ function betFromCloud(value: unknown): UnstampedBet {
 
   if (typeof id !== "string" || typeof placedAt !== "string" || typeof label !== "string") {
     throw new Error("Cloud data contains an incomplete bet.");
+  }
+  if (
+    sequenceId !== undefined &&
+    sequenceId !== null &&
+    (typeof sequenceId !== "string" || sequenceId.length === 0)
+  ) {
+    throw new Error("Cloud data contains an invalid sequence ID.");
   }
 
   const parsedStakeOverride = optionalPositiveNumber(stakeOverride, "stake override");
@@ -179,6 +187,7 @@ function betFromCloud(value: unknown): UnstampedBet {
     label,
     odds,
     outcome: readOutcome(value.outcome),
+    ...(typeof sequenceId === "string" ? { sequenceId } : {}),
     ...(parsedStakeOverride === undefined ? {} : { stakeOverride: parsedStakeOverride }),
     ...(sequenceStartRecoveryGap === undefined ? {} : { sequenceStartRecoveryGap }),
     ...(strategy === undefined ? {} : { strategy }),
@@ -285,7 +294,7 @@ export async function loadLatestCloudLedger(): Promise<CloudLedger | null> {
   const { data: betData, error: betError } = await client
     .from("bets")
     .select(
-      "id,placed_at,label,odds,outcome,stake_override,sequence_start_recovery_gap,base_stake,threshold,recovery_weight,stake_rounding,max_stake",
+      "id,placed_at,label,odds,outcome,sequence_id,stake_override,sequence_start_recovery_gap,base_stake,threshold,recovery_weight,stake_rounding,max_stake",
     )
     .eq("ledger_id", ledger.id)
     .order("placed_at", { ascending: true });
@@ -362,6 +371,7 @@ export async function saveLedgerToCloud(
         label: bet.label,
         odds: bet.odds,
         outcome: bet.outcome,
+        sequence_id: bet.sequenceId ?? null,
         stake_override: bet.stakeOverride ?? null,
         sequence_start_recovery_gap: bet.sequenceStartRecoveryGap ?? null,
         base_stake: bet.strategy.baseStake,

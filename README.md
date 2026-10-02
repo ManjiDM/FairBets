@@ -74,7 +74,7 @@ and Playwright debugging enabled. Use `pnpm test:e2e` for the normal headless ru
 
 Cloud storage is optional until a Supabase project is configured. It uses email magic-link authentication and row-level security so each user can only access their own FairBets ledger.
 
-1. Create a Supabase project and run [`supabase/schema.sql`](./supabase/schema.sql) in its SQL Editor. If you deployed the earlier Series Ledger schema, run [`supabase/migrations/0002_fairbets_ledgers.sql`](./supabase/migrations/0002_fairbets_ledgers.sql) instead.
+1. For a new Supabase project, run [`supabase/schema.sql`](./supabase/schema.sql) in its SQL Editor. For an existing project, apply any pending migrations in numerical order. A FairBets project already migrated through `0004` needs [`supabase/migrations/0005_bet_sequence_id.sql`](./supabase/migrations/0005_bet_sequence_id.sql); a project on the earlier Series Ledger schema should first run [`supabase/migrations/0002_fairbets_ledgers.sql`](./supabase/migrations/0002_fairbets_ledgers.sql), then the remaining pending migrations.
 2. In Supabase Authentication settings, enable Email sign-in and add your local and deployed app URLs to the redirect allow list.
 3. Copy `.env.example` to `.env.local`, then enter the project URL and the public anon key from Supabase Project Settings -> API.
 4. Restart `pnpm dev`.

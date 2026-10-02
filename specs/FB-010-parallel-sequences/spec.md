@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | ID | `FB-010-parallel-sequences` |
-| Status | Draft |
+| Status | Shipped |
 | Created | 2026-10-02 |
 | Related | — |
 
@@ -148,16 +148,16 @@ will be detailed in the plan; no workbook layout change is intended.
 Confirm against [`../constitution.md`](../constitution.md), noting anything that needs
 discussion.
 
-- [ ] I. Private tracker, never an operator
-- [ ] II. Local-first
-- [ ] III. Deterministic domain logic
-- [ ] IV. UI and domain stay separated
-- [ ] V. The sequence model is preserved
-- [ ] VI. Risk limits stay enforced
-- [ ] VII. Data compatibility preserved
-- [ ] VIII. No secrets introduced
+- [x] I. Private tracker, never an operator
+- [x] II. Local-first
+- [x] III. Deterministic domain logic
+- [x] IV. UI and domain stay separated
+- [x] V. The sequence model is preserved
+- [x] VI. Risk limits stay enforced
+- [x] VII. Data compatibility preserved
+- [x] VIII. No secrets introduced
 - [x] IX. Behaviour specified in Gherkin
-- [ ] X. Gates pass
+- [x] X. Gates pass
 
 ## Open questions
 

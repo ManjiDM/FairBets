@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | Spec | [`spec.md`](./spec.md) |
-| Status | Approved |
+| Status | Done |
 | Updated | 2026-10-02 |
 
 > How the spec will be built. Written after every `[NEEDS CLARIFICATION]` marker in the
@@ -38,13 +38,13 @@ retroactively mutate data or depend on migration timing.
 
 | File | Change | Notes |
 | --- | --- | --- |
+| `README.md` | Clarify which Supabase migration to apply | Existing cloud databases need `0005` |
 | `src/domain/ledger.ts` | Add optional sequence membership and calculate multiple independent sequences | Domain remains deterministic; legacy bets retain current grouping |
 | `src/App.tsx` | Keep standalone Add bet enabled, launch sequence-targeted form from plus controls, and route recovery to selected sequence | Update single-bet and active-sequence cards |
 | `src/lib/cloudStore.ts` | Parse/write optional sequence ID | Null cloud field remains legacy-compatible |
 | `supabase/schema.sql` | Add nullable sequence ID column | Fresh installs |
 | `supabase/migrations/0005_bet_sequence_id.sql` | Add nullable sequence ID column | Existing cloud installs |
 | `e2e/features/bets.feature` | Replace global-open prohibition with parallel-sequence scenarios | Main button always creates independent sequence |
-| `e2e/features/bet-strategy.feature` | Cover sequence-scoped add, icon visibility, win isolation, stable reload membership | Strategy and sequence regressions |
 | `e2e/steps/fairbets.steps.js` | Add sequence ID/button/count assertions | User-visible behavior |
 | `specs/FB-010-parallel-sequences/*` | Track implementation and verification | Plan, tasks, spec status |
 
@@ -62,9 +62,9 @@ export interface LedgerCalculation {
 
 Each explicit sequence ID maps to one accumulator and is processed in placement order
 within that sequence. A win closes only that accumulator. When no explicit ID exists,
-legacy bets are grouped chronologically with the current rule and derive a stable
-legacy ID from their first bet. Global settled P&L, expected profit, open exposure, and
-risk flags still aggregate all bets.
+legacy bets are grouped chronologically with the current rule and retain the existing
+legacy ID derived from their first bet. Global settled P&L, expected profit, open
+exposure, and risk flags still aggregate all bets.
 
 The singular `activeSequence` result is replaced with `activeSequences`. The general
 next-bet guide uses the new-sequence recovery gap, while bet-form suggestions use either
@@ -87,8 +87,9 @@ the selected sequence's gap or the new-sequence gap.
 
 The main Add bet action is never disabled because another sequence has an open bet; it
 always creates a new sequence. Single-bet and multi-bet active sequence cards show an
-accessible plus-icon button only if their latest bet is lost. That action opens the
-existing bet form with a selected sequence ID and that sequence's stake suggestion.
+accessible plus-icon button only if their latest bet is lost and the sequence has no
+open bet. That action opens the existing bet form with a selected sequence ID and that
+sequence's stake suggestion.
 New standalone forms use the existing new-sequence recovery suggestion. One open bet
 per sequence is maintained because the plus action is only offered after a loss.
 
@@ -97,7 +98,8 @@ per sequence is maintained because the plus action is only offered after a loss.
 - Replace the existing scenario that expects Add bet to disable during an open bet.
 - Cover adding an independent open bet while another sequence is open.
 - Cover plus-button visibility after loss and hiding after a new open bet or win.
-- Cover independent settlement of two sequences.
+- Cover independent settlement of two sequences and combined exposure limits.
+- Cover a new independent bet with a timestamp earlier than an existing sequence.
 - Assert continuation attaches to the selected sequence and uses its own recovery.
 - Reload after multiple sequences and verify membership/status and stakes remain stable.
 - Preserve existing exposure-risk, strategy, workbook-import, and FB-009 tests.
@@ -110,7 +112,7 @@ per sequence is maintained because the plus action is only offered after a loss.
 | --- | --- | --- |
 | Legacy bets are regrouped when explicit bets are introduced | Historical sequence and stake changes | Derive legacy sequences only from the ordered legacy subset |
 | A targeted bet uses another sequence's recovery | Incorrect stake recommendation | Resolve the recovery gap by selected sequence ID in the domain calculation |
-| Two open bets enter one sequence | Violates the one-open rule | Show the plus action only when latest outcome is lost; validate target sequence before save |
+| Two open bets enter one sequence | Violates the one-open rule | Show the plus action only when latest outcome is lost and no bet is open; validate target sequence before save |
 | New sequence becomes coupled to placement timestamps | Independent bets merge/reorder | Persist a distinct sequence ID at new-bet creation |
 | Aggregate exposure checks only one sequence | Risk ceiling bypass | Keep open exposure aggregation across all calculated bets |
 

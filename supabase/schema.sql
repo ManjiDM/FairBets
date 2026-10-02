@@ -15,6 +15,7 @@ create table if not exists public.bets (
   label text not null check (char_length(label) between 1 and 60),
   odds numeric(12, 4) not null check (odds > 1),
   outcome text not null check (outcome in ('open', 'won', 'lost')),
+  sequence_id text,
   stake_override numeric(12, 4) check (stake_override is null or stake_override > 0),
   sequence_start_recovery_gap numeric(12, 4) check (
     sequence_start_recovery_gap is null or sequence_start_recovery_gap >= 0
