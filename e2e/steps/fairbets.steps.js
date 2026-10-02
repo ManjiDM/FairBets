@@ -78,6 +78,15 @@ Then("the summary drawer should be open", async function () {
   await expect(this.page.locator(".summary-sidebar.drawer-open")).toBeVisible();
 });
 
+Then("the toolbar should remain above the summary drawer", async function () {
+  const toolbar = await this.page.locator(".topbar").boundingBox();
+  const drawer = await this.page.locator(".summary-sidebar.drawer-open").boundingBox();
+  expect(toolbar).not.toBeNull();
+  expect(drawer).not.toBeNull();
+  expect(drawer.y).toBeGreaterThanOrEqual(toolbar.y + toolbar.height);
+  await expect(this.page.locator(".topbar")).toBeVisible();
+});
+
 When("I close the summary drawer", async function () {
   await this.page.locator(".summary-sidebar .drawer-close").click();
 });

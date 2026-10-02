@@ -39,6 +39,7 @@ Feature: FairBets app overview
     Then the mobile summary control should show an accessible sidebar icon
     When I open the summary drawer
     Then the summary drawer should be open
+    And the toolbar should remain above the summary drawer
     When I close the summary drawer
     Then the summary drawer should be closed
 

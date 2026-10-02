@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | ID | `FB-005-sidebar-below-toolbar` |
-| Status | Reproducing |
+| Status | Diagnosed |
 | Severity | Broken flow |
 | Created | 2026-10-02 |
 | Related | — |
@@ -59,8 +59,7 @@ Inside the mobile media query, `.summary-sidebar` is fixed from `top: 0` and use
 
 ## Regression scenario
 
-This scenario must be run and confirmed failing before the fix; record the red output
-below.
+The scenario was run and failed before the fix; see the red output below.
 
 ```gherkin
 Scenario: The summary drawer stays below the visible toolbar
@@ -91,7 +90,7 @@ behavior.
 
 ## Verification
 
-- [ ] Regression scenario failed before the fix (evidence recorded below)
+- [x] Regression scenario failed before the fix (evidence recorded below)
 - [ ] Regression scenario passes after the fix
 - [ ] `pnpm lint`
 - [ ] `pnpm build`
@@ -101,7 +100,12 @@ behavior.
 **Evidence of the red state:**
 
 ```text
-Run the mobile drawer positioning scenario before changing the implementation.
+pnpm test:e2e
+The summary is reachable as a drawer on a small screen:
+  Expected drawer top >= toolbar bottom (67px)
+  Received drawer top: 0px
+23 scenarios (1 failed, 22 passed)
+170 steps (1 failed, 2 skipped, 167 passed)
 ```
 
 ## Manual check
