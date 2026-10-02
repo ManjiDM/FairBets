@@ -41,6 +41,32 @@ Feature: Bet management
     Then I should see 2 sequences
     And the bets "First open sequence" and "Second open sequence" should be in different sequences
 
+  Scenario: Newest recorded sequence appears first when placement times tie
+    When I start a fresh ledger
+    And I add a bet labeled "Recorded first" with odds "2.00" placed at "2026-09-13T12:00"
+    And I add a bet labeled "Recorded second" with odds "2.00" placed at "2026-09-13T12:00"
+    Then the sequence card titles should be ordered as "Recorded second" then "Recorded first"
+    And no recording timestamp should be displayed
+    When I reload the app
+    Then the sequence card titles should be ordered as "Recorded second" then "Recorded first"
+
+  Scenario: A newly recorded backdated sequence appears first
+    When I start a fresh ledger
+    And I add a bet labeled "Later placement" with odds "2.00" placed at "2026-09-13T13:00"
+    And I add a bet labeled "Earlier placement" with odds "2.00" placed at "2026-09-13T11:00"
+    Then the sequence card titles should be ordered as "Earlier placement" then "Later placement"
+
+  Scenario: Odds replace a generated title while custom labels stay visible
+    When I start a fresh ledger
+    And I press the Add Bet button
+    And I input the date and time "2026-09-13T12:00"
+    And I input "1.30" in the odds field
+    And I press the Add button
+    Then the prominent title should show "1.30 odds"
+    And no generated Selection title should be shown
+    When I add a bet labeled "Home team" with odds "1.40" placed at "2026-09-13T13:00"
+    Then the prominent title "Home team" should be visible
+
   Scenario: Continue only the lost sequence and keep membership after reload
     When I start a fresh ledger
     And I set the base stake to "1"

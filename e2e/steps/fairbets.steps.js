@@ -370,6 +370,36 @@ Then(
   },
 );
 
+Then(
+  "the sequence card titles should be ordered as {string} then {string}",
+  async function (firstTitle, secondTitle) {
+    await expect(
+      this.page.locator(".sequence-list > article .single-bet-info > strong"),
+    ).toHaveText([firstTitle, secondTitle]);
+  },
+);
+
+Then("no recording timestamp should be displayed", async function () {
+  const sequenceText = await this.page.locator(".sequence-list").innerText();
+  expect(sequenceText).not.toMatch(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z/);
+});
+
+Then("the prominent title should show {string}", async function (title) {
+  await expect(
+    this.page.locator(".sequence-list > article .single-bet-info > strong"),
+  ).toHaveText([title]);
+});
+
+Then("no generated Selection title should be shown", async function () {
+  await expect(this.page.getByText(/^Selection \d+$/)).toHaveCount(0);
+});
+
+Then("the prominent title {string} should be visible", async function (title) {
+  await expect(
+    this.page.locator(".sequence-list .single-bet-info > strong").filter({ hasText: title }),
+  ).toBeVisible();
+});
+
 Then("the bet {string} should be {string}", async function (label, outcome) {
   const normalizedOutcome = outcome.toLowerCase();
   const sequence = this.page.locator(".sequence-list > *").filter({
