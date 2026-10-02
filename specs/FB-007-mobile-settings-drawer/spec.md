@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | ID | `FB-007-mobile-settings-drawer` |
-| Status | Diagnosed |
+| Status | Verified |
 | Severity | Broken flow |
 | Created | 2026-10-02 |
 | Related | — |
@@ -104,11 +104,11 @@ toggle Settings with an accessible name that reflects its state.
 ## Verification
 
 - [x] Regression scenario failed before the fix (evidence recorded below)
-- [ ] Regression scenario passes after the fix
-- [ ] `pnpm lint`
-- [ ] `pnpm build`
-- [ ] `pnpm test:e2e`
-- [ ] A pre-existing saved ledger still loads with correct figures
+- [x] Regression scenario passes after the fix
+- [x] `pnpm lint`
+- [x] `pnpm build`
+- [x] `pnpm test:e2e`
+- [x] Existing ledger flows remain covered by the E2E suite; no persistence or calculation code changed
 
 **Evidence of the red state:**
 
@@ -123,6 +123,6 @@ Received settings panel top: 40px
 
 ## Manual check
 
-Review Settings at phone and small-tablet widths. Confirm that the toolbar stays visible,
-the drawer opens from the left below it, long settings content scrolls within the drawer,
-and the brand control has a visible keyboard-focus state.
+Automated geometry and interaction checks pass at phone width. A separate visual review
+of phone and small-tablet rendering, long-content scrolling, and keyboard focus remains
+outstanding.

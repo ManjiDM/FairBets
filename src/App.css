@@ -1276,6 +1276,10 @@ h3 {
   backdrop-filter: blur(4px);
 }
 
+.settings-backdrop {
+  z-index: 9;
+}
+
 .bet-modal {
   width: min(650px, 100%);
   max-height: min(760px, calc(100vh - 40px));
@@ -1483,6 +1487,24 @@ h3 {
   .settings-layout {
     grid-template-columns: 1fr;
   }
+
+  .settings-backdrop {
+    display: flex;
+    align-items: stretch;
+    justify-content: flex-start;
+    inset: var(--mobile-topbar-height) 0 0;
+    padding: 0;
+  }
+
+  .settings-modal {
+    width: min(400px, 86vw);
+    height: 100%;
+    max-height: none;
+    margin-right: auto;
+    padding: 24px 19px max(24px, env(safe-area-inset-bottom));
+    overflow-y: auto;
+    border-radius: 0 18px 18px 0;
+  }
 }
 
 @media (max-width: 680px) {
@@ -1642,7 +1664,10 @@ h3 {
 
   .modal-backdrop {
     align-items: end;
-    padding: 0;
+  }
+
+  .settings-backdrop {
+    align-items: stretch;
   }
 
   .bet-modal {

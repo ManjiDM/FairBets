@@ -1449,8 +1449,10 @@ function App() {
         <button
           type="button"
           className="brand"
-          onClick={() => setSettingsOpen(true)}
-          aria-label="Open settings"
+          onClick={() => setSettingsOpen((open) => !open)}
+          aria-controls="settings-dialog"
+          aria-expanded={settingsOpen}
+          aria-label={settingsOpen ? "Close settings" : "Open settings"}
         >
           <span className="brand-mark">FB</span>
           <span>
@@ -1723,8 +1725,9 @@ function App() {
           </div>
 
         {settingsOpen && (
-          <div className="modal-backdrop" role="presentation">
+          <div className="modal-backdrop settings-backdrop" role="presentation">
             <section
+              id="settings-dialog"
               className="settings-page settings-modal"
               role="dialog"
               aria-modal="true"
@@ -1735,13 +1738,6 @@ function App() {
                   <p className="eyebrow">FairBets controls</p>
                   <h2 id="settings-title">Strategy and safety settings</h2>
                 </div>
-                <button
-                  type="button"
-                  className="close-button"
-                  onClick={() => setSettingsOpen(false)}
-                >
-                  Back to sequences
-                </button>
               </div>
             <div className="settings-layout">
               <form className="panel settings-form" onSubmit={saveSettings}>

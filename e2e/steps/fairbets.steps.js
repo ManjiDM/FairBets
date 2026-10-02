@@ -143,7 +143,7 @@ Then("the settings overlay should be shown", async function () {
 });
 
 When("I close the settings overlay", async function () {
-  await this.page.getByRole("button", { name: "Back to sequences" }).click();
+  await this.page.locator(".brand").click();
 });
 
 Then("the settings overlay should not be shown", async function () {
@@ -175,7 +175,7 @@ When("I set the maximum stake to {string}", async function (value) {
   });
   await field.locator("input").fill(value);
   await this.page.getByRole("button", { name: "Save settings" }).click();
-  await this.page.getByRole("button", { name: "Back to sequences" }).click();
+  await this.page.locator(".brand").click();
 });
 
 Then("a guardrail warning should be shown", async function () {
@@ -414,7 +414,7 @@ When("I set the base stake to {string}", async function (value) {
   });
   await field.locator("input").fill(value);
   await this.page.getByRole("button", { name: "Save settings" }).click();
-  await this.page.getByRole("button", { name: "Back to sequences" }).click();
+  await this.page.locator(".brand").click();
 });
 
 Then("the bet {string} should have a stake of {string}", async function (label, stake) {
