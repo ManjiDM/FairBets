@@ -225,6 +225,65 @@ Then("I should see {int} sequences", async function (sequenceCount) {
   ).toBeVisible();
 });
 
+Then(
+  "the bets {string} and {string} should be in the same sequence",
+  async function (firstLabel, secondLabel) {
+    const sharedSequence = this.page
+      .locator(".sequence-list > *")
+      .filter({
+        has: this.page.getByText(firstLabel, { exact: true }),
+      })
+      .filter({
+        has: this.page.getByText(secondLabel, { exact: true }),
+      });
+    await expect(sharedSequence).toHaveCount(1);
+  },
+);
+
+Then(
+  "the bets {string} and {string} should be in different sequences",
+  async function (firstLabel, secondLabel) {
+    const sharedSequence = this.page
+      .locator(".sequence-list > *")
+      .filter({
+        has: this.page.getByText(firstLabel, { exact: true }),
+      })
+      .filter({
+        has: this.page.getByText(secondLabel, { exact: true }),
+      });
+    await expect(sharedSequence).toHaveCount(0);
+  },
+);
+
+Then(
+  "the plus button for the sequence containing the bet {string} should be {word}",
+  async function (label, visibility) {
+    const sequence = this.page.locator(".sequence-list > *").filter({
+      has: this.page.getByText(label, { exact: true }),
+    });
+    const button = sequence.getByRole("button", {
+      name: /^Add bet to sequence \d+$/,
+    });
+    if (visibility === "visible") {
+      await expect(button).toBeVisible();
+    } else {
+      await expect(button).toHaveCount(0);
+    }
+  },
+);
+
+When(
+  "I press the plus button for the sequence containing the bet {string}",
+  async function (label) {
+    const sequence = this.page.locator(".sequence-list > *").filter({
+      has: this.page.getByText(label, { exact: true }),
+    });
+    await sequence.getByRole("button", {
+      name: /^Add bet to sequence \d+$/,
+    }).click();
+  },
+);
+
 When("I press the Add Bet button", async function () {
   await this.page.getByRole("button", { name: "Add bet", exact: true }).click();
 });
@@ -522,7 +581,9 @@ Then("the settled P&L should be {string}", async function (profit) {
 When(
   "I add a bet labeled {string} with odds {string} placed at {string}",
   async function (label, odds, placedAt) {
-    await this.page.getByRole("button", { name: "Add bet", exact: true }).click();
+    const addButton = this.page.getByRole("button", { name: "Add bet", exact: true });
+    await expect(addButton).toBeEnabled();
+    await addButton.click();
     await this.page.getByLabel("Label").fill(label);
     await this.page.getByLabel("Date and time").fill(placedAt);
     await this.page.getByLabel("Decimal odds").fill(odds);
