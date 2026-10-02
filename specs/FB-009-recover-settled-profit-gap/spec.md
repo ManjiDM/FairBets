@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | ID | `FB-009-recover-settled-profit-gap` |
-| Status | Draft |
+| Status | Clarified |
 | Created | 2026-10-02 |
 | Related | — |
 
@@ -13,15 +13,16 @@
 
 ## Problem
 
-When deciding the stake for a new bet, the user wants the suggested amount to account
-for whether settled profit is ahead of or behind expected profit. The intended
-comparison and how it interacts with the existing sequence recovery rules need to be
-made explicit before changing stake calculations.
+When all sequences are closed and the user starts a new bet, the suggested stake does
+not account for the difference between the ledger-wide settled P&L and its
+goal-rate-adjusted expected profit.
 
 ## Goal
 
-Use the difference between expected profit and settled profit to determine whether a
-new bet starts at the base stake or includes a recovery amount.
+When starting a new sequence, compare ledger-wide settled P&L with the
+goal-rate-adjusted expected-profit target. If settled P&L is below the target, suggest
+the configured base stake plus enough recovery stake, at the selected odds, to cover
+the gap.
 
 ## Non-goals
 
@@ -40,39 +41,56 @@ starts at the base stake.
 
 ## Functional requirements
 
-- **FR-1** Before suggesting a new bet's stake, the app MUST compare the settled result
-  with the expected profit.
-- **FR-2** If settled profit is below expected profit, the new suggested stake MUST
-  include recovery for the difference.
-- **FR-3** If settled profit is at or above expected profit, the new suggested stake
-  MUST start at the configured base stake.
-- **FR-4** The suggestion MUST continue to respect the configured recovery weight,
-  rounding, maximum stake, and open-exposure limits.
-- **FR-5** A win MUST continue to close the active sequence.
+- **FR-1** When a new bet starts a sequence and there is no active sequence, the app
+  MUST compare ledger-wide settled P&L with the goal-rate-adjusted expected-profit
+  target.
+- **FR-2** Expected-profit target MUST be the ledger-wide expected profit multiplied
+  by the configured goal rate.
+- **FR-3** If settled P&L is below the target, the suggested stake MUST be the base
+  stake plus recovery for the difference, calculated using the new bet's selected
+  odds.
+- **FR-4** If settled P&L is equal to or above the target, the suggested stake MUST be
+  the configured base stake.
+- **FR-5** This ledger-wide comparison MUST NOT change stake recovery within an active
+  sequence.
+- **FR-6** Recovery MUST continue to respect configured recovery weight, rounding, and
+  maximum-stake rules.
+- **FR-7** A win MUST continue to close the active sequence. This feature applies only
+  when starting a new sequence.
 
 ## Business rules
 
-The comparison basis is unresolved.
-
 | Input | Expected result | Notes |
 | --- | --- | --- |
-| Settled profit below expected profit | [NEEDS CLARIFICATION: Which settled and expected totals are compared, and how does goal rate apply?] | |
-| Settled profit equal to or above expected profit | Base-stake suggestion | Confirm equality behavior |
+| Settled P&L is below expected profit × goal rate | Base stake plus recovery of the shortfall at the selected odds | Applies only when no sequence is active |
+| Settled P&L equals or exceeds expected profit × goal rate | Base-stake suggestion | |
+| Base stake €1; goal rate 100%; settled P&L €0; expected profit €1; new odds 1.50; recovery weight 100% | Suggested stake €3 | The €2 recovery portion earns €1 at 1.50 odds, covering the €1 shortfall; the base portion remains the new bet's normal stake |
 
 ## Acceptance scenarios
 
 ```gherkin
-Scenario: Recover the difference when settled profit is below expected profit
-  Given [NEEDS CLARIFICATION: the exact bets, odds, base stake, goal rate, and totals]
-  When I prepare a new bet
-  Then the suggested stake should include recovery for the difference
+Scenario: Recover the ledger-wide shortfall when starting a new sequence
+  Given all sequences are closed
+  And settled P&L is €0
+  And expected profit is €1 with a 100% goal rate
+  And the base stake is €1 with 100% recovery weight
+  When I prepare a new bet at odds 1.50
+  Then the suggested stake should be €3
 ```
 
 ```gherkin
 Scenario: Start at the base stake when settled profit has met expected profit
-  Given [NEEDS CLARIFICATION: the exact bets, odds, base stake, goal rate, and totals]
+  Given all sequences are closed
+  And settled P&L is equal to or above expected profit multiplied by the goal rate
   When I prepare a new bet
   Then the suggested stake should be the base stake
+```
+
+```gherkin
+Scenario: Do not apply ledger-wide recovery within an active sequence
+  Given a sequence is active
+  When I prepare another bet in that sequence
+  Then the suggested stake should use the existing sequence recovery calculation
 ```
 
 ## Edge cases
@@ -80,6 +98,7 @@ Scenario: Start at the base stake when settled profit has met expected profit
 - Settled profit exactly equals expected profit.
 - Open bets exist when a new suggestion is calculated.
 - The recovery amount exceeds the maximum stake.
+- Settled P&L equals the goal-rate-adjusted expected-profit target.
 - The goal rate is below 100%.
 
 ## Data impact
@@ -105,10 +124,7 @@ discussion.
 
 ## Open questions
 
-- [NEEDS CLARIFICATION: Does "settled result" mean the current sequence's net profit or the ledger-wide settled P&L?]
-- [NEEDS CLARIFICATION: Is "expected profit" the ledger's expected profit from base stakes, or that amount adjusted by the configured goal rate?]
-- [NEEDS CLARIFICATION: Should a win always close the sequence, with this comparison only affecting the next sequence, or should recovery continue across wins until the target is met?]
-- [NEEDS CLARIFICATION: What exact numeric example should define the recovery stake, including outcome history, starting balance, odds, base stake, and goal rate?]
+None. The comparison is ledger-wide settled P&L against ledger expected profit multiplied by goal rate. It only affects a new sequence when no sequence is active; bets inside an active sequence retain the existing recovery calculation.
 
 ## Out of scope for now
 
