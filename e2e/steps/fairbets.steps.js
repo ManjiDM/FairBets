@@ -179,6 +179,19 @@ When(
   },
 );
 
+When(
+  "I add a bet labeled {string} with odds {string} and a manual stake of {string} placed at {string}",
+  async function (label, odds, stake, placedAt) {
+    await this.page.getByRole("button", { name: "Add bet" }).click();
+    await this.page.getByLabel("Label").fill(label);
+    await this.page.getByLabel("Date and time").fill(placedAt);
+    await this.page.getByLabel("Decimal odds").fill(odds);
+    await this.page.getByLabel("Manual stake (optional)").fill(stake);
+    await this.page.getByRole("button", { name: "Add bet" }).last().click();
+    await expect(this.page.getByRole("dialog")).toHaveCount(0);
+  },
+);
+
 When("I set the maximum stake to {string}", async function (value) {
   await this.page.getByRole("button", { name: "Open settings", exact: true }).click();
   const field = this.page.locator("label").filter({
@@ -269,6 +282,16 @@ When("I prepare a bet labeled {string} with odds {string}", async function (labe
   await this.page.getByLabel("Label").fill(label);
   await this.page.getByLabel("Decimal odds").fill(odds);
 });
+
+When(
+  "I prepare a bet labeled {string} with odds {string} placed at {string}",
+  async function (label, odds, placedAt) {
+    await this.page.getByRole("button", { name: "Add bet" }).click();
+    await this.page.getByLabel("Label").fill(label);
+    await this.page.getByLabel("Date and time").fill(placedAt);
+    await this.page.getByLabel("Decimal odds").fill(odds);
+  },
+);
 
 When("I submit the prepared bet", async function () {
   await this.page.getByRole("button", { name: "Add bet", exact: true }).last().click();
@@ -468,6 +491,14 @@ When("I set the goal rate to {string} with full recovery weighting", async funct
     await field.locator("input").fill(setting);
   }
   await this.page.getByRole("button", { name: "Save settings" }).click();
+  await this.page.locator(".brand").click();
+  await this.page.locator(".brand").click();
+  for (const label of ["Goal rate (%)", "Recovery weight (%)"]) {
+    const field = this.page.locator("label").filter({
+      has: this.page.getByText(label, { exact: true }),
+    });
+    await expect(field.locator("input")).toHaveValue(value);
+  }
   await this.page.locator(".brand").click();
 });
 

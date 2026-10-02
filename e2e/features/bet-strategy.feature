@@ -31,11 +31,12 @@ Feature: Recorded strategy values
     And I set the base stake to "1"
     And I set the goal rate to "100" with full recovery weighting
     Then I see the available balance as "€100.00"
-    And I add a bet labeled "First loss" with odds "1.50" and a manual stake of "1"
+    And I add a bet labeled "First loss" with odds "1.50" and a manual stake of "1" placed at "2026-09-10T10:00"
     And I mark the bet "First loss" as "Lost"
-    When I prepare a bet labeled "Recovery win" with odds "1.50"
+    When I prepare a bet labeled "Recovery win" with odds "1.50" placed at "2026-09-11T10:00"
     Then the suggested stake should be "€4.00"
     And I submit the prepared bet
+    And the bet "Recovery win" should have a stake of "€4.00"
     And I mark the bet "Recovery win" as "Won"
     Then the sequence containing the bet "Recovery win" should be "Closed"
     And the settled P&L should be "+€1.00"
