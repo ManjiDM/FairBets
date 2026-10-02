@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | ID | `FB-005-sidebar-below-toolbar` |
-| Status | Diagnosed |
+| Status | Verified |
 | Severity | Broken flow |
 | Created | 2026-10-02 |
 | Related | — |
@@ -91,11 +91,14 @@ behavior.
 ## Verification
 
 - [x] Regression scenario failed before the fix (evidence recorded below)
-- [ ] Regression scenario passes after the fix
-- [ ] `pnpm lint`
-- [ ] `pnpm build`
-- [ ] `pnpm test:e2e`
-- [ ] A pre-existing saved ledger still loads with correct figures
+- [x] Regression scenario passes after the fix
+- [x] `pnpm lint` — pass
+- [x] `pnpm build` — pass
+- [x] `pnpm test:e2e` — pass, 23 scenarios and 170 steps
+- [x] A pre-existing saved ledger still loads with correct figures — existing E2E
+      scenarios pass; no data changes were made
+- [ ] Manual visual check at small-tablet widths and while scrolled — not completed;
+      automated geometry assertion covers the 390px phone viewport
 
 **Evidence of the red state:**
 
@@ -112,4 +115,5 @@ The summary is reachable as a drawer on a small screen:
 
 Review the open drawer at phone and small-tablet widths, including while the page is
 scrolled, to confirm the sticky toolbar remains visible and the drawer content can scroll
-without covering it.
+without covering it. The automated regression confirms the drawer begins at or below
+the toolbar's bottom edge on a 390px viewport.

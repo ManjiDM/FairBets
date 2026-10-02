@@ -1405,6 +1405,10 @@ h3 {
 }
 
 @media (max-width: 860px) {
+  :root {
+    --mobile-topbar-height: 76px;
+  }
+
   .workspace {
     grid-template-columns: 1fr;
   }
@@ -1443,11 +1447,11 @@ h3 {
 
   .summary-sidebar {
     position: fixed;
-    top: 0;
+    top: var(--mobile-topbar-height);
     right: 0;
     bottom: 0;
     left: auto;
-    z-index: 40;
+    z-index: 9;
     width: min(340px, 86vw);
     align-content: start;
     padding: 20px;
@@ -1482,6 +1486,10 @@ h3 {
 }
 
 @media (max-width: 680px) {
+  :root {
+    --mobile-topbar-height: 67px;
+  }
+
   .topbar {
     min-height: 67px;
     padding: 10px 17px;
