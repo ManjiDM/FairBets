@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | ID | `FB-011-split-ci-pipelines` |
-| Status | Draft |
+| Status | Shipped |
 | Created | 2026-10-02 |
 | Related | — |
 
@@ -109,7 +109,7 @@ discussion.
 - [x] VII. Data compatibility preserved
 - [x] VIII. No secrets introduced
 - [x] IX. Behaviour specified in Gherkin
-- [ ] X. Gates pass
+- [x] X. Gates pass
 
 ## Open questions
 

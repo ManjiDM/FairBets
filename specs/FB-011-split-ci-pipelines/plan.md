@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | Spec | [`spec.md`](./spec.md) |
-| Status | Approved |
+| Status | Done |
 | Updated | 2026-10-02 |
 
 > How the spec will be built. Written after every `[NEEDS CLARIFICATION]` marker in the
@@ -59,11 +59,12 @@ require the old combined status name.
 ## Test strategy
 
 - Review both workflow trigger, permissions, runner, setup, and command lists.
-- Validate workflow YAML syntax using an available parser/action linter if installed.
+- Review workflow YAML structure and triggers. No YAML/action linter is installed in the
+  environment.
 - Run local `pnpm lint`, `pnpm build`, and `pnpm test:e2e` to verify the commands
   themselves are unchanged and functional.
-- GitHub-hosted workflow execution is the final validation for actions and runner
-  integration.
+- GitHub-hosted workflow execution remains the final validation for actions and runner
+  integration; authenticated GitHub access is unavailable in this environment.
 
 ## Risks and mitigations
 

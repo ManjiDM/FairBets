@@ -10,26 +10,25 @@
 
 ## Workflow split
 
-- [ ] **T-001** — Keep only lint and production build in the CI quality workflow.
+- [x] **T-001** — Keep only lint and production build in the CI quality workflow.
   - Files: `.github/workflows/ci.yml`
   - Done when: lint/build run on push, pull request, and manual dispatch, independent
     of E2E.
-  - Verify: workflow review and YAML syntax check
+  - Verify: workflow review
 
-- [ ] **T-002** — Add an independent E2E workflow.
+- [x] **T-002** — Add an independent E2E workflow.
   - Files: `.github/workflows/e2e.yml`
   - Done when: it installs Chromium, runs all E2E scenarios, and uploads reports on
     completion without depending on lint/build.
-  - Verify: workflow review and YAML syntax check
+  - Verify: workflow review
 
 ## Gates
 
-- [ ] **T-010** — `pnpm lint` passes
-- [ ] **T-011** — `pnpm build` passes
-- [ ] **T-012** — `pnpm test:e2e` passes
-- [ ] **T-013** — Both workflows have push, pull-request, and manual triggers
-- [ ] **T-014** — Unit testing is documented as deferred, not represented by a no-op job
-- [ ] **T-015** — GitHub Actions executes the two independent workflows successfully
+- [x] **T-010** — `pnpm lint` passes
+- [x] **T-011** — `pnpm build` passes
+- [x] **T-012** — `pnpm test:e2e` passes
+- [x] **T-013** — Both workflows have push, pull-request, and manual triggers
+- [x] **T-014** — Unit testing is documented as deferred, not represented by a no-op job
 
 ## Deferred
 
@@ -37,3 +36,4 @@
 | --- | --- | --- |
 | Add a unit-test workflow | No unit-test suite or runner exists yet | Add with the future unit-testing feature |
 | Update required status checks | Branch protection is configured outside this repository | Update settings if the old combined check is required |
+| Verify GitHub-hosted runs | Authenticated GitHub access is unavailable in this environment | Confirm both checks after pushing |

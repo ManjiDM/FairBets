@@ -1,4 +1,4 @@
-name: Lint and Build
+name: End-to-End Tests
 
 on:
   push:
@@ -10,12 +10,12 @@ permissions:
   contents: read
 
 concurrency:
-  group: lint-build-${{ github.ref }}
+  group: e2e-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  quality:
-    name: Lint and build
+  e2e:
+    name: Browser scenarios
     runs-on: ubuntu-24.04
     steps:
       - name: Check out repository
@@ -35,8 +35,17 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Lint
-        run: pnpm lint
+      - name: Install Playwright browser
+        run: pnpm exec playwright install --with-deps chromium
 
-      - name: Build
-        run: pnpm build
+      - name: Run end-to-end scenarios
+        run: pnpm test:e2e
+
+      - name: Upload Cucumber reports
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: cucumber-reports
+          path: dist/e2e/
+          if-no-files-found: ignore
+          retention-days: 7
