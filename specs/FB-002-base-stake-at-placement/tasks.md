@@ -127,7 +127,7 @@
   - Verify: review
 
 - [x] **T-041** [P] — Close out the spec
-  - Files: `specs/002-base-stake-at-placement/spec.md`, `plan.md`
+  - Files: `specs/FB-002-base-stake-at-placement/spec.md`, `plan.md`
   - Done when: both are marked Done and the spec carries a Verification section
   - Verify: review
 

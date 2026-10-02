@@ -12,14 +12,23 @@
 
 Every non-trivial change starts with a spec, not with code:
 
-1. **Specify** — `specs/<NNN-slug>/spec.md` from `specs/templates/spec-template.md`.
-   Behaviour only; mark unknowns `[NEEDS CLARIFICATION: ...]`.
-2. **Clarify** — resolve every marker before planning. Never guess on money rules, data
+1. **Reserve an ID** — inspect `specs/FB-*` and allocate one greater than the highest
+   existing sequential FairBets ID (`FB-001`, `FB-002`, ...). Use it in the permanent
+   `specs/FB-NNN-feature-slug/` directory name and throughout the change. Do not use a
+   GitHub issue number as the sequence or reuse an ID.
+2. **Specify and commit first** — create `spec.md` from
+   `specs/templates/spec-template.md`, including unresolved questions as
+   `[NEEDS CLARIFICATION: ...]`, then commit the draft before clarification, planning, or
+   implementation. Use `spec(FB-NNN): define <feature-slug>`; keep the slug concise
+   enough to fit the commit hook's 50-character subject limit. Keep this commit limited
+   to the new spec artifacts. If the commit is blocked by a hook or Git configuration,
+   stop and report the blocker rather than continuing without it.
+3. **Clarify** — resolve every marker before planning. Never guess on money rules, data
    shapes, or risk limits.
-3. **Plan** — `plan.md`. Approach, affected modules, data and migration impact, risks.
-4. **Tasks** — `tasks.md`. Small, ordered, individually verifiable steps.
-5. **Implement** — work the tasks in order, ticking them off as they land.
-6. **Verify** — `pnpm lint`, `pnpm build`, `pnpm test:e2e`, plus each acceptance scenario.
+4. **Plan** — `plan.md`. Approach, affected modules, data and migration impact, risks.
+5. **Tasks** — `tasks.md`. Small, ordered, individually verifiable steps.
+6. **Implement** — work the tasks in order, ticking them off as they land.
+7. **Verify** — `pnpm lint`, `pnpm build`, `pnpm test:e2e`, plus each acceptance scenario.
 
 Bugfixes use a shortened track with `specs/templates/bugfix-template.md`: reproduce,
 establish whether the code or the expectation is wrong, write a regression scenario that
@@ -46,10 +55,13 @@ Rules for the `<subject>`:
 
 ### ITEM ID
 
-The related issue, user story, or defect.
+The FairBets work item. A spec reserves its own sequential `FB-NNN` ID, which is used
+for its folder, spec metadata, and every commit in that change from the initial spec
+commit through implementation. Related GitHub issue numbers go in the spec's `Related`
+field; they do not replace the spec ID.
 
-- User stories and defects use the `FB-` prefix — `spec(FB-432): add sidebar spec`.
-- When no ID applies, use `no-id` — `spec(no-id): add sidebar spec`.
+- Use the reserved spec ID for all spec, feature, fix, test, and documentation commits.
+- When no ID applies, use `no-id` — `docs(no-id): clarify setup steps`.
 
 ### Types
 
@@ -72,12 +84,18 @@ Examples:
 
 ```
 feat(FB-432): show summary in a sidebar
+spec(FB-003): define import-preview
+feat(FB-003): add import-preview
 fix(FB-517): correct available balance
-spec(no-id): add bugfix track
 test(FB-432): cover guardrail banner
+docs(no-id): clarify setup steps
 ```
 
 ### Enforcement
+
+The initial commit for every feature or bugfix is the draft spec commit, made before
+clarification, planning, or implementation. Continue to use that same `FB-NNN` ID for
+every later commit in the work item.
 
 A `commit-msg` hook in `.githooks/` runs `scripts/check-commit-msg.mjs` and rejects any
 message that breaks these rules. `pnpm install` points Git at that directory through the

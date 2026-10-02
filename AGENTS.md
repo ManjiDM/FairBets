@@ -49,15 +49,22 @@ non-negotiable rules live in [`specs/constitution.md`](./specs/constitution.md).
 
 Short version:
 
-1. **Specify** — write `specs/<NNN-slug>/spec.md` from `specs/templates/spec-template.md`.
-   Describe the *what* and *why* only. No file names, no APIs, no code.
-2. **Clarify** — resolve every `[NEEDS CLARIFICATION]` marker before planning.
-3. **Plan** — write `plan.md` from `specs/templates/plan-template.md`. Technical
+1. **Reserve an ID** — inspect `specs/FB-*` and choose one greater than the highest
+   sequential FairBets ID. Use it in the spec directory and metadata; never substitute a
+   GitHub issue number.
+2. **Specify and commit first** — write `specs/FB-NNN-feature-slug/spec.md` from
+   `specs/templates/spec-template.md`. Describe the *what* and *why* only. Commit the
+   draft as `spec(FB-NNN): define <feature-slug>` before clarification, planning, or code;
+   keep the slug within the commit hook's 50-character subject limit. If the commit is
+   blocked, stop and report the blocker.
+3. **Clarify** — resolve every `[NEEDS CLARIFICATION]` marker before planning.
+4. **Plan** — write `plan.md` from `specs/templates/plan-template.md`. Technical
    approach, affected modules, data shape changes, risks.
-4. **Tasks** — write `tasks.md` from `specs/templates/tasks-template.md`. Small,
+5. **Tasks** — write `tasks.md` from `specs/templates/tasks-template.md`. Small,
    ordered, individually verifiable steps.
-5. **Implement** — execute tasks in order, ticking them off as they land.
-6. **Verify** — lint, build, E2E, plus each acceptance scenario in the spec.
+6. **Implement** — execute tasks in order, ticking them off as they land. Use the same
+   `FB-NNN` ID in every follow-up commit for this change.
+7. **Verify** — lint, build, E2E, plus each acceptance scenario in the spec.
 
 Slash-style prompts for each stage are in `.github/prompts/`. The reusable skill is in
 `.agents/skills/spec-driven-development/`.
@@ -65,9 +72,10 @@ Slash-style prompts for each stage are in `.github/prompts/`. The reusable skill
 Trivial changes (typo fixes, dependency bumps, comment edits) may skip the spec, but
 must still pass lint and build.
 
-**Bugfixes follow a shortened track**: reproduce → establish which side is wrong →
-failing regression scenario → root cause → blast radius → minimal fix → verify. Use
-`specs/templates/bugfix-template.md` and `.github/prompts/bugfix.prompt.md`. The rule
+**Bugfixes follow a shortened track**: reserve the next `FB-NNN` → reproduce and commit
+the bugfix spec → establish which side is wrong → failing regression scenario → root
+cause → blast radius → minimal fix → verify. Use `specs/templates/bugfix-template.md`
+and `.github/prompts/bugfix.prompt.md`. Use the same ID for every follow-up commit. The rule
 that matters most: a failing test means the code is wrong *or* the expectation is stale
 — prove which before editing either, and never fix a defect without a scenario that
 failed first.
@@ -96,7 +104,9 @@ failed first.
 
 ## Definition of done
 
-- [ ] `spec.md`, `plan.md`, and `tasks.md` exist and are current (non-trivial changes)
+- [ ] For non-trivial feature/behaviour changes: `spec.md`, `plan.md`, and `tasks.md`
+      exist and are current. Bugfixes use `bugfix-template.md` and its regression evidence;
+      add `plan.md` and `tasks.md` only if the fix grows into a feature.
 - [ ] Every task in `tasks.md` is checked or explicitly deferred with a reason
 - [ ] `pnpm lint` passes
 - [ ] `pnpm build` passes

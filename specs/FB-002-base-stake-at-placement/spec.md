@@ -2,10 +2,10 @@
 
 | Field | Value |
 | --- | --- |
-| ID | `002-base-stake-at-placement` |
+| ID | `FB-002-base-stake-at-placement` |
 | Status | Done |
 | Created | 2026-09-24 |
-| Related | FB-002 |
+| Related | — |
 
 ## Problem
 
@@ -326,12 +326,13 @@ Scenario: An existing saved ledger shows the same figures after upgrading
 - [x] V. The sequence model is preserved — FR-7 keeps sequences intact across a change
 - [x] VI. Risk limits stay enforced — FR-8 keeps every warning evaluated against current
       settings, so pinning can never mute a live breach
-- [ ] VII. Data compatibility preserved — **needs attention.** This changes the persisted
-      shape and the cloud schema. FR-10 and FR-11 exist to hold the line: old ledgers must
-      load and must not shift by a single cent
+- [x] VII. Data compatibility preserved — additive local/cloud migrations stamp legacy
+      bets from their saved settings, with no change to existing displayed figures. The
+      automated gates pass; real pre-change local-ledger and cloud-backup checks remain
+      deferred to the maintainer (see Verification).
 - [x] VIII. No secrets introduced
 - [x] IX. Behaviour specified in Gherkin — acceptance scenarios above
-- [x] X. Gates pass — enforced at verification
+- [x] X. Gates pass — `pnpm lint`, `pnpm build`, and `pnpm test:e2e` passed; see Verification
 
 This change **strengthens** principle III's spirit: today a pure function produces a
 different answer for the same historical bet depending on a setting changed months later.

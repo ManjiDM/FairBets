@@ -2,7 +2,7 @@
 
 | Field | Value |
 | --- | --- |
-| ID | `NNN-fix-slug` |
+| ID | `FB-NNN-fix-slug` |
 | Status | Reproducing \| Diagnosed \| Fixing \| Verified |
 | Severity | Wrong money \| Data loss \| Broken flow \| Cosmetic |
 | Created | YYYY-MM-DD |

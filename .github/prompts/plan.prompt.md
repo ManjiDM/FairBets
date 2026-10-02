@@ -5,7 +5,7 @@ description: "Stage 3 — turn a clarified spec into a technical plan"
 
 # Plan
 
-Produce the implementation plan for `specs/${input:spec:FG-NNN-feature-slug}/spec.md`.
+Produce the implementation plan for `specs/${input:spec:FB-NNN-feature-slug}/spec.md`.
 
 ## Preconditions
 
@@ -18,8 +18,8 @@ Produce the implementation plan for `specs/${input:spec:FG-NNN-feature-slug}/spe
 2. Read the code you intend to change — at minimum `src/domain/ledger.ts` for money
    rules, plus `src/App.tsx`, `src/domain/workbookImport.ts`, or `src/lib/cloudStore.ts`
    as relevant.
-3. Copy `specs/templates/plan-template.md` to `specs/<FG-NNN-slug>/plan.md` and complete
-   every section.
+3. Copy `specs/templates/plan-template.md` to
+   `specs/<FB-NNN-feature-slug>/plan.md` and complete every section.
 
 ## Rules
 

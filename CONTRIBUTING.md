@@ -18,13 +18,17 @@ Cloud sync is optional: copy `.env.example` to `.env.local` and fill in
 
 ## The workflow
 
-1. **Specify** — `specs/<NNN-slug>/spec.md` from `specs/templates/spec-template.md`.
-   What and why, no implementation detail.
-2. **Clarify** — resolve every `[NEEDS CLARIFICATION]` marker before planning.
-3. **Plan** — `plan.md`. Approach, affected modules, data impact, risks.
-4. **Tasks** — `tasks.md`. Small, ordered, individually verifiable.
-5. **Implement** — work the tasks in order, ticking them off.
-6. **Verify** — gates plus every acceptance scenario.
+1. **Reserve** — inspect `specs/FB-*` and use one greater than the highest sequential
+   FairBets ID. The path is `specs/FB-NNN-feature-slug/`; GitHub issue numbers are separate.
+2. **Specify and commit** — write the draft `spec.md` from the template, then commit it
+   as `spec(FB-NNN): define <feature-slug>` before clarification, planning, or code.
+   Keep the slug within the 50-character subject limit.
+3. **Clarify** — resolve every `[NEEDS CLARIFICATION]` marker before planning.
+4. **Plan** — `plan.md`. Approach, affected modules, data impact, risks.
+5. **Tasks** — `tasks.md`. Small, ordered, individually verifiable.
+6. **Implement** — work the tasks in order, ticking them off; keep the same `FB-NNN` ID
+   in all follow-up commits.
+7. **Verify** — gates plus every acceptance scenario.
 
 Full detail: [`specs/README.md`](./specs/README.md). Non-negotiables:
 [`specs/constitution.md`](./specs/constitution.md).
@@ -32,7 +36,8 @@ Full detail: [`specs/README.md`](./specs/README.md). Non-negotiables:
 **Bugfixes** use a shortened track and `specs/templates/bugfix-template.md`: reproduce
 the defect, establish whether the code or the expectation is wrong, write a regression
 scenario that fails first, name the root cause, check whether persisted ledgers hold
-incorrect values, then make a minimal fix.
+incorrect values, then make a minimal fix. Reserve the next `FB-NNN`, commit the
+reproduced bugfix spec before implementation, and retain that ID in all related commits.
 
 Trivial changes — typos, dependency bumps, formatting, comments, cosmetic defects — may
 skip the spec. The gates still apply.

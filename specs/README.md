@@ -22,28 +22,42 @@ specs/
     tasks-template.md          # Stage 4 — ordered steps
     bugfix-template.md         # Shortened track for defects
     feature-template.feature   # Gherkin scaffold
-  NNN-feature-slug/
+  FB-NNN-feature-slug/
     spec.md
     plan.md
     tasks.md
 ```
 
-`NNN` is a zero-padded, incrementing number: `001-stake-rounding-modes`,
-`002-cloud-conflict-resolution`. Bugfixes share the same numbering with a `fix-` slug,
-for example `003-fix-open-exposure-double-count`. One directory per change, kept after
-it ships so the history of decisions stays readable.
+`FB-NNN` is a zero-padded, incrementing FairBets work-item ID: `FB-001-sidebar-summary`,
+`FB-002-base-stake-at-placement`. Before starting a spec, inspect all `specs/FB-*`
+directories and choose one greater than the highest number present; never reuse an ID,
+including for an abandoned draft. Bugfixes use the same sequence and include `fix-` in
+the slug, for example `FB-003-fix-open-exposure-double-count`. GitHub issue numbers are
+recorded in the spec's `Related` field and do not determine the FairBets ID. Keep one
+directory per change after it ships so the history of decisions stays readable.
 
 ## The workflow
 
 ### 1. Specify
 
-Copy `templates/spec-template.md` to `specs/<NNN-slug>/spec.md` and fill it in.
+1. Reserve the next sequential `FB-NNN` ID and create
+   `specs/FB-NNN-feature-slug/spec.md` from `templates/spec-template.md`.
+2. Record the same canonical ID in the spec's ID field. Describe behaviour only and
+   leave unresolved questions marked `[NEEDS CLARIFICATION: question]`.
+3. Commit the draft spec before clarification, planning, or implementation. The commit
+   must use the same ID and identify the slug in its subject, for example
+   `spec(FB-003): define import-preview`. Keep the slug short enough for the commit
+   subject's 50-character limit; if Git blocks the commit, stop and report the blocker.
 
 Write for a reader who does not know the codebase. Describe user outcomes, business
 rules, and acceptance scenarios. **No file paths, no function names, no code, no
 library choices.** Mark every open question with `[NEEDS CLARIFICATION: question]`.
 
 Prompt: `.github/prompts/specify.prompt.md`
+
+Every later commit for this change — clarification, plan, tasks, implementation, tests,
+and docs — keeps the same `FB-NNN` ID. Use the appropriate commit type and a concise
+subject that identifies the work. Do not push unless asked.
 
 ### 2. Clarify
 
@@ -106,7 +120,9 @@ acceptance scenarios and is checked by hand.
 A defect follows a shortened track. The full six stages are overkill; skipping the
 process entirely is how a money bug comes back.
 
-Use `specs/templates/bugfix-template.md` at `specs/<NNN-fix-slug>/spec.md`. There is no
+Use `specs/templates/bugfix-template.md` at `specs/FB-NNN-fix-slug/spec.md`, reserving the
+next sequential ID just like a feature. Commit the reproduced defect spec first with
+`spec(FB-NNN): define fix-<slug>` before implementing the fix. There is no
 separate `plan.md` or `tasks.md` unless the fix turns out to be large enough to need
 one — at which point it is really a feature and should switch to the full track.
 

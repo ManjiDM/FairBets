@@ -120,7 +120,7 @@ if (errors.length > 0) {
   console.error("\nExpected format:\n");
   console.error("  <type>(<ITEM ID>): <subject>");
   console.error("  feat(FB-432): show summary in a sidebar");
-  console.error("  spec(no-id): add bugfix track\n");
+  console.error("  docs(no-id): clarify setup steps\n");
   console.error("See .github/copilot-instructions.md for the full convention.\n");
   process.exit(1);
 }

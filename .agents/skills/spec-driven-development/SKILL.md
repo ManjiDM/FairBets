@@ -28,6 +28,13 @@ Use it when the user asks to:
 Skip it for typo fixes, dependency bumps, comment edits, and formatting. Lint and build
 gates still apply to those.
 
+For defects, use the shortened bugfix workflow in `specs/README.md` and
+`.github/prompts/bugfix.prompt.md`: reproduce first, establish which side is wrong, record
+a failing regression scenario, assess the blast radius, then make and verify a minimal
+fix. Use the next `FB-NNN-fix-<slug>` directory, commit the reproduced bugfix spec before
+implementation, and retain that ID in every related commit. A separate plan and task
+list are only needed if the fix grows into a feature.
+
 ---
 
 ## Ground rules
@@ -49,10 +56,18 @@ principles that most often decide a design:
 
 ### Step 1 — Specify
 
-1. Pick the next number under `specs/` and a kebab-case slug; create `specs/<NNN-slug>/`.
-2. Copy `specs/templates/spec-template.md` to `spec.md` and complete every section.
+1. Inspect existing `specs/FB-*` directories and reserve one greater than the highest
+   sequential FairBets ID (`FB-NNN`). Never use a GitHub issue number in place of this ID.
+2. Create `specs/FB-NNN-feature-slug/` and copy
+   `specs/templates/spec-template.md` to `spec.md`. Put the same canonical ID in its ID
+   field.
 3. Describe behaviour only. Mark unknowns `[NEEDS CLARIFICATION: question]`.
 4. Include worked numeric examples for any money rule.
+5. Commit the draft spec before clarification, planning, or implementation using
+   `spec(FB-NNN): define <feature-slug>`. Keep the slug within the commit hook's
+   50-character subject limit and this first commit limited to the new spec. If Git
+   blocks the commit, stop and report the blocker. Use the same ID for every later commit
+   in the work item.
 
 ### Step 2 — Clarify
 
@@ -83,8 +98,8 @@ principles that most often decide a design:
 2. Run each task's verification before moving on.
 3. Build only what the spec requires; new ideas go to "Out of scope for now".
 4. If the plan proves wrong, update `plan.md` and `tasks.md`, then continue.
-5. Commit iteratively with single-line messages and no commit body. Do not push unless
-   asked.
+5. Commit work iteratively with single-line messages and no commit body, always retaining
+   the spec's `FB-NNN` ID. Do not push unless asked.
 
 ### Step 6 — Verify
 

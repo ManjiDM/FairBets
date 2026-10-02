@@ -11,9 +11,16 @@ Diagnose and fix: `${input:defect:Describe the defect, with the observed and exp
 
 ### 1. Reproduce
 
-Create `specs/<FG-NNN-fix-slug>/spec.md` from `specs/templates/bugfix-template.md`. Record
-the exact input state and observed output before changing anything. For money defects,
-capture settings, bets, the observed figure, and the expected figure.
+Inspect existing `specs/FB-*` directories and reserve one greater than the highest
+sequential FairBets ID. Create `specs/FB-NNN-fix-<slug>/spec.md` from
+`specs/templates/bugfix-template.md`. Record the exact input state and observed output
+before changing anything. For money defects, capture settings, bets, the observed figure,
+and the expected figure.
+
+Commit the reproduced defect spec before changing implementation code, using
+`spec(FB-NNN): define fix-<slug>`. Keep the subject within the 50-character commit
+limit. Use that same ID for every follow-up commit. If the commit is blocked, stop and
+report the blocker rather than proceeding without it.
 
 ### 2. Establish which side is wrong
 

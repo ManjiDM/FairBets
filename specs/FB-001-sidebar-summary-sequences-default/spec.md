@@ -2,7 +2,7 @@
 
 | Field | Value |
 | --- | --- |
-| ID | `001-sidebar-summary-sequences-default` |
+| ID | `FB-001-sidebar-summary-sequences-default` |
 | Status | Done |
 | Created | 2026-09-23 |
 | Clarified | 2026-09-23 |
@@ -233,8 +233,8 @@ they assert (`€38.07`, `€39.07`) must remain correct.
       dismissal is transient and cannot permanently mute a warning
 - [x] VII. Data compatibility — no ledger shape change
 - [x] VIII. No secrets
-- [ ] IX. Behaviour specified in Gherkin — scenarios above; E2E updates required
-- [ ] X. Gates pass — to confirm at verification
+- [x] IX. Behaviour specified in Gherkin — scenarios above and matching E2E coverage
+- [x] X. Gates pass — `pnpm lint`, `pnpm build`, and `pnpm test:e2e` passed; see Verification
 
 ## Resolved decisions
 

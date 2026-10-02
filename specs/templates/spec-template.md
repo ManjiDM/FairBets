@@ -2,7 +2,7 @@
 
 | Field | Value |
 | --- | --- |
-| ID | `NNN-feature-slug` |
+| ID | `FB-NNN-feature-slug` |
 | Status | Draft \| Clarified \| Planned \| In progress \| Shipped |
 | Created | YYYY-MM-DD |
 | Related | Issue / PR links |

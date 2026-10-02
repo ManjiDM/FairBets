@@ -30,8 +30,17 @@ artifact, not as documentation written after the fact.
 
 ## Naming
 
-`specs/FB-NNN-feature-slug/` with a zero-padded incrementing number and a short kebab-case
-slug, for example `001-stake-rounding-modes`.
+Use `specs/FB-NNN-feature-slug/`, where `FB-NNN` is one greater than the highest
+zero-padded sequential FairBets work-item ID already in the spec directories. Check
+existing spec directories before assigning it.
+Bugfixes use the same sequence and include `fix-` in the slug. Put any GitHub issue
+number in the spec's `Related` field; it does not replace the FairBets ID.
+
+The first commit for a feature or bugfix is its draft spec, committed before clarification,
+planning, or implementation as `spec(FB-NNN): define <feature-slug>`. Keep the slug short
+enough to meet the 50-character commit-subject limit. Keep the same ID in the spec
+metadata and every follow-up commit for the work item. If Git prevents the commit, stop
+and report the blocker rather than continuing without it.
 
 ## Templates
 
