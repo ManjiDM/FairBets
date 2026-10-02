@@ -329,7 +329,11 @@ function formatSignedMoney(value: number, currency: Currency): string {
 }
 
 function formatOdds(odds: number): string {
-  return odds.toFixed(2);
+  return new Intl.NumberFormat("en-GB", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 4,
+    useGrouping: false,
+  }).format(odds);
 }
 
 function formatPercent(value: number): string {
@@ -2061,7 +2065,7 @@ function App() {
                   <input
                     type="number"
                     min="1.01"
-                    step="0.01"
+                    step="0.001"
                     value={draft.odds}
                     onChange={(event) => setDraft((current) => ({ ...current, odds: event.target.value }))}
                     required

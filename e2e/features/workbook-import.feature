@@ -8,6 +8,7 @@ Feature: Workbook import
     Given the user selects a valid FairBets workbook
     When the workbook is imported
     Then the imported ledger should be displayed
+    And the bet "Imported selection" should display odds "1.234"
     And the import success message should mention "1 bets imported"
 
   Scenario: Reject an incompatible workbook

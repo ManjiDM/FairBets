@@ -44,3 +44,9 @@ Feature: Bet management
     And I input "1.234" in the odds field
     And I press the Add button
     Then the bet "Three decimal odds" should display odds "1.234"
+    When I reload the app
+    Then the bet "Three decimal odds" should display odds "1.234"
+    When I update the odds for "Three decimal odds" to "1.235"
+    Then the bet "Three decimal odds" should display odds "1.235"
+    When I reload the app
+    Then the bet "Three decimal odds" should display odds "1.235"

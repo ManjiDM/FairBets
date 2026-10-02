@@ -14,6 +14,10 @@ When("I open the FairBets app", async function () {
   await expect(this.page.locator("#root")).toContainText("FairBets demo");
 });
 
+When("I reload the app", async function () {
+  await this.page.reload({ waitUntil: "domcontentloaded" });
+});
+
 Then("I should see the {string} ledger", async function (ledgerName) {
   await expect(this.page.locator("h1")).toHaveText(ledgerName);
 });
@@ -262,7 +266,7 @@ Given("the user selects a valid FairBets workbook", async function () {
     ["FairBets import fixture"],
     [],
     ["Bet", "Activity", "DATETIME", "BET", "ODD", "Result"],
-    ["Imported selection", "x", "2026-09-13", 0.25, 2, "won"],
+    ["Imported selection", "x", "2026-09-13", 0.25, 1.234, "won"],
   ];
   XLSX.utils.book_append_sheet(workbook, XLSX.utils.aoa_to_sheet(rows), "Bets");
   const filePath = join(tmpdir(), `fairbets-import-${Date.now()}.xlsx`);
@@ -383,6 +387,13 @@ When("I rename the bet {string} to {string}", async function (label, newLabel) {
   await betCard(this.page, label).getByRole("button", { name: "Edit", exact: true }).click();
   await expect(this.page.getByRole("dialog")).toBeVisible();
   await this.page.getByLabel("Label").fill(newLabel);
+  await this.page.getByRole("button", { name: "Save changes" }).click();
+  await expect(this.page.getByRole("dialog")).toHaveCount(0);
+});
+
+When("I update the odds for {string} to {string}", async function (label, odds) {
+  await openBetEditor(this.page, label);
+  await this.page.getByLabel("Decimal odds").fill(odds);
   await this.page.getByRole("button", { name: "Save changes" }).click();
   await expect(this.page.getByRole("dialog")).toHaveCount(0);
 });

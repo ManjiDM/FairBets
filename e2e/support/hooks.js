@@ -11,7 +11,10 @@ Before(async function () {
     serviceWorkers: "block",
   });
   await this.context.addInitScript(() => {
-    window.localStorage.clear();
+    if (!window.sessionStorage.getItem("fairbets-e2e-started")) {
+      window.localStorage.clear();
+      window.sessionStorage.setItem("fairbets-e2e-started", "true");
+    }
   });
   this.page = await this.context.newPage();
 });
