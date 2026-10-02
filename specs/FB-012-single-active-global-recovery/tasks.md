@@ -18,7 +18,7 @@
     stake and verifies only the residual shortfall after owner closure.
   - Verify: `pnpm test:e2e`
 
-- [ ] **T-002** — Cover a losing active sequence with no FB-009 snapshot suppressing
+- [x] **T-002** — Cover a losing active sequence with no FB-009 snapshot suppressing
   duplicate global recovery.
   - Files: `e2e/features/bet-strategy.feature`
   - Done when: an active loss-recovery sequence keeps its own continuation suggestion

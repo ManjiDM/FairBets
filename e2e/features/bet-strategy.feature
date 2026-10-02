@@ -84,6 +84,24 @@ Feature: Recorded strategy values
     When I prepare a bet labeled "Remaining recovery" with odds "1.50" placed at "2026-09-14T10:00"
     Then the suggested stake should be "€2.00"
 
+  Scenario: An active sequence recovering a loss blocks duplicate global recovery
+    When I start a fresh ledger
+    And I set the base stake to "1"
+    And I set the goal rate to "100" with full recovery weighting
+    And I add a bet labeled "Active sequence loss" with odds "1.50" and a manual stake of "1" placed at "2026-09-10T10:00"
+    And I mark the bet "Active sequence loss" as "Lost"
+    When I press the plus button for the sequence containing the bet "Active sequence loss"
+    Then I see the new bet dialog
+    When I input the label "Sequence continuation"
+    And I input the date and time "2026-09-11T10:00"
+    And I input "1.50" in the odds field
+    Then the suggested stake should be "€4.00"
+    When I cancel the bet form
+    And I prepare a bet labeled "Independent base bet" with odds "1.50" placed at "2026-09-12T10:00"
+    Then the suggested stake should be "€1.00"
+    When I submit the prepared bet
+    Then the bet "Independent base bet" should have a stake of "€1.00"
+
   Scenario: A new sequence starts at base stake when the goal is met
     When I start a fresh ledger
     And I set the base stake to "1"
