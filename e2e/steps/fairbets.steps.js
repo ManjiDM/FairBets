@@ -78,6 +78,10 @@ Then("the summary drawer should be open", async function () {
   await expect(this.page.locator(".summary-sidebar.drawer-open")).toBeVisible();
 });
 
+Then("there should be no separate drawer Close button", async function () {
+  await expect(this.page.locator(".summary-sidebar .drawer-close")).toHaveCount(0);
+});
+
 Then("the toolbar should remain above the summary drawer", async function () {
   const toolbar = await this.page.locator(".topbar").boundingBox();
   const drawer = await this.page.locator(".summary-sidebar.drawer-open").boundingBox();
@@ -85,10 +89,6 @@ Then("the toolbar should remain above the summary drawer", async function () {
   expect(drawer).not.toBeNull();
   expect(drawer.y).toBeGreaterThanOrEqual(toolbar.y + toolbar.height);
   await expect(this.page.locator(".topbar")).toBeVisible();
-});
-
-When("I close the summary drawer", async function () {
-  await this.page.locator(".summary-sidebar .drawer-close").click();
 });
 
 Then("the summary drawer should be closed", async function () {

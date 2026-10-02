@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | ID | `FB-006-sidebar-toggle-dismissal` |
-| Status | Reproducing |
+| Status | Diagnosed |
 | Severity | Cosmetic |
 | Created | 2026-10-02 |
 | Related | — |
@@ -58,7 +58,7 @@ toolbar `.drawer-toggle` unconditionally calls `setDrawerOpen(true)`.
 
 ## Regression scenario
 
-This scenario must be run and confirmed failing before the fix; record the red output
+Both drawer behavior scenarios were run and failed before the fix; see the red output
 below.
 
 ```gherkin
@@ -92,7 +92,7 @@ accessible name and `aria-expanded`.
 
 ## Verification
 
-- [ ] Regression scenario failed before the fix (evidence recorded below)
+- [x] Regression scenario failed before the fix (evidence recorded below)
 - [ ] Regression scenario passes after the fix
 - [ ] `pnpm lint`
 - [ ] `pnpm build`
@@ -102,7 +102,17 @@ accessible name and `aria-expanded`.
 **Evidence of the red state:**
 
 ```text
-Run the updated mobile drawer interaction scenario before changing the implementation.
+pnpm test:e2e
+The summary is reachable as a drawer on a small screen:
+  Expected drawer open class count after second toolbar activation: 0
+  Received: 1
+
+The summary drawer has no separate Close button:
+  Expected drawer Close button count: 0
+  Received: 1
+
+24 scenarios (2 failed, 22 passed)
+175 steps (2 failed, 173 passed)
 ```
 
 ## Manual check

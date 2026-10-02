@@ -40,8 +40,14 @@ Feature: FairBets app overview
     When I open the summary drawer
     Then the summary drawer should be open
     And the toolbar should remain above the summary drawer
-    When I close the summary drawer
+    When I open the summary drawer
     Then the summary drawer should be closed
+
+  Scenario: The summary drawer has no separate Close button
+    Given the viewport is a small phone
+    When I open the summary drawer
+    Then the summary drawer should be open
+    And there should be no separate drawer Close button
 
   Scenario: No guardrail warning is shown while within limits
     Then no guardrail warning should be shown
