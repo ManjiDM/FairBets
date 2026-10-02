@@ -121,8 +121,8 @@ Scenario: Custom bet labels are retained
 
 Each bet gains a recording timestamp used for display ordering only. Existing local
 records and workbook imports without one require a deterministic compatibility
-fallback. Cloud storage needs an additive nullable/backfilled column and parser/writer
-support. No workbook format change is intended.
+fallback. Cloud records use the existing `created_at` column and parser/writer
+support; no cloud schema migration or workbook format change is intended.
 
 ## Constitution check
 
