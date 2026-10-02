@@ -42,6 +42,35 @@ Feature: Recorded strategy values
     And the settled P&L should be "+€1.00"
     And I see the available balance as "€101.00"
 
+  Scenario: A new sequence recovers the ledger-wide goal shortfall
+    When I start a fresh ledger
+    And I set the starting balance to "100"
+    And I set the base stake to "1"
+    And I set the goal rate to "100" with full recovery weighting
+    And I add a bet labeled "Lead-in loss" with odds "1.50" and a manual stake of "1" placed at "2026-09-10T10:00"
+    And I mark the bet "Lead-in loss" as "Lost"
+    And I add a bet labeled "Lead-in win" with odds "1.50" and a manual stake of "2" placed at "2026-09-11T10:00"
+    And I mark the bet "Lead-in win" as "Won"
+    Then the sequence containing the bet "Lead-in win" should be "Closed"
+    And I see the available balance as "€100.00"
+    When I prepare a bet labeled "New sequence" with odds "1.50" placed at "2026-09-12T10:00"
+    Then the suggested stake should be "€3.00"
+    And I submit the prepared bet
+    And the bet "New sequence" should have a stake of "€3.00"
+    And the bet "Lead-in loss" should have a stake of "€1.00"
+    When I reload the app
+    Then the bet "New sequence" should have a stake of "€3.00"
+    And the bet "Lead-in loss" should have a stake of "€1.00"
+
+  Scenario: A new sequence starts at base stake when the goal is met
+    When I start a fresh ledger
+    And I set the base stake to "1"
+    And I set the goal rate to "100" with full recovery weighting
+    And I add a bet labeled "Target met" with odds "1.50" placed at "2026-09-10T10:00"
+    And I mark the bet "Target met" as "Won"
+    When I prepare a bet labeled "At target" with odds "1.50" placed at "2026-09-11T10:00"
+    Then the suggested stake should be "€1.00"
+
   Scenario: A sequence that spans a strategy change stays one sequence
     When I add a bet labeled "Before the change" with odds "2.00" placed at "2026-09-10T10:00"
     And I mark the bet "Before the change" as "Lost"

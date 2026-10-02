@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | ID | `FB-009-recover-settled-profit-gap` |
-| Status | Planned |
+| Status | In progress |
 | Created | 2026-10-02 |
 | Related | — |
 
@@ -93,6 +93,20 @@ Scenario: Do not apply ledger-wide recovery within an active sequence
   Given a sequence is active
   When I prepare another bet in that sequence
   Then the suggested stake should use the existing sequence recovery calculation
+```
+
+## Regression status
+
+The new-sequence shortfall scenario fails before implementation: with a €1 ledger
+shortfall and a 1.50 selected odd, the preview suggests only the €1 base stake instead
+of €3.
+
+```text
+pnpm test:e2e
+28 scenarios (1 failed, 27 passed)
+237 steps (1 failed, 6 skipped, 230 passed)
+Expected: €3.00
+Received: €1.00
 ```
 
 ## Edge cases
