@@ -166,6 +166,7 @@ function betsFromWorkbook(rows: SpreadsheetRows, headerRow: number): UnstampedBe
         id: `import-${headerRow + offset + 2}-${Date.now()}`,
         placedAt: dateFromCell(row[dateColumn], row[dateColumn + 1]),
         label,
+        labelIsAutomatic: false,
         odds,
         outcome: outcomeFromCell(row[oddsColumn + 1]),
         ...(stake !== undefined && stake > 0 ? { stakeOverride: stake } : {}),

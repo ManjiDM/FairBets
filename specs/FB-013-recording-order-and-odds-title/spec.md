@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | ID | `FB-013-recording-order-and-odds-title` |
-| Status | Draft |
+| Status | Done |
 | Created | 2026-10-02 |
 | Related | [FB-010](../FB-010-parallel-sequences/spec.md) |
 
@@ -105,6 +105,13 @@ Scenario: Custom bet labels are retained
   And the bet's odds should still be visible in its details
 ```
 
+```gherkin
+Scenario: A user label that resembles an old generated title is retained
+  Given I enter the label “Selection 09”
+  When I record the bet at odds 1.50
+  Then the prominent title should remain “Selection 09”
+```
+
 ## Edge cases
 
 - Multiple bets are recorded within the same clock precision interval.
@@ -114,6 +121,7 @@ Scenario: Custom bet labels are retained
 - Legacy local/cloud bets and workbook imports lack recording timestamps.
 - An automatically generated old “Selection NN” label is shown as odds; a custom
   label must not be mistaken for an automatic one.
+- A newly entered custom label that matches the old generated pattern remains custom.
 - Odds are edited on a bet with an automatic title; its displayed odds title stays
   current.
 
@@ -121,8 +129,12 @@ Scenario: Custom bet labels are retained
 
 Each bet gains a recording timestamp used for display ordering only. Existing local
 records and workbook imports without one require a deterministic compatibility
-fallback. Cloud records use the existing `created_at` column and parser/writer
-support; no cloud schema migration or workbook format change is intended.
+fallback. Cloud records use the existing `created_at` column for ordering and gain
+metadata to distinguish automatically generated titles from user-provided labels.
+No workbook format change is intended. Older records do not distinguish a generated
+“Selection NN” label from a user-entered label with identical text, so only those
+legacy matching labels are inferred as generated; new records preserve this
+distinction explicitly.
 
 ## Constitution check
 
@@ -135,7 +147,7 @@ support; no cloud schema migration or workbook format change is intended.
 - [x] VII. Data compatibility preserved
 - [x] VIII. No secrets introduced
 - [x] IX. Behaviour specified in Gherkin
-- [ ] X. Gates pass
+- [x] X. Gates pass
 
 ## Open questions
 

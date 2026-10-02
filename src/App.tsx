@@ -6,6 +6,7 @@ import {
   calculateLedger,
   createBlankLedger,
   createDemoLedger,
+  nextBetRecordingTimestamp,
   pickStrategy,
   stampBets,
   type Bet,
@@ -149,6 +150,8 @@ function isBet(value: unknown): value is UnstampedBet {
     (value.sequenceId === undefined ||
       (typeof value.sequenceId === "string" && value.sequenceId.length > 0)) &&
     (value.stakeOverride === undefined || typeof value.stakeOverride === "number") &&
+    (value.createdAt === undefined || typeof value.createdAt === "string") &&
+    (value.labelIsAutomatic === undefined || typeof value.labelIsAutomatic === "boolean") &&
     (value.sequenceStartRecoveryGap === undefined ||
       (typeof value.sequenceStartRecoveryGap === "number" &&
         Number.isFinite(value.sequenceStartRecoveryGap) &&
@@ -204,10 +207,24 @@ function loadLedger(): LoadedLedger {
 
     const currentValue = parseStoredValue(currentStoredValue, STORAGE_KEY);
     if (isLedgerState(currentValue)) {
+      const bets = stampBets(currentValue.bets, currentValue.settings);
+      if (
+        currentValue.bets.some(
+          (bet) =>
+            !bet.createdAt ||
+            !Number.isFinite(Date.parse(bet.createdAt)) ||
+            bet.labelIsAutomatic === undefined,
+        )
+      ) {
+        window.localStorage.setItem(
+          STORAGE_KEY,
+          JSON.stringify({ ...currentValue, bets }),
+        );
+      }
       return {
         state: {
           ...currentValue,
-          bets: stampBets(currentValue.bets, currentValue.settings),
+          bets,
         },
         feedback: null,
       };
@@ -340,6 +357,13 @@ function formatOdds(odds: number): string {
     maximumFractionDigits: 4,
     useGrouping: false,
   }).format(odds);
+}
+
+function betTitle(bet: Bet): string {
+  const label = bet.label.trim();
+  return bet.labelIsAutomatic || (!label && bet.labelIsAutomatic === undefined)
+    ? `${formatOdds(bet.odds)} odds`
+    : label;
 }
 
 function formatPercent(value: number): string {
@@ -545,7 +569,7 @@ function SequenceBetRow({
         <span className={`status-badge status-${bet.outcome}`}>{outcomeLabel(bet.outcome)}</span>
       </div>
       <div className="single-bet-info">
-        <strong>{bet.label}</strong>
+        <strong>{betTitle(bet)}</strong>
         <span>
           {formatDateTime(bet.placedAt)} | {formatOdds(bet.odds)} odds
         </span>
@@ -650,7 +674,7 @@ function SingleBetSequenceCard({
         </span>
       </div>
       <div className="single-bet-info">
-        <strong>{bet.label}</strong>
+        <strong>{betTitle(bet)}</strong>
         <span>
           {formatDateTime(bet.placedAt)} | {formatOdds(bet.odds)} odds
         </span>
@@ -1240,7 +1264,7 @@ function App() {
     setEditingBetId(bet.id);
     setTargetSequenceId(null);
     setDraft({
-      label: bet.label,
+      label: bet.labelIsAutomatic ? "" : bet.label,
       placedAt: bet.placedAt.slice(0, 16),
       odds: String(bet.odds),
       outcome: bet.outcome,
@@ -1321,6 +1345,7 @@ function App() {
       return;
     }
 
+    const label = draft.label.trim();
     const sequenceStartRecoveryGap = editingBetId
       ? editingBet?.sequenceStartRecoveryGap
       : targetSequenceId
@@ -1328,7 +1353,11 @@ function App() {
         : calculation.newSequenceRecoveryGap;
     const bet: Bet = {
       id: editingBetId ?? createBetId(),
-      label: draft.label.trim() || `Selection ${tracker.bets.length + 1}`,
+      createdAt:
+        editingBet?.createdAt ??
+        nextBetRecordingTimestamp(tracker.bets, Date.now()),
+      label: label || `Selection ${tracker.bets.length + 1}`,
+      labelIsAutomatic: !label,
       placedAt: draft.placedAt,
       odds,
       outcome: draft.outcome,
@@ -2133,7 +2162,7 @@ function App() {
                     value={draft.label}
                     onChange={(event) => setDraft((current) => ({ ...current, label: event.target.value }))}
                     maxLength={60}
-                    placeholder="e.g. Selection 09"
+                    placeholder="Optional — leave blank to show odds"
                   />
                 </label>
                 <label className="form-field">

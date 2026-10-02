@@ -154,7 +154,9 @@ function betFromCloud(value: unknown): UnstampedBet {
 
   const id = value.id;
   const placedAt = value.placed_at;
+  const createdAt = value.created_at;
   const label = value.label;
+  const labelIsAutomatic = value.label_is_automatic;
   const sequenceId = value.sequence_id;
   const stakeOverride = value.stake_override;
   const sequenceStartRecoveryGap = optionalNonNegativeNumber(
@@ -162,7 +164,14 @@ function betFromCloud(value: unknown): UnstampedBet {
     "sequence start recovery gap",
   );
 
-  if (typeof id !== "string" || typeof placedAt !== "string" || typeof label !== "string") {
+  if (
+    typeof id !== "string" ||
+    typeof placedAt !== "string" ||
+    typeof createdAt !== "string" ||
+    !Number.isFinite(Date.parse(createdAt)) ||
+    typeof label !== "string" ||
+    typeof labelIsAutomatic !== "boolean"
+  ) {
     throw new Error("Cloud data contains an incomplete bet.");
   }
   if (
@@ -184,7 +193,9 @@ function betFromCloud(value: unknown): UnstampedBet {
   return {
     id,
     placedAt,
+    createdAt,
     label,
+    labelIsAutomatic,
     odds,
     outcome: readOutcome(value.outcome),
     ...(typeof sequenceId === "string" ? { sequenceId } : {}),
@@ -294,7 +305,7 @@ export async function loadLatestCloudLedger(): Promise<CloudLedger | null> {
   const { data: betData, error: betError } = await client
     .from("bets")
     .select(
-      "id,placed_at,label,odds,outcome,sequence_id,stake_override,sequence_start_recovery_gap,base_stake,threshold,recovery_weight,stake_rounding,max_stake",
+      "id,placed_at,created_at,label,label_is_automatic,odds,outcome,sequence_id,stake_override,sequence_start_recovery_gap,base_stake,threshold,recovery_weight,stake_rounding,max_stake",
     )
     .eq("ledger_id", ledger.id)
     .order("placed_at", { ascending: true });
@@ -368,7 +379,9 @@ export async function saveLedgerToCloud(
         id: bet.id,
         ledger_id: ledgerId,
         placed_at: bet.placedAt,
+        created_at: bet.createdAt ?? bet.placedAt,
         label: bet.label,
+        label_is_automatic: bet.labelIsAutomatic ?? false,
         odds: bet.odds,
         outcome: bet.outcome,
         sequence_id: bet.sequenceId ?? null,

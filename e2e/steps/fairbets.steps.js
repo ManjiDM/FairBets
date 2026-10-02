@@ -18,6 +18,22 @@ When("I reload the app", async function () {
   await this.page.reload({ waitUntil: "domcontentloaded" });
 });
 
+When("I remove recording timestamps from saved bets and reload", async function () {
+  await this.page.evaluate(() => {
+    const stored = window.localStorage.getItem("fairbets-ledger-state-v2");
+    if (!stored) {
+      throw new Error("Saved FairBets ledger was not found.");
+    }
+
+    const ledger = JSON.parse(stored);
+    for (const bet of ledger.bets) {
+      delete bet.createdAt;
+    }
+    window.localStorage.setItem("fairbets-ledger-state-v2", JSON.stringify(ledger));
+  });
+  await this.page.reload({ waitUntil: "domcontentloaded" });
+});
+
 Then("I should see the {string} ledger", async function (ledgerName) {
   await expect(this.page.locator("h1")).toHaveText(ledgerName);
 });
@@ -388,6 +404,14 @@ Then("the prominent title should show {string}", async function (title) {
   await expect(
     this.page.locator(".sequence-list > article .single-bet-info > strong"),
   ).toHaveText([title]);
+});
+
+When("I update the odds for the generated-title bet to {string}", async function (odds) {
+  const card = this.page.locator(".sequence-list > article").first();
+  await card.getByRole("button", { name: "Edit", exact: true }).click();
+  await this.page.getByLabel("Decimal odds").fill(odds);
+  await this.page.getByRole("button", { name: "Save changes" }).click();
+  await expect(this.page.getByRole("dialog")).toHaveCount(0);
 });
 
 Then("no generated Selection title should be shown", async function () {

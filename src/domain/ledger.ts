@@ -14,7 +14,9 @@ export interface BetStrategy {
 export interface Bet {
   id: string;
   placedAt: string;
+  createdAt?: string;
   label: string;
+  labelIsAutomatic?: boolean;
   odds: number;
   outcome: Outcome;
   sequenceId?: string;
@@ -223,10 +225,50 @@ export function pickStrategy(settings: StrategySettings): BetStrategy {
 }
 
 export function stampBets(bets: UnstampedBet[], settings: StrategySettings): Bet[] {
-  return bets.map((bet) => ({
-    ...bet,
-    strategy: bet.strategy ? { ...bet.strategy } : pickStrategy(settings),
-  }));
+  const latestExistingTimestamp = bets.reduce((latest, bet) => {
+    const createdAt = bet.createdAt ? Date.parse(bet.createdAt) : Number.NaN;
+    const placedAt = Date.parse(bet.placedAt);
+    return Math.max(
+      latest,
+      Number.isFinite(createdAt) ? createdAt : 0,
+      Number.isFinite(placedAt) ? placedAt : 0,
+    );
+  }, 0);
+  let nextTimestamp = latestExistingTimestamp;
+
+  return bets.map((bet) => {
+    const createdAt =
+      bet.createdAt && Number.isFinite(Date.parse(bet.createdAt))
+        ? bet.createdAt
+        : new Date(++nextTimestamp).toISOString();
+
+    return {
+      ...bet,
+      createdAt,
+      labelIsAutomatic:
+        bet.labelIsAutomatic ?? /^Selection \d+$/i.test(bet.label.trim()),
+      strategy: bet.strategy ? { ...bet.strategy } : pickStrategy(settings),
+    };
+  });
+}
+
+export function nextBetRecordingTimestamp(bets: Bet[], now: number): string {
+  const latestTimestamp = bets.reduce((latest, bet) => {
+    const timestamp = bet.createdAt ? Date.parse(bet.createdAt) : Number.NaN;
+    return Number.isFinite(timestamp) ? Math.max(latest, timestamp) : latest;
+  }, 0);
+
+  return new Date(Math.max(now, latestTimestamp + 1)).toISOString();
+}
+
+function sequenceRecordingTimestamp(sequence: SequenceAccumulator): number {
+  const recordingTimes = sequence.bets
+    .map((bet) => (bet.createdAt ? Date.parse(bet.createdAt) : Number.NaN))
+    .filter(Number.isFinite);
+
+  return recordingTimes.length > 0
+    ? Math.min(...recordingTimes)
+    : new Date(sequence.startedAt).getTime();
 }
 
 export function suggestStakeForOdds(
@@ -413,8 +455,8 @@ export function calculateLedger(bets: Bet[], settings: StrategySettings): Ledger
   }
 
   sequenceAccumulators.sort((left, right) => {
-    const leftTime = new Date(left.startedAt).getTime();
-    const rightTime = new Date(right.startedAt).getTime();
+    const leftTime = sequenceRecordingTimestamp(left);
+    const rightTime = sequenceRecordingTimestamp(right);
     const dateDifference = leftTime - rightTime;
     return Number.isFinite(dateDifference) && dateDifference !== 0
       ? dateDifference

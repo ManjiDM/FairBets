@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | Spec | [`spec.md`](./spec.md) |
-| Status | Approved |
+| Status | Done |
 | Updated | 2026-10-02 |
 
 > How the spec will be built. Written after every `[NEEDS CLARIFICATION]` marker in the
@@ -17,13 +17,18 @@ card ordering and display numbering. New bets get a strictly increasing timestam
 relative to existing bets so rapid consecutive entries remain ordered. Editing a bet
 preserves its original timestamp.
 
-Reuse Supabase's existing `created_at` column rather than adding a schema migration.
-Cloud parsing maps it to the bet timestamp, cloud writes preserve it, and its existing
-database default covers records created by older clients. Existing local records
-without it receive synthetic timestamps once, in their persisted array order, then
-are saved locally. Workbook imports receive timestamps in source row order. When the
-domain is given an unstamped bet directly, placement time remains a deterministic
-fallback.
+Reuse Supabase's existing `created_at` column for recording time. Cloud parsing maps
+it to the bet timestamp, cloud writes preserve it, and its existing database default
+covers records created by older clients. Existing local records without it receive
+synthetic timestamps once, in their persisted array order, then are saved locally.
+Workbook imports receive timestamps in source row order. When the domain is given an
+unstamped bet directly, placement time remains a deterministic fallback.
+
+Persist a `labelIsAutomatic` flag so a user can intentionally name a bet “Selection
+NN” without the UI replacing that custom title. New blank labels are flagged
+automatic. Legacy generated labels are inferred from their existing `Selection NN`
+pattern during migration; workbook-provided labels are always treated as custom.
+Add this flag to the cloud schema and backfill matching legacy labels in a migration.
 
 Only sequence presentation order changes: sequence calculations, legacy grouping,
 and bet order within a sequence continue using placement time. Display ordering sorts
@@ -36,10 +41,12 @@ timestamp itself is never rendered.
 
 | File | Change | Notes |
 | --- | --- | --- |
-| `src/domain/ledger.ts` | Add optional `createdAt`; sort sequences by recording time for stable display numbering | Financial progression remains placement-time based |
-| `src/App.tsx` | Stamp new bets, backfill legacy local records, preserve timestamps on edit, and render odds for generated titles | Timestamp remains hidden |
-| `src/lib/cloudStore.ts` | Map bet `createdAt` to existing Supabase `created_at` | No new cloud column |
-| `src/domain/workbookImport.ts` | Stamp imported bets in workbook row order | Workbook format unchanged |
+| `src/domain/ledger.ts` | Add optional `createdAt` and `labelIsAutomatic`; sort sequences by recording time for stable display numbering | Financial progression remains placement-time based |
+| `src/App.tsx` | Stamp new bets, backfill legacy local records, preserve metadata on edit, and render odds for generated titles | Timestamp remains hidden |
+| `src/lib/cloudStore.ts` | Map bet `createdAt` to existing Supabase `created_at` and round-trip automatic-label metadata | |
+| `supabase/schema.sql` | Add `label_is_automatic` to the fresh schema | Recording timestamp column already exists |
+| `supabase/migrations/0006_automatic_bet_labels.sql` | Add and backfill automatic-label metadata | |
+| `src/domain/workbookImport.ts` | Stamp imported bets in workbook row order and mark source labels custom | Workbook format unchanged |
 | `e2e/features/bets.feature` | Cover tied placement times, creation order, hidden timestamp, and generated title replacement | |
 | `e2e/steps/fairbets.steps.js` | Add sequence-card order assertion if needed | |
 | `specs/FB-013-recording-order-and-odds-title/*` | Track plan, implementation, and verification | |
@@ -49,6 +56,7 @@ timestamp itself is never rendered.
 ```ts
 export interface Bet {
   createdAt?: string;
+  labelIsAutomatic?: boolean;
 }
 ```
 
@@ -59,11 +67,11 @@ bets, with placement time and stable ID fallback for unstamped or equal timestam
 
 ## Data and migration
 
-- **`LedgerState` shape:** Bets gain optional `createdAt`.
+- **`LedgerState` shape:** Bets gain optional `createdAt` and `labelIsAutomatic`.
 - **`localStorage` migration:** For bets without `createdAt`, assign increasing
   timestamps in their existing stored-array order and persist the upgraded ledger.
-- **Cloud schema:** Unchanged. Use existing `public.bets.created_at`; map it in cloud
-  reads and preserve it in upserts.
+- **Cloud schema:** Use existing `public.bets.created_at`; add
+  `label_is_automatic` with a migration and matching parser/writer support.
 - **Backward compatibility:** Older cloud rows already have `created_at`. Missing
   local timestamps are backfilled in array order. Domain callers without one continue
   to calculate normally.
@@ -73,9 +81,9 @@ bets, with placement time and stable ID fallback for unstamped or equal timestam
 ## UI changes
 
 Sequence cards continue to show the user-entered placement date/time, but sort newest
-recorded sequence first. The internal recording timestamp is never shown. If a bet
-label matches the legacy auto-generated `Selection NN` form, its prominent title is
-the odds followed by “odds”; custom labels remain prominent. The label field
+recorded sequence first. The internal recording timestamp is never shown. A flagged
+automatic label uses odds followed by “odds” as the prominent title; custom labels,
+including a user-entered “Selection NN”, remain prominent. The label field
 placeholder describes the label as optional rather than suggesting generated
 selection numbers.
 
@@ -102,6 +110,7 @@ selection numbers.
 | `created_at` changes during cloud upsert | Cloud restore reorders bets | Explicitly write the original timestamp during upsert |
 | Placement chronology changes financial sequence math | Repriced or regrouped history | Keep calculation sort independent of createdAt; alter only sequence display ordering |
 | Custom labels are replaced by odds | User notes are lost | Replace only the known generated `Selection NN` presentation |
+| Old custom label matches the generated pattern | Old label may be mistaken for generated | Infer legacy labels once; preserve explicit automatic/custom metadata for all new records |
 
 ## Constitution check
 
@@ -112,6 +121,6 @@ selection numbers.
 
 ## Rollback
 
-Revert presentation ordering and the optional `createdAt` field mapping. Supabase's
-existing `created_at` data remains untouched; local timestamps can be ignored by old
-code. No schema rollback or destructive data migration is necessary.
+Revert presentation ordering and ignore the optional metadata. Supabase's existing
+`created_at` data remains untouched; the new automatic-label column can remain
+unused, so no destructive data migration is necessary.

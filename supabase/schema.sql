@@ -13,6 +13,7 @@ create table if not exists public.bets (
   ledger_id uuid not null references public.ledgers (id) on delete cascade,
   placed_at timestamp without time zone not null,
   label text not null check (char_length(label) between 1 and 60),
+  label_is_automatic boolean not null default false,
   odds numeric(12, 4) not null check (odds > 1),
   outcome text not null check (outcome in ('open', 'won', 'lost')),
   sequence_id text,

@@ -49,6 +49,8 @@ Feature: Bet management
     And no recording timestamp should be displayed
     When I reload the app
     Then the sequence card titles should be ordered as "Recorded second" then "Recorded first"
+    When I remove recording timestamps from saved bets and reload
+    Then the sequence card titles should be ordered as "Recorded second" then "Recorded first"
 
   Scenario: A newly recorded backdated sequence appears first
     When I start a fresh ledger
@@ -63,9 +65,16 @@ Feature: Bet management
     And I input "1.30" in the odds field
     And I press the Add button
     Then the prominent title should show "1.30 odds"
+    When I update the odds for the generated-title bet to "1.35"
+    Then the prominent title should show "1.35 odds"
     And no generated Selection title should be shown
     When I add a bet labeled "Home team" with odds "1.40" placed at "2026-09-13T13:00"
     Then the prominent title "Home team" should be visible
+
+  Scenario: A custom label that resembles a generated title is retained
+    When I start a fresh ledger
+    And I add a bet labeled "Selection 09" with odds "1.50" placed at "2026-09-13T14:00"
+    Then the prominent title "Selection 09" should be visible
 
   Scenario: Continue only the lost sequence and keep membership after reload
     When I start a fresh ledger
