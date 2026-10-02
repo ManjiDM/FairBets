@@ -11,7 +11,7 @@
 
 ## 1. Regression scenario
 
-- [ ] **T-001** — Cover suppression of a second recovery allocation and release after
+- [x] **T-001** — Cover suppression of a second recovery allocation and release after
   the recovery owner closes.
   - Files: `e2e/features/bet-strategy.feature`
   - Done when: the scenario fails against current behavior at the second suggested

@@ -63,6 +63,27 @@ Feature: Recorded strategy values
     Then the bet "New sequence" should have a stake of "€3.00"
     And the bet "Lead-in loss" should have a stake of "€1.00"
 
+  Scenario: An active recovery sequence reserves the global shortfall
+    When I start a fresh ledger
+    And I set the starting balance to "100"
+    And I set the base stake to "1"
+    And I set the goal rate to "100" with full recovery weighting
+    And I add a bet labeled "Allocation lead-in loss" with odds "1.50" placed at "2026-09-10T10:00"
+    And I mark the bet "Allocation lead-in loss" as "Lost"
+    And I add a bet labeled "Allocation lead-in win" with odds "1.50" and a manual stake of "2" placed at "2026-09-11T10:00"
+    And I mark the bet "Allocation lead-in win" as "Won"
+    When I prepare a bet labeled "Recovery allocation" with odds "1.50" placed at "2026-09-12T10:00"
+    Then the suggested stake should be "€3.00"
+    When I input "2" in the Manual Stake field
+    And I submit the prepared bet
+    Then the bet "Recovery allocation" should have a stake of "€2.00"
+    When I prepare a bet labeled "Parallel base bet" with odds "1.50" placed at "2026-09-13T10:00"
+    Then the suggested stake should be "€1.00"
+    When I submit the prepared bet
+    And I mark the bet "Recovery allocation" as "Won"
+    When I prepare a bet labeled "Remaining recovery" with odds "1.50" placed at "2026-09-14T10:00"
+    Then the suggested stake should be "€2.00"
+
   Scenario: A new sequence starts at base stake when the goal is met
     When I start a fresh ledger
     And I set the base stake to "1"
