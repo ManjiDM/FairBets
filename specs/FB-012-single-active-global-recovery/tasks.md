@@ -20,7 +20,7 @@
 
 ## 2. Domain behavior
 
-- [ ] **T-010** — Suppress the new-sequence recovery gap while a positive-snapshot
+- [x] **T-010** — Suppress the new-sequence recovery gap while a positive-snapshot
   recovery owner is active.
   - Files: `src/domain/ledger.ts`
   - Done when: active recovery owners reserve the global allocation; ordinary active
@@ -29,14 +29,14 @@
 
 ## 3. Documentation
 
-- [ ] **T-020** — Mark the spec verified and align plan/tasks with implementation.
+- [x] **T-020** — Mark the spec verified and align plan/tasks with implementation.
   - Files: `specs/FB-012-single-active-global-recovery/*`
   - Done when: decisions and verification match shipped behavior.
   - Verify: review
 
 ## 4. Gates
 
-- [ ] **T-030** — `pnpm lint` passes
-- [ ] **T-031** — `pnpm build` passes
-- [ ] **T-032** — `pnpm test:e2e` passes
-- [ ] **T-033** — Every acceptance scenario in `spec.md` is satisfied
+- [x] **T-030** — `pnpm lint` passes
+- [x] **T-031** — `pnpm build` passes
+- [x] **T-032** — `pnpm test:e2e` passes
+- [x] **T-033** — Every acceptance scenario in `spec.md` is satisfied

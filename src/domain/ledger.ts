@@ -433,9 +433,15 @@ export function calculateLedger(bets: Bet[], settings: StrategySettings): Ledger
   const openExposure = fromMoneyUnits(totalOpenExposureUnits);
   const settledBalance = settings.startingBalance + settledProfit;
   const goal = expectedProfit * settings.goalRate;
-  const newSequenceRecoveryGap = fromMoneyUnits(
+  const ledgerWideRecoveryGap = fromMoneyUnits(
     Math.max(0, toMoneyUnits(goal) - toMoneyUnits(settledProfit)),
   );
+  const hasActiveRecoveryAllocation = sequences.some(
+    (sequence) =>
+      sequence.status === "active" &&
+      sequence.bets.some((bet) => (bet.sequenceStartRecoveryGap ?? 0) > 0),
+  );
+  const newSequenceRecoveryGap = hasActiveRecoveryAllocation ? 0 : ledgerWideRecoveryGap;
   const nextOddsGuide = calculatedBets.at(-1)?.odds ?? 1.3;
   const nextSuggestion = suggestStakeForOdds(
     newSequenceRecoveryGap,

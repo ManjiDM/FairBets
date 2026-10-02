@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | Spec | [`spec.md`](./spec.md) |
-| Status | Approved |
+| Status | Done |
 | Updated | 2026-10-02 |
 
 > How the spec will be built. Written after every `[NEEDS CLARIFICATION]` marker in the
@@ -12,10 +12,10 @@
 
 ## Approach
 
-Use the FB-009 recovery snapshot already stored on each new-sequence first bet to
-identify recovery ownership. After calculating sequences and the current ledger-wide
-shortfall, inspect active sequences for a positive snapshot on their first bet. When
-any active sequence owns a positive allocation, report a zero available
+Use the FB-009 recovery snapshot already stored on the originating bet of each new
+sequence to identify recovery ownership. After calculating sequences and the current
+ledger-wide shortfall, inspect active sequences for a positive snapshot on any of their
+bets. When any active sequence owns a positive allocation, report a zero available
 new-sequence-recovery gap and calculate the new-sequence guide at base stake.
 
 Keep each placed bet's snapshot untouched. Sequence continuation still uses its own
@@ -34,7 +34,7 @@ after the owner closes.
 
 | File | Change | Notes |
 | --- | --- | --- |
-| `src/domain/ledger.ts` | Suppress global new-sequence gap when any active sequence owns a positive recovery snapshot | No schema/data change |
+| `src/domain/ledger.ts` | Suppress global new-sequence gap when any active sequence contains a positive recovery snapshot | No schema/data change |
 | `e2e/features/bet-strategy.feature` | Verify duplicate allocation prevention and remaining-gap recalculation after closure | Uses FB-009 fixture and an open parallel base-stake sequence |
 | `specs/FB-012-single-active-global-recovery/*` | Track implementation and verification | |
 
@@ -48,9 +48,10 @@ export function calculateLedger(
 ```
 
 `newSequenceRecoveryGap` and `nextSuggestion` remain outputs of `calculateLedger`.
-When an active sequence's first bet has `sequenceStartRecoveryGap > 0`, the returned
-new-sequence gap is zero and the guide suggestion is base stake. The stored snapshots
-and each sequence's `recoveryGap` are not changed.
+When an active sequence contains a bet with `sequenceStartRecoveryGap > 0`, the
+returned new-sequence gap is zero and the guide suggestion is base stake. Checking the
+whole sequence handles bets chronologically reordered by a backdated placement time.
+The stored snapshots and each sequence's `recoveryGap` are not changed.
 
 ## Data and migration
 
@@ -69,6 +70,8 @@ and each sequence's `recoveryGap` are not changed.
 - Close the owning sequence with a win using a stake that leaves a measurable
   shortfall.
 - Assert a later new sequence recovers only the remaining shortfall.
+- Preserve existing recovery snapshots and the recovery amounts of already placed
+  bets.
 - Preserve the existing FB-009 test that verifies an ordinary open sequence does not
   prevent a new sequence from recovering the global gap.
 - Run `pnpm lint`, `pnpm build`, and `pnpm test:e2e`.
@@ -77,7 +80,7 @@ and each sequence's `recoveryGap` are not changed.
 
 | Risk | Impact | Mitigation |
 | --- | --- | --- |
-| Any open sequence is treated as recovery owner | Recovery would be blocked unnecessarily | Require a positive snapshot on that sequence's first bet |
+| Any open sequence is treated as recovery owner | Recovery would be blocked unnecessarily | Require a positive recovery snapshot within that sequence |
 | A lost recovery bet releases the reservation | Multiple sequences could claim one gap | Keep reservation while its sequence remains active; loss does not close it |
 | Recovery remains blocked after its owner closes | User cannot recover a remaining gap | Derive reservation from active sequences on every calculation |
 | A suppressed sequence's future open bet inherits recovery | Re-prices or changes its existing allocation | Never modify or backfill placed snapshots |

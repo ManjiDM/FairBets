@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | ID | `FB-012-single-active-global-recovery` |
-| Status | Draft |
+| Status | Shipped |
 | Created | 2026-10-02 |
 | Related | [FB-009](../FB-009-recover-settled-profit-gap/spec.md), [FB-010](../FB-010-parallel-sequences/spec.md) |
 
@@ -45,9 +45,9 @@ shortfall remains based on current ledger results.
 
 ## Functional requirements
 
-- **FR-1** A sequence MUST count as an active global-recovery sequence when its first
-  bet was placed with a positive ledger-wide recovery-gap snapshot and the sequence
-  has not closed with a win.
+- **FR-1** A sequence MUST count as an active global-recovery sequence when one of
+  its bets carries the positive ledger-wide recovery-gap snapshot recorded when that
+  sequence began, and the sequence has not closed with a win.
 - **FR-2** While one or more active global-recovery sequences exist, a new independent
   sequence MUST have no ledger-wide recovery added to its suggested stake. Its
   suggestion MUST use base stake and the selected odds, subject to existing strategy
@@ -139,13 +139,26 @@ discussion.
 - [x] VII. Data compatibility preserved
 - [x] VIII. No secrets introduced
 - [x] IX. Behaviour specified in Gherkin
-- [ ] X. Gates pass
+- [x] X. Gates pass
 
 ## Open questions
 
 None. The user confirmed that an active sequence with a positive FB-009 snapshot
 reserves the recovery allocation until that sequence wins and closes. Once every such
 sequence is closed, a later new sequence may recover any remaining shortfall.
+
+## Verification
+
+- [x] The duplicate-allocation E2E regression failed before implementation
+  (`€3.00` suggested instead of the expected `€1.00` for a parallel independent bet).
+- [x] While the recovery owner is active, another independent bet uses base stake.
+- [x] After the owner wins and closes, the next independent bet recovers only the
+  remaining ledger shortfall (`€2.00` in the scenario).
+- [x] Existing FB-009 recovery behavior remains available when active sequences do
+  not carry a positive recovery snapshot.
+- [x] `pnpm lint`
+- [x] `pnpm build`
+- [x] `pnpm test:e2e` (32 scenarios, 324 steps)
 
 ## Out of scope for now
 
