@@ -35,3 +35,12 @@ Feature: Bet management
     When I mark the bet "Single bet to close" as "Won"
     Then the bet "Single bet to close" should be "Won"
     And the Add Bet button should be enabled
+
+  Scenario: Save and display odds with three decimal places
+    When I press the Add Bet button
+    Then I see the new bet dialog
+    When I input the label "Three decimal odds"
+    And I input the date and time "2026-09-14T12:00"
+    And I input "1.234" in the odds field
+    And I press the Add button
+    Then the bet "Three decimal odds" should display odds "1.234"

@@ -200,6 +200,16 @@ Then("the ledger should show the bet {string}", async function (label) {
   await expect(this.page.getByText(label, { exact: true })).toBeVisible();
 });
 
+Then(
+  "the bet {string} should display odds {string}",
+  async function (label, odds) {
+    const betCard = this.page.locator(".sequence-list article").filter({
+      has: this.page.getByText(label, { exact: true }),
+    });
+    await expect(betCard).toContainText(`${odds} odds`);
+  },
+);
+
 Then("the bet {string} should be {string}", async function (label, outcome) {
   const normalizedOutcome = outcome.toLowerCase();
   const sequence = this.page.locator(".sequence-list > *").filter({
