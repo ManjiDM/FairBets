@@ -64,7 +64,14 @@ Given("the viewport is a small phone", async function () {
 });
 
 When("I open the summary drawer", async function () {
-  await this.page.getByRole("button", { name: "Summary", exact: true }).click();
+  await this.page.getByRole("button", { name: "Open summary", exact: true }).click();
+});
+
+Then("the mobile summary control should show an accessible sidebar icon", async function () {
+  const button = this.page.getByRole("button", { name: "Open summary", exact: true });
+  await expect(button).toBeVisible();
+  await expect(button.locator("svg[aria-hidden='true']")).toBeVisible();
+  await expect(button).not.toContainText("Summary");
 });
 
 Then("the summary drawer should be open", async function () {
@@ -80,7 +87,11 @@ Then("the summary drawer should be closed", async function () {
 });
 
 When("I open the settings overlay", async function () {
-  await this.page.getByRole("button", { name: "Settings", exact: true }).click();
+  await this.page.getByRole("button", { name: "Open settings", exact: true }).click();
+});
+
+Then("there should be no separate Settings button", async function () {
+  await expect(this.page.getByRole("button", { name: "Settings", exact: true })).toHaveCount(0);
 });
 
 Then("the settings overlay should be shown", async function () {
@@ -116,7 +127,7 @@ When(
 );
 
 When("I set the maximum stake to {string}", async function (value) {
-  await this.page.getByRole("button", { name: "Settings", exact: true }).click();
+  await this.page.getByRole("button", { name: "Open settings", exact: true }).click();
   const field = this.page.locator("label").filter({
     has: this.page.getByText("Maximum stake", { exact: true }),
   });
@@ -355,7 +366,7 @@ Then("the available balance should be unchanged", async function () {
 });
 
 When("I set the base stake to {string}", async function (value) {
-  await this.page.getByRole("button", { name: "Settings", exact: true }).click();
+  await this.page.getByRole("button", { name: "Open settings", exact: true }).click();
   const field = this.page.locator("label").filter({
     has: this.page.getByText("Base stake", { exact: true }),
   });

@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | ID | `FB-004-header-controls` |
-| Status | Reproducing |
+| Status | Diagnosed |
 | Severity | Cosmetic |
 | Created | 2026-10-02 |
 | Related | — |
@@ -65,8 +65,7 @@ toggle also renders the visible text `Summary` instead of an icon.
 
 ## Regression scenario
 
-These scenarios must be run and confirmed failing before the fix; record the red output
-below.
+Both scenarios were run and failed before the fix; see the red output below.
 
 ```gherkin
 Scenario: The brand is the only Settings entry point
@@ -105,7 +104,7 @@ accessible name and the existing drawer action.
 
 ## Verification
 
-- [ ] Regression scenarios failed before the fix (evidence recorded below)
+- [x] Regression scenarios failed before the fix (evidence recorded below)
 - [ ] Regression scenarios pass after the fix
 - [ ] `pnpm lint`
 - [ ] `pnpm build`
@@ -115,7 +114,17 @@ accessible name and the existing drawer action.
 **Evidence of the red state:**
 
 ```text
-Run the header-controls regression scenarios before changing the implementation.
+pnpm test:e2e
+The FairBets brand is the only Settings entry point:
+  Expected separate Settings button count: 0
+  Received: 1
+
+The summary is reachable as a drawer on a small screen:
+  Expected button "Open summary" to be visible
+  Error: element(s) not found
+
+23 scenarios (2 failed, 21 passed)
+169 steps (2 failed, 6 skipped, 161 passed)
 ```
 
 ## Manual check

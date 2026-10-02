@@ -29,8 +29,14 @@ Feature: FairBets app overview
     Then the settings overlay should not be shown
     And the sequences view should be shown
 
+  Scenario: The FairBets brand is the only Settings entry point
+    Then there should be no separate Settings button
+    When I open the settings overlay
+    Then the settings overlay should be shown
+
   Scenario: The summary is reachable as a drawer on a small screen
     Given the viewport is a small phone
+    Then the mobile summary control should show an accessible sidebar icon
     When I open the summary drawer
     Then the summary drawer should be open
     When I close the summary drawer
