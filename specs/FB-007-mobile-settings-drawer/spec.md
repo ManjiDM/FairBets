@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | ID | `FB-007-mobile-settings-drawer` |
-| Status | Reproducing |
+| Status | Diagnosed |
 | Severity | Broken flow |
 | Created | 2026-10-02 |
 | Related | — |
@@ -67,8 +67,8 @@ side drawer below the toolbar.
 
 ## Regression scenario
 
-These mobile interaction and geometry checks must fail before the fix; record the red
-output below.
+The mobile regression scenario fails before the fix: the Settings panel begins at 40px,
+above the 67px toolbar bottom. See the red output below.
 
 ```gherkin
 Scenario: Toggle mobile Settings with the brand control
@@ -103,7 +103,7 @@ toggle Settings with an accessible name that reflects its state.
 
 ## Verification
 
-- [ ] Regression scenario failed before the fix (evidence recorded below)
+- [x] Regression scenario failed before the fix (evidence recorded below)
 - [ ] Regression scenario passes after the fix
 - [ ] `pnpm lint`
 - [ ] `pnpm build`
@@ -113,7 +113,12 @@ toggle Settings with an accessible name that reflects its state.
 **Evidence of the red state:**
 
 ```text
-Run the mobile Settings drawer scenario before changing the implementation.
+pnpm test:e2e
+Scenario: Settings uses a left drawer on mobile and toggles from the brand
+Expected settings panel top >= toolbar bottom (67px)
+Received settings panel top: 40px
+25 scenarios (1 failed, 24 passed)
+186 steps (1 failed, 5 skipped, 180 passed)
 ```
 
 ## Manual check

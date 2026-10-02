@@ -34,6 +34,16 @@ Feature: FairBets app overview
     When I open the settings overlay
     Then the settings overlay should be shown
 
+  Scenario: Settings uses a left drawer on mobile and toggles from the brand
+    Given the viewport is a small phone
+    When I open Settings using the brand control
+    Then the settings drawer should be visible below the toolbar
+    And there should be no Back to sequences button
+    And the brand control should be named "Close settings"
+    When I toggle Settings using the brand control
+    Then the settings drawer should be closed
+    And the brand control should be named "Open settings"
+
   Scenario: The summary is reachable as a drawer on a small screen
     Given the viewport is a small phone
     Then the mobile summary control should show an accessible sidebar icon

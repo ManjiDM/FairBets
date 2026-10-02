@@ -103,6 +103,35 @@ When("I open the settings overlay", async function () {
   await this.page.getByRole("button", { name: "Open settings", exact: true }).click();
 });
 
+When("I open Settings using the brand control", async function () {
+  await this.page.getByRole("button", { name: "Open settings", exact: true }).click();
+});
+
+When("I toggle Settings using the brand control", async function () {
+  await this.page.locator(".brand").click();
+});
+
+Then("the settings drawer should be visible below the toolbar", async function () {
+  const toolbar = await this.page.locator(".topbar").boundingBox();
+  const settings = await this.page.locator(".settings-modal").boundingBox();
+  expect(toolbar).not.toBeNull();
+  expect(settings).not.toBeNull();
+  expect(settings.y).toBeGreaterThanOrEqual(toolbar.y + toolbar.height);
+  await expect(this.page.locator(".topbar")).toBeVisible();
+});
+
+Then("the settings drawer should be closed", async function () {
+  await expect(this.page.locator(".settings-modal")).toHaveCount(0);
+});
+
+Then("there should be no Back to sequences button", async function () {
+  await expect(this.page.getByRole("button", { name: "Back to sequences" })).toHaveCount(0);
+});
+
+Then("the brand control should be named {string}", async function (name) {
+  await expect(this.page.locator(".brand")).toHaveAccessibleName(name);
+});
+
 Then("there should be no separate Settings button", async function () {
   await expect(this.page.getByRole("button", { name: "Settings", exact: true })).toHaveCount(0);
 });
