@@ -22,22 +22,26 @@ Feature: FairBets app overview
     And the summary sidebar should show the "Largest stake" metric
     And the summary sidebar should show goal tracking
 
-  Scenario: Settings opens over the sequences view
-    When I open the settings overlay
-    Then the settings overlay should be shown
-    When I close the settings overlay
-    Then the settings overlay should not be shown
-    And the sequences view should be shown
+  Scenario: Settings opens as a non-modal sidebar on desktop
+    When I open Settings using the brand control
+    Then the settings panel should be visible alongside sequences
+    And there should be no modal backdrop
+    And Settings should not be a modal dialog
+    And the brand control should be named "Close settings"
+    When I toggle Settings using the brand control
+    Then the settings drawer should be closed
+    And the brand control should be named "Open settings"
 
   Scenario: The FairBets brand is the only Settings entry point
     Then there should be no separate Settings button
-    When I open the settings overlay
-    Then the settings overlay should be shown
+    When I open Settings using the brand control
+    Then the settings panel should be visible alongside sequences
 
   Scenario: Settings uses a left drawer on mobile and toggles from the brand
     Given the viewport is a small phone
     When I open Settings using the brand control
     Then the settings drawer should be visible below the toolbar
+    And there should be no modal backdrop
     And there should be no Back to sequences button
     And the brand control should be named "Close settings"
     When I toggle Settings using the brand control

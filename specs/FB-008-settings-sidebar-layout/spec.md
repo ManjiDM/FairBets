@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | ID | `FB-008-settings-sidebar-layout` |
-| Status | Draft |
+| Status | In progress |
 | Created | 2026-10-02 |
 | Related | — |
 
@@ -83,6 +83,17 @@ Scenario: Settings opens as a left drawer on a small screen
   And the toolbar should remain visible above the drawer
   When I close Settings using the FairBets brand control
   Then the Settings drawer should be hidden
+```
+
+## Regression status
+
+The new desktop and mobile sidebar checks fail against the existing modal
+implementation: the expected non-modal Settings sidebar is absent.
+
+```text
+pnpm test:e2e
+25 scenarios (3 failed, 22 passed)
+190 steps (3 failed, 12 skipped, 175 passed)
 ```
 
 ## Edge cases

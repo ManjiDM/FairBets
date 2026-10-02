@@ -99,10 +99,6 @@ Then("the summary drawer should be closed", async function () {
   await expect(this.page.locator(".summary-sidebar.drawer-open")).toHaveCount(0);
 });
 
-When("I open the settings overlay", async function () {
-  await this.page.getByRole("button", { name: "Open settings", exact: true }).click();
-});
-
 When("I open Settings using the brand control", async function () {
   await this.page.getByRole("button", { name: "Open settings", exact: true }).click();
 });
@@ -113,7 +109,7 @@ When("I toggle Settings using the brand control", async function () {
 
 Then("the settings drawer should be visible below the toolbar", async function () {
   const toolbar = await this.page.locator(".topbar").boundingBox();
-  const settings = await this.page.locator(".settings-modal").boundingBox();
+  const settings = await this.page.locator(".settings-sidebar").boundingBox();
   expect(toolbar).not.toBeNull();
   expect(settings).not.toBeNull();
   expect(settings.y).toBeGreaterThanOrEqual(toolbar.y + toolbar.height);
@@ -121,11 +117,26 @@ Then("the settings drawer should be visible below the toolbar", async function (
 });
 
 Then("the settings drawer should be closed", async function () {
-  await expect(this.page.locator(".settings-modal")).toHaveCount(0);
+  await expect(this.page.locator(".settings-sidebar")).toHaveCount(0);
 });
 
 Then("there should be no Back to sequences button", async function () {
   await expect(this.page.getByRole("button", { name: "Back to sequences" })).toHaveCount(0);
+});
+
+Then("the settings panel should be visible alongside sequences", async function () {
+  await expect(this.page.locator(".settings-sidebar")).toBeVisible();
+  await expect(this.page.locator(".sequence-page")).toBeVisible();
+});
+
+Then("there should be no modal backdrop", async function () {
+  await expect(this.page.locator(".settings-backdrop")).toHaveCount(0);
+});
+
+Then("Settings should not be a modal dialog", async function () {
+  await expect(
+    this.page.getByRole("dialog", { name: "Strategy and safety settings" }),
+  ).toHaveCount(0);
 });
 
 Then("the brand control should be named {string}", async function (name) {
@@ -134,22 +145,6 @@ Then("the brand control should be named {string}", async function (name) {
 
 Then("there should be no separate Settings button", async function () {
   await expect(this.page.getByRole("button", { name: "Settings", exact: true })).toHaveCount(0);
-});
-
-Then("the settings overlay should be shown", async function () {
-  await expect(
-    this.page.getByRole("dialog", { name: "Strategy and safety settings" }),
-  ).toBeVisible();
-});
-
-When("I close the settings overlay", async function () {
-  await this.page.locator(".brand").click();
-});
-
-Then("the settings overlay should not be shown", async function () {
-  await expect(
-    this.page.getByRole("dialog", { name: "Strategy and safety settings" }),
-  ).toHaveCount(0);
 });
 
 Then("no guardrail warning should be shown", async function () {
