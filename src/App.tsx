@@ -1466,15 +1466,17 @@ function App() {
             onClick={() => setDrawerOpen(true)}
             aria-controls="summary-sidebar"
             aria-expanded={drawerOpen}
+            aria-label="Open summary"
           >
-            Summary
-          </button>
-          <button
-            type="button"
-            className="topbar-button"
-            onClick={() => setSettingsOpen(true)}
-          >
-            Settings
+            <svg
+              className="sidebar-icon"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+              focusable="false"
+            >
+              <rect x="3.5" y="4.5" width="17" height="15" rx="2" />
+              <path d="M9 5v14M13 9h4M13 12h4M13 15h4" />
+            </svg>
           </button>
         </div>
 

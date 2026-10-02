@@ -267,7 +267,7 @@ Then("I should see the bet settlement message", async function () {
 });
 
 Given("the user is on the Settings screen", async function () {
-  await this.page.getByText("Settings", { exact: true }).first().click();
+  await this.page.getByRole("button", { name: "Open settings", exact: true }).click();
   await expect(this.page.getByRole("heading", { name: "Strategy and safety settings" })).toBeVisible();
 });
 

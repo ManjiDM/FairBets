@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | ID | `FB-004-header-controls` |
-| Status | Diagnosed |
+| Status | Verified |
 | Severity | Cosmetic |
 | Created | 2026-10-02 |
 | Related | — |
@@ -86,7 +86,7 @@ Scenario: The mobile summary control uses a sidebar icon
 Where it lands:
 
 - [x] `e2e/features/*.feature` — automatable through the UI
-- [ ] Not automatable; the manual check is described below and the reason given
+- [ ] Not automatable; the visual styling review remains a manual check
 
 ## Fix
 
@@ -105,11 +105,14 @@ accessible name and the existing drawer action.
 ## Verification
 
 - [x] Regression scenarios failed before the fix (evidence recorded below)
-- [ ] Regression scenarios pass after the fix
-- [ ] `pnpm lint`
-- [ ] `pnpm build`
-- [ ] `pnpm test:e2e`
-- [ ] A pre-existing saved ledger still loads with correct figures
+- [x] Regression scenarios pass after the fix
+- [x] `pnpm lint` — pass
+- [x] `pnpm build` — pass
+- [x] `pnpm test:e2e` — pass, 23 scenarios and 169 steps
+- [x] A pre-existing saved ledger still loads with correct figures — existing E2E
+      scenarios pass; no data changes were made
+- [ ] Manual visual review at desktop and mobile sizes — not completed because browser
+      screenshot capture timed out in this environment
 
 **Evidence of the red state:**
 
@@ -131,4 +134,5 @@ The summary is reachable as a drawer on a small screen:
 
 Review the header at desktop and mobile widths to confirm the brand remains an
 understandable Settings affordance and the mobile icon is visually legible, aligned, and
-has a visible focus treatment.
+has a visible focus treatment. Automated tests confirmed the sidebar icon is present,
+the button retains its accessible name, and the drawer still opens.

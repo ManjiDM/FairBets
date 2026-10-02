@@ -1410,16 +1410,35 @@ h3 {
   }
 
   .drawer-toggle {
-    display: inline-flex;
-    align-items: center;
-    padding: 8px 14px;
-    border: 1px solid rgba(255, 255, 255, 0.22);
-    border-radius: 999px;
-    background: transparent;
-    color: inherit;
-    font-size: 13px;
-    font-weight: 700;
+    display: grid;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    place-items: center;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.04);
+    color: #f4fbf6;
     cursor: pointer;
+  }
+
+  .drawer-toggle:hover {
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  .drawer-toggle:focus-visible {
+    outline: 2px solid var(--lime);
+    outline-offset: 3px;
+  }
+
+  .sidebar-icon {
+    width: 20px;
+    height: 20px;
+    fill: none;
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 1.8;
   }
 
   .summary-sidebar {
