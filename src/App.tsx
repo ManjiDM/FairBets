@@ -147,6 +147,10 @@ function isBet(value: unknown): value is UnstampedBet {
     typeof value.odds === "number" &&
     isOutcome(value.outcome) &&
     (value.stakeOverride === undefined || typeof value.stakeOverride === "number") &&
+    (value.sequenceStartRecoveryGap === undefined ||
+      (typeof value.sequenceStartRecoveryGap === "number" &&
+        Number.isFinite(value.sequenceStartRecoveryGap) &&
+        value.sequenceStartRecoveryGap >= 0)) &&
     (value.strategy === undefined || isBetStrategy(value.strategy))
   );
 }
@@ -884,9 +888,14 @@ function App() {
   );
   const hasOpenBet = tracker.bets.some((bet) => bet.outcome === "open");
   const draftOdds = Number(draft.odds);
+  const draftRecoveryGap = editingBetId
+    ? calculation.recoveryGap
+    : calculation.activeSequence
+      ? calculation.recoveryGap
+      : calculation.newSequenceRecoveryGap;
   const draftSuggestion = useMemo(
-    () => suggestStakeForOdds(calculation.recoveryGap, draftOdds, tracker.settings),
-    [calculation.recoveryGap, draftOdds, tracker.settings],
+    () => suggestStakeForOdds(draftRecoveryGap, draftOdds, tracker.settings),
+    [draftRecoveryGap, draftOdds, tracker.settings],
   );
   const editingBet = editingBetId
     ? tracker.bets.find((bet) => bet.id === editingBetId) ?? null
@@ -1241,6 +1250,11 @@ function App() {
       return;
     }
 
+    const sequenceStartRecoveryGap = editingBetId
+      ? editingBet?.sequenceStartRecoveryGap
+      : calculation.activeSequence
+        ? undefined
+        : calculation.newSequenceRecoveryGap;
     const bet: Bet = {
       id: editingBetId ?? createBetId(),
       label: draft.label.trim() || `Selection ${tracker.bets.length + 1}`,
@@ -1248,6 +1262,7 @@ function App() {
       odds,
       outcome: draft.outcome,
       ...(manualStake === undefined ? {} : { stakeOverride: manualStake }),
+      ...(sequenceStartRecoveryGap === undefined ? {} : { sequenceStartRecoveryGap }),
       strategy,
     };
 

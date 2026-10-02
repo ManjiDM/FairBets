@@ -16,6 +16,9 @@ create table if not exists public.bets (
   odds numeric(12, 4) not null check (odds > 1),
   outcome text not null check (outcome in ('open', 'won', 'lost')),
   stake_override numeric(12, 4) check (stake_override is null or stake_override > 0),
+  sequence_start_recovery_gap numeric(12, 4) check (
+    sequence_start_recovery_gap is null or sequence_start_recovery_gap >= 0
+  ),
   base_stake numeric(12, 4) check (base_stake is null or base_stake > 0),
   threshold numeric(12, 4) check (threshold is null or threshold > 0),
   recovery_weight numeric(12, 4) check (recovery_weight is null or (recovery_weight >= 0 and recovery_weight <= 1)),

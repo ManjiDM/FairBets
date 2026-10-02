@@ -18,6 +18,7 @@ export interface Bet {
   odds: number;
   outcome: Outcome;
   stakeOverride?: number;
+  sequenceStartRecoveryGap?: number;
   strategy: BetStrategy;
 }
 
@@ -96,6 +97,7 @@ export interface LedgerCalculation {
   goal: number;
   goalProgress: number;
   recoveryGap: number;
+  newSequenceRecoveryGap: number;
   nextOddsGuide: number;
   nextSuggestion: StakeSuggestion;
   wins: number;
@@ -292,10 +294,13 @@ export function calculateLedger(bets: Bet[], settings: StrategySettings): Ledger
 
     const safeOdds = bet.odds > 1 && Number.isFinite(bet.odds) ? bet.odds : 1.01;
     const baseStakeUnits = toMoneyUnits(bet.strategy.baseStake);
-    const recoveryBeforeUnits = Math.max(
-      0,
-      currentSequence.expectedProfitUnits - currentSequence.profitUnits,
-    );
+    const recoveryBeforeUnits =
+      currentSequence.bets.length === 0
+        ? toMoneyUnits(bet.sequenceStartRecoveryGap ?? 0)
+        : Math.max(
+            0,
+            currentSequence.expectedProfitUnits - currentSequence.profitUnits,
+          );
     const suggestion = suggestStakeForOdds(
       fromMoneyUnits(recoveryBeforeUnits),
       safeOdds,
@@ -373,17 +378,20 @@ export function calculateLedger(bets: Bet[], settings: StrategySettings): Ledger
 
   const sequences = sequenceAccumulators.map(toBetSequence);
   const activeSequence = sequences.findLast((sequence) => sequence.status === "active") ?? null;
-  const nextOddsGuide = calculatedBets.at(-1)?.odds ?? 1.3;
-  const nextSuggestion = suggestStakeForOdds(
-    activeSequence?.recoveryGap ?? 0,
-    nextOddsGuide,
-    settings,
-  );
   const settledProfit = fromMoneyUnits(totalProfitUnits);
   const expectedProfit = fromMoneyUnits(totalExpectedUnits);
   const openExposure = fromMoneyUnits(totalOpenExposureUnits);
   const settledBalance = settings.startingBalance + settledProfit;
   const goal = expectedProfit * settings.goalRate;
+  const newSequenceRecoveryGap = fromMoneyUnits(
+    Math.max(0, toMoneyUnits(goal) - toMoneyUnits(settledProfit)),
+  );
+  const nextOddsGuide = calculatedBets.at(-1)?.odds ?? 1.3;
+  const nextSuggestion = suggestStakeForOdds(
+    activeSequence?.recoveryGap ?? newSequenceRecoveryGap,
+    nextOddsGuide,
+    settings,
+  );
   const riskFlags: string[] = [];
 
   if (totalOpenExposureUnits > toMoneyUnits(settings.maxOpenExposure)) {
@@ -410,6 +418,7 @@ export function calculateLedger(bets: Bet[], settings: StrategySettings): Ledger
     goal,
     goalProgress: goal > 0 ? settledProfit / goal : 0,
     recoveryGap: activeSequence?.recoveryGap ?? 0,
+    newSequenceRecoveryGap,
     nextOddsGuide,
     nextSuggestion,
     wins,

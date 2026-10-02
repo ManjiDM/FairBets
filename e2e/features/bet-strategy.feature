@@ -6,6 +6,7 @@ Feature: Recorded strategy values
   Background:
     Given the FairBets app is available
     And I navigate to the Sequences view
+    And I start a fresh ledger
 
   Scenario: Raising the base stake leaves settled history untouched
     Given I note the available balance
@@ -47,7 +48,7 @@ Feature: Recorded strategy values
     And I set the starting balance to "100"
     And I set the base stake to "1"
     And I set the goal rate to "100" with full recovery weighting
-    And I add a bet labeled "Lead-in loss" with odds "1.50" and a manual stake of "1" placed at "2026-09-10T10:00"
+    And I add a bet labeled "Lead-in loss" with odds "1.50" placed at "2026-09-10T10:00"
     And I mark the bet "Lead-in loss" as "Lost"
     And I add a bet labeled "Lead-in win" with odds "1.50" and a manual stake of "2" placed at "2026-09-11T10:00"
     And I mark the bet "Lead-in win" as "Won"

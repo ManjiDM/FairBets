@@ -114,6 +114,19 @@ function optionalPositiveNumber(value: unknown, label: string): number | undefin
   return value === null || value === undefined ? undefined : readPositiveNumber(value, label);
 }
 
+function optionalNonNegativeNumber(value: unknown, label: string): number | undefined {
+  if (value === null || value === undefined) {
+    return undefined;
+  }
+
+  const numberValue = readNumber(value, label);
+  if (numberValue < 0) {
+    throw new Error(`Cloud data contains an invalid ${label} value.`);
+  }
+
+  return numberValue;
+}
+
 function strategyFromCloud(value: Record<string, unknown>): BetStrategy | undefined {
   const baseStake = optionalPositiveNumber(value.base_stake, "recorded base stake");
   const threshold = optionalPositiveNumber(value.threshold, "recorded threshold");
@@ -143,6 +156,10 @@ function betFromCloud(value: unknown): UnstampedBet {
   const placedAt = value.placed_at;
   const label = value.label;
   const stakeOverride = value.stake_override;
+  const sequenceStartRecoveryGap = optionalNonNegativeNumber(
+    value.sequence_start_recovery_gap,
+    "sequence start recovery gap",
+  );
 
   if (typeof id !== "string" || typeof placedAt !== "string" || typeof label !== "string") {
     throw new Error("Cloud data contains an incomplete bet.");
@@ -163,6 +180,7 @@ function betFromCloud(value: unknown): UnstampedBet {
     odds,
     outcome: readOutcome(value.outcome),
     ...(parsedStakeOverride === undefined ? {} : { stakeOverride: parsedStakeOverride }),
+    ...(sequenceStartRecoveryGap === undefined ? {} : { sequenceStartRecoveryGap }),
     ...(strategy === undefined ? {} : { strategy }),
   };
 }
@@ -267,7 +285,7 @@ export async function loadLatestCloudLedger(): Promise<CloudLedger | null> {
   const { data: betData, error: betError } = await client
     .from("bets")
     .select(
-      "id,placed_at,label,odds,outcome,stake_override,base_stake,threshold,recovery_weight,stake_rounding,max_stake",
+      "id,placed_at,label,odds,outcome,stake_override,sequence_start_recovery_gap,base_stake,threshold,recovery_weight,stake_rounding,max_stake",
     )
     .eq("ledger_id", ledger.id)
     .order("placed_at", { ascending: true });
@@ -345,6 +363,7 @@ export async function saveLedgerToCloud(
         odds: bet.odds,
         outcome: bet.outcome,
         stake_override: bet.stakeOverride ?? null,
+        sequence_start_recovery_gap: bet.sequenceStartRecoveryGap ?? null,
         base_stake: bet.strategy.baseStake,
         threshold: bet.strategy.threshold,
         recovery_weight: bet.strategy.recoveryWeight,

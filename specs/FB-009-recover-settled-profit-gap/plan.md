@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | Spec | [`spec.md`](./spec.md) |
-| Status | Approved |
+| Status | Done |
 | Updated | 2026-10-02 |
 
 > How the spec will be built. Written after every `[NEEDS CLARIFICATION]` marker in the

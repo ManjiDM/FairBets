@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | ID | `FB-009-recover-settled-profit-gap` |
-| Status | In progress |
+| Status | Shipped |
 | Created | 2026-10-02 |
 | Related | — |
 
@@ -130,16 +130,28 @@ imports remain unchanged and do not set the optional value.
 Confirm against [`../constitution.md`](../constitution.md), noting anything that needs
 discussion.
 
-- [ ] I. Private tracker, never an operator
-- [ ] II. Local-first
-- [ ] III. Deterministic domain logic
-- [ ] IV. UI and domain stay separated
-- [ ] V. The sequence model is preserved
-- [ ] VI. Risk limits stay enforced
-- [ ] VII. Data compatibility preserved
-- [ ] VIII. No secrets introduced
-- [ ] IX. Behaviour specified in Gherkin
-- [ ] X. Gates pass
+- [x] I. Private tracker, never an operator
+- [x] II. Local-first
+- [x] III. Deterministic domain logic
+- [x] IV. UI and domain stay separated
+- [x] V. The sequence model is preserved
+- [x] VI. Risk limits stay enforced
+- [x] VII. Data compatibility preserved
+- [x] VIII. No secrets introduced
+- [x] IX. Behaviour specified in Gherkin
+- [x] X. Gates pass
+
+## Verification
+
+- [x] New-sequence shortfall regression failed before implementation and passes after it.
+- [x] A new sequence at the expected-profit target starts at the base stake.
+- [x] Active-sequence recovery retains the existing stake calculation.
+- [x] The placed recovery gap and historical stakes persist unchanged after local reload.
+- [x] `pnpm lint`
+- [x] `pnpm build`
+- [x] `pnpm test:e2e`
+- [x] Cloud schema, migration, and parser/writer changes reviewed; live cloud round-trip
+  remains environment-dependent.
 
 ## Open questions
 
