@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | ID | `FB-009-recover-settled-profit-gap` |
-| Status | Clarified |
+| Status | Planned |
 | Created | 2026-10-02 |
 | Related | — |
 
@@ -57,6 +57,8 @@ starts at the base stake.
   maximum-stake rules.
 - **FR-7** A win MUST continue to close the active sequence. This feature applies only
   when starting a new sequence.
+- **FR-8** Once placed, a bet's new-sequence recovery basis MUST be retained so that
+  this feature does not re-price bets recorded before it was introduced.
 
 ## Business rules
 
@@ -103,8 +105,11 @@ Scenario: Do not apply ledger-wide recovery within an active sequence
 
 ## Data impact
 
-None expected. No saved ledger, local storage, cloud schema, or workbook format changes
-are anticipated.
+Newly placed bets may store an optional recovery-gap snapshot to preserve the
+new-sequence stake calculation. Existing local and cloud bets without this value must
+continue to load and retain their previously calculated stake behavior. Cloud storage
+requires a nullable column migration and matching parser/writer support. Workbook
+imports remain unchanged and do not set the optional value.
 
 ## Constitution check
 
@@ -124,7 +129,10 @@ discussion.
 
 ## Open questions
 
-None. The comparison is ledger-wide settled P&L against ledger expected profit multiplied by goal rate. It only affects a new sequence when no sequence is active; bets inside an active sequence retain the existing recovery calculation.
+None. The comparison is ledger-wide settled P&L against ledger expected profit
+multiplied by goal rate. It only affects a new sequence when no sequence is active;
+bets inside an active sequence retain the existing recovery calculation. Previously
+placed bets keep their existing recovery basis and are not re-priced.
 
 ## Out of scope for now
 
