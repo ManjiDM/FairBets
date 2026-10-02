@@ -27,6 +27,7 @@ Feature: FairBets app overview
     Then the settings panel should be visible alongside sequences
     And there should be no modal backdrop
     And Settings should not be a modal dialog
+    And the summary sidebar should remain visible
     And the brand control should be named "Close settings"
     When I toggle Settings using the brand control
     Then the settings drawer should be closed

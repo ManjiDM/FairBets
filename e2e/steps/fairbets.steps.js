@@ -109,15 +109,18 @@ When("I toggle Settings using the brand control", async function () {
 
 Then("the settings drawer should be visible below the toolbar", async function () {
   const toolbar = await this.page.locator(".topbar").boundingBox();
-  const settings = await this.page.locator(".settings-sidebar").boundingBox();
+  const settingsSidebar = this.page.locator(".settings-sidebar");
+  await expect(settingsSidebar).toHaveCSS("transform", "matrix(1, 0, 0, 1, 0, 0)");
+  const settings = await settingsSidebar.boundingBox();
   expect(toolbar).not.toBeNull();
   expect(settings).not.toBeNull();
+  expect(settings.x).toBe(0);
   expect(settings.y).toBeGreaterThanOrEqual(toolbar.y + toolbar.height);
   await expect(this.page.locator(".topbar")).toBeVisible();
 });
 
 Then("the settings drawer should be closed", async function () {
-  await expect(this.page.locator(".settings-sidebar")).toHaveCount(0);
+  await expect(this.page.locator(".settings-sidebar")).toBeHidden();
 });
 
 Then("there should be no Back to sequences button", async function () {
@@ -127,16 +130,29 @@ Then("there should be no Back to sequences button", async function () {
 Then("the settings panel should be visible alongside sequences", async function () {
   await expect(this.page.locator(".settings-sidebar")).toBeVisible();
   await expect(this.page.locator(".sequence-page")).toBeVisible();
+  const settings = await this.page.locator(".settings-sidebar").boundingBox();
+  const workspace = await this.page.locator(".workspace").boundingBox();
+  expect(settings).not.toBeNull();
+  expect(workspace).not.toBeNull();
+  expect(settings.x + settings.width).toBeLessThanOrEqual(workspace.x);
+  expect(settings.width).toBeCloseTo(320, 0);
 });
 
 Then("there should be no modal backdrop", async function () {
-  await expect(this.page.locator(".settings-backdrop")).toHaveCount(0);
+  const isInsideBackdrop = await this.page
+    .locator(".settings-sidebar")
+    .evaluate((panel) => Boolean(panel.closest(".modal-backdrop")));
+  expect(isInsideBackdrop).toBe(false);
 });
 
 Then("Settings should not be a modal dialog", async function () {
   await expect(
     this.page.getByRole("dialog", { name: "Strategy and safety settings" }),
   ).toHaveCount(0);
+});
+
+Then("the summary sidebar should remain visible", async function () {
+  await expect(this.page.locator(".summary-sidebar")).toBeVisible();
 });
 
 Then("the brand control should be named {string}", async function (name) {

@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | ID | `FB-008-settings-sidebar-layout` |
-| Status | In progress |
+| Status | Shipped |
 | Created | 2026-10-02 |
 | Related | — |
 
@@ -111,16 +111,24 @@ None. No saved ledger, local storage, cloud schema, or workbook format changes.
 Confirm against [`../constitution.md`](../constitution.md), noting anything that needs
 discussion.
 
-- [ ] I. Private tracker, never an operator
-- [ ] II. Local-first
-- [ ] III. Deterministic domain logic
-- [ ] IV. UI and domain stay separated
-- [ ] V. The sequence model is preserved
-- [ ] VI. Risk limits stay enforced
-- [ ] VII. Data compatibility preserved
-- [ ] VIII. No secrets introduced
+- [x] I. Private tracker, never an operator
+- [x] II. Local-first
+- [x] III. Deterministic domain logic
+- [x] IV. UI and domain stay separated
+- [x] V. The sequence model is preserved
+- [x] VI. Risk limits stay enforced
+- [x] VII. Data compatibility preserved
+- [x] VIII. No secrets introduced
 - [x] IX. Behaviour specified in Gherkin
-- [ ] X. Gates pass
+- [x] X. Gates pass
+
+## Verification
+
+- [x] Desktop Settings sidebar displays beside the sequences without overlap or backdrop.
+- [x] Mobile Settings drawer remains below the toolbar and has no modal backdrop.
+- [x] `pnpm lint`
+- [x] `pnpm build`
+- [x] `pnpm test:e2e`
 
 ## Open questions
 

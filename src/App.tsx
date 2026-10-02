@@ -1443,14 +1443,19 @@ function App() {
     setSettingsOpen(false);
   }
 
+  function toggleSettings() {
+    setSettingsOpen((open) => !open);
+    setDrawerOpen(false);
+  }
+
   return (
     <div className="app-shell">
       <header className="topbar">
         <button
           type="button"
           className="brand"
-          onClick={() => setSettingsOpen((open) => !open)}
-          aria-controls="settings-dialog"
+          onClick={toggleSettings}
+          aria-controls="settings-sidebar"
           aria-expanded={settingsOpen}
           aria-label={settingsOpen ? "Close settings" : "Open settings"}
         >
@@ -1465,7 +1470,10 @@ function App() {
           <button
             type="button"
             className="drawer-toggle"
-            onClick={() => setDrawerOpen((open) => !open)}
+            onClick={() => {
+              setDrawerOpen((open) => !open);
+              setSettingsOpen(false);
+            }}
             aria-controls="summary-sidebar"
             aria-expanded={drawerOpen}
             aria-label={drawerOpen ? "Close summary" : "Open summary"}
@@ -1491,7 +1499,7 @@ function App() {
         />
       </header>
 
-      <main className="main-content">
+      <main className={`main-content ${settingsOpen ? "settings-open" : ""}`}>
         {feedback && (
           <div className={`notice notice-${feedback.tone}`} role="status">
             <span>{feedback.text}</span>
@@ -1501,7 +1509,7 @@ function App() {
           </div>
         )}
 
-        <div className="workspace">
+        <div className={`workspace ${settingsOpen ? "settings-open" : ""}`}>
             <section className="sequence-page">
             {showRiskBanner && (
               <div className="risk-banner" role="alert">
@@ -1517,7 +1525,10 @@ function App() {
                   <button
                     type="button"
                     className="text-button"
-                    onClick={() => setSettingsOpen(true)}
+                    onClick={() => {
+                      setSettingsOpen(true);
+                      setDrawerOpen(false);
+                    }}
                   >
                     Review guardrails
                   </button>
@@ -1724,15 +1735,11 @@ function App() {
             </aside>
           </div>
 
-        {settingsOpen && (
-          <div className="modal-backdrop settings-backdrop" role="presentation">
-            <section
-              id="settings-dialog"
-              className="settings-page settings-modal"
-              role="dialog"
-              aria-modal="true"
-              aria-labelledby="settings-title"
-            >
+        <aside
+          id="settings-sidebar"
+          className={`settings-page settings-sidebar ${settingsOpen ? "drawer-open" : ""}`}
+          aria-labelledby="settings-title"
+        >
               <div className="modal-heading">
                 <div>
                   <p className="eyebrow">FairBets controls</p>
@@ -2011,9 +2018,7 @@ function App() {
                 </article>
               </aside>
             </div>
-            </section>
-          </div>
-        )}
+        </aside>
       </main>
 
       {isFormOpen && (
