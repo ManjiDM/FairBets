@@ -37,25 +37,27 @@ sequences start at base stake and do not add another global recovery allocation.
 
 **Primary user:** A person tracking several independent betting sequences.
 
-If a new sequence was assigned a positive ledger-wide recovery snapshot and is still
-active, another independent bet should not try to recover that same shortfall. The
-additional bet starts at base stake. Once every active sequence that owns a positive
-recovery allocation has closed with a win, a later new sequence may recover whatever
-shortfall remains based on current ledger results.
+If an active sequence is still recovering settled losses, another independent bet
+should not also add the ledger-wide recovery amount. The additional bet starts at base
+stake. An active sequence reserves recovery when its own settled results leave a
+positive sequence recovery gap, or when it carries a positive FB-009 recovery
+allocation that has not settled yet. Once every recovery-reserving sequence closes
+with a win, a later new sequence may recover whatever global shortfall remains based
+on current ledger results.
 
 ## Functional requirements
 
-- **FR-1** A sequence MUST count as an active global-recovery sequence when one of
-  its bets carries the positive ledger-wide recovery-gap snapshot recorded when that
-  sequence began, and the sequence has not closed with a win.
+- **FR-1** An active sequence MUST reserve new-sequence global recovery while its
+  sequence recovery gap is positive, or while one of its bets carries a positive
+  FB-009 recovery-gap snapshot.
 - **FR-2** While one or more active global-recovery sequences exist, a new independent
   sequence MUST have no ledger-wide recovery added to its suggested stake. Its
   suggestion MUST use base stake and the selected odds, subject to existing strategy
   and risk rules.
 - **FR-3** Bets added to an existing sequence MUST continue to use that sequence's
   recovery calculation and MUST NOT be treated as new global-recovery allocations.
-- **FR-4** Open exposure and parallel sequences that do not own positive global
-  recovery allocations MUST NOT by themselves reserve the global recovery gap.
+- **FR-4** An active sequence whose recovery gap and FB-009 recovery snapshots are
+  both zero MUST NOT reserve global recovery solely because it has an open bet.
 - **FR-5** When the last active global-recovery sequence closes with a win, the next
   new-sequence suggestion MUST recalculate any remaining ledger-wide shortfall from
   current settled P&L and expected profit.
@@ -70,9 +72,9 @@ shortfall remains based on current ledger results.
 
 | Input | Expected result | Notes |
 | --- | --- | --- |
-| One active sequence started with a positive FB-009 recovery snapshot | A new independent bet is suggested at base stake | Prevent duplicate ledger-wide allocation |
-| Several active sequences include one or more positive recovery snapshots | New independent bets remain at base stake | Reservation remains until every owning sequence closes |
-| Only active sequences have zero or no recovery snapshot | New independent bet uses the current ledger-wide shortfall | Ordinary open bets are not recovery reservations |
+| One active sequence has a positive sequence recovery gap | A new independent bet is suggested at base stake | Existing sequence is recovering settled losses |
+| One active sequence has a positive FB-009 snapshot but no settled sequence gap yet | A new independent bet is suggested at base stake | Includes an open recovery allocation |
+| All active sequences have zero recovery gap and zero recovery snapshots | New independent bet uses the current ledger-wide shortfall | An ordinary open bet alone does not reserve recovery |
 | All recovery-owning sequences close, and settled P&L remains below target | A later new sequence receives the remaining shortfall recovery | Recalculate using current totals |
 | Add a bet through a sequence's plus control | Use that sequence's recovery calculation | Not a separate global allocation |
 
@@ -103,6 +105,15 @@ Scenario: An open sequence without recovery allocation does not suppress recover
   And the ledger has a positive global recovery shortfall
   When I prepare a new independent bet
   Then its suggestion should include the current global recovery shortfall
+```
+
+```gherkin
+Scenario: An active loss-recovery sequence suppresses a duplicate global recovery
+  Given an active sequence has settled losses and a positive sequence recovery gap
+  And the ledger has a positive global recovery shortfall
+  When I prepare a new independent bet
+  Then its suggestion should be the base stake
+  And the existing sequence recovery should remain available
 ```
 
 ## Edge cases
@@ -143,9 +154,9 @@ discussion.
 
 ## Open questions
 
-None. The user confirmed that an active sequence with a positive FB-009 snapshot
-reserves the recovery allocation until that sequence wins and closes. Once every such
-sequence is closed, a later new sequence may recover any remaining shortfall.
+The user clarified that any sequence already recovering losses must prevent a parallel
+new sequence from allocating the same ledger shortfall. A positive FB-009 snapshot
+also reserves recovery before an open recovery bet has settled.
 
 ## Verification
 
