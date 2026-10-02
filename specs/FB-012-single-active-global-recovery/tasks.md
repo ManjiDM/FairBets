@@ -22,16 +22,17 @@
   duplicate global recovery.
   - Files: `e2e/features/bet-strategy.feature`
   - Done when: an active loss-recovery sequence keeps its own continuation suggestion
-    and a new independent bet is suggested at base stake.
+    and a new independent bet is suggested at base stake, including when multiple
+    active sequences are recovering losses.
   - Verify: `pnpm test:e2e`
 
 ## 2. Domain behavior
 
-- [x] **T-010** — Suppress the new-sequence recovery gap while a positive-snapshot
-  recovery owner is active.
+- [x] **T-010** — Suppress the new-sequence recovery gap while an active sequence has
+  a positive recovery gap or positive FB-009 snapshot.
   - Files: `src/domain/ledger.ts`
-  - Done when: active recovery owners reserve the global allocation; ordinary active
-    sequences do not; recovery resumes after every owner closes.
+  - Done when: loss-recovery sequences and unsettled FB-009 allocations reserve the
+    global gap; other open sequences do not; recovery resumes after owners close.
   - Verify: `pnpm test:e2e`
 
 ## 3. Documentation

@@ -108,8 +108,8 @@ Scenario: An open sequence without recovery allocation does not suppress recover
 ```
 
 ```gherkin
-Scenario: An active loss-recovery sequence suppresses a duplicate global recovery
-  Given an active sequence has settled losses and a positive sequence recovery gap
+Scenario: Active loss-recovery sequences suppress a duplicate global recovery
+  Given multiple active sequences have settled losses and positive sequence recovery gaps
   And the ledger has a positive global recovery shortfall
   When I prepare a new independent bet
   Then its suggestion should be the base stake
@@ -163,13 +163,15 @@ also reserves recovery before an open recovery bet has settled.
 - [x] The duplicate-allocation E2E regression failed before implementation
   (`€3.00` suggested instead of the expected `€1.00` for a parallel independent bet).
 - [x] While the recovery owner is active, another independent bet uses base stake.
+- [x] Multiple active loss-recovery sequences without positive FB-009 snapshots also
+  suppress new-sequence recovery.
 - [x] After the owner wins and closes, the next independent bet recovers only the
   remaining ledger shortfall (`€2.00` in the scenario).
 - [x] Existing FB-009 recovery behavior remains available when active sequences do
   not carry a positive recovery snapshot.
 - [x] `pnpm lint`
 - [x] `pnpm build`
-- [x] `pnpm test:e2e` (32 scenarios, 324 steps)
+- [x] `pnpm test:e2e` (33 scenarios, 366 steps)
 
 ## Out of scope for now
 

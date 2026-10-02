@@ -35,7 +35,7 @@ E2E scenarios for settled-loss recovery suppression and FB-009 snapshot suppress
 | File | Change | Notes |
 | --- | --- | --- |
 | `src/domain/ledger.ts` | Suppress global new-sequence gap when any active sequence has a positive recovery gap or snapshot | No schema/data change |
-| `e2e/features/bet-strategy.feature` | Verify loss-recovery and FB-009 snapshot suppression, plus remaining-gap recalculation after closure | |
+| `e2e/features/bet-strategy.feature` | Verify multiple loss-recovery sequences and FB-009 snapshot suppression, plus remaining-gap recalculation after closure | |
 | `specs/FB-012-single-active-global-recovery/*` | Track implementation and verification | |
 
 ## Domain changes
@@ -68,8 +68,8 @@ reordered by a backdated placement time. Stored snapshots and each sequence's
 - Add an E2E scenario with a positive global shortfall and one active recovery owner.
 - Assert the first recovery allocation still uses the FB-009 suggestion.
 - Assert a parallel independent bet is suggested and recorded at base stake.
-- Assert an active sequence with settled losses also suppresses new-sequence recovery
-  even without an FB-009 snapshot.
+- Assert multiple active sequences with settled losses also suppress new-sequence
+  recovery even without FB-009 snapshots.
 - Close the owning sequence with a win using a stake that leaves a measurable
   shortfall.
 - Assert a later new sequence recovers only the remaining shortfall.

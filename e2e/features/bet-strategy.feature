@@ -34,7 +34,11 @@ Feature: Recorded strategy values
     Then I see the available balance as "€100.00"
     And I add a bet labeled "First loss" with odds "1.50" and a manual stake of "1" placed at "2026-09-10T10:00"
     And I mark the bet "First loss" as "Lost"
-    When I prepare a bet labeled "Recovery win" with odds "1.50" placed at "2026-09-11T10:00"
+    When I press the plus button for the sequence containing the bet "First loss"
+    Then I see the new bet dialog
+    When I input the label "Recovery win"
+    And I input the date and time "2026-09-11T10:00"
+    And I input "1.50" in the odds field
     Then the suggested stake should be "€4.00"
     And I submit the prepared bet
     And the bet "Recovery win" should have a stake of "€4.00"
@@ -50,7 +54,13 @@ Feature: Recorded strategy values
     And I set the goal rate to "100" with full recovery weighting
     And I add a bet labeled "Lead-in loss" with odds "1.50" placed at "2026-09-10T10:00"
     And I mark the bet "Lead-in loss" as "Lost"
-    And I add a bet labeled "Lead-in win" with odds "1.50" and a manual stake of "2" placed at "2026-09-11T10:00"
+    When I press the plus button for the sequence containing the bet "Lead-in loss"
+    Then I see the new bet dialog
+    When I input the label "Lead-in win"
+    And I input the date and time "2026-09-11T10:00"
+    And I input "1.50" in the odds field
+    And I input "2" in the Manual Stake field
+    And I press the Add button
     And I mark the bet "Lead-in win" as "Won"
     Then the sequence containing the bet "Lead-in win" should be "Closed"
     And I see the available balance as "€100.00"
@@ -70,7 +80,13 @@ Feature: Recorded strategy values
     And I set the goal rate to "100" with full recovery weighting
     And I add a bet labeled "Allocation lead-in loss" with odds "1.50" placed at "2026-09-10T10:00"
     And I mark the bet "Allocation lead-in loss" as "Lost"
-    And I add a bet labeled "Allocation lead-in win" with odds "1.50" and a manual stake of "2" placed at "2026-09-11T10:00"
+    When I press the plus button for the sequence containing the bet "Allocation lead-in loss"
+    Then I see the new bet dialog
+    When I input the label "Allocation lead-in win"
+    And I input the date and time "2026-09-11T10:00"
+    And I input "1.50" in the odds field
+    And I input "2" in the Manual Stake field
+    And I press the Add button
     And I mark the bet "Allocation lead-in win" as "Won"
     When I prepare a bet labeled "Recovery allocation" with odds "1.50" placed at "2026-09-12T10:00"
     Then the suggested stake should be "€3.00"
@@ -90,14 +106,16 @@ Feature: Recorded strategy values
     And I set the goal rate to "100" with full recovery weighting
     And I add a bet labeled "Active sequence loss" with odds "1.50" and a manual stake of "1" placed at "2026-09-10T10:00"
     And I mark the bet "Active sequence loss" as "Lost"
+    And I add a bet labeled "Parallel sequence loss" with odds "1.50" and a manual stake of "1" placed at "2026-09-11T10:00"
+    And I mark the bet "Parallel sequence loss" as "Lost"
     When I press the plus button for the sequence containing the bet "Active sequence loss"
     Then I see the new bet dialog
     When I input the label "Sequence continuation"
-    And I input the date and time "2026-09-11T10:00"
+    And I input the date and time "2026-09-12T10:00"
     And I input "1.50" in the odds field
     Then the suggested stake should be "€4.00"
     When I cancel the bet form
-    And I prepare a bet labeled "Independent base bet" with odds "1.50" placed at "2026-09-12T10:00"
+    And I prepare a bet labeled "Independent base bet" with odds "1.50" placed at "2026-09-13T10:00"
     Then the suggested stake should be "€1.00"
     When I submit the prepared bet
     Then the bet "Independent base bet" should have a stake of "€1.00"
@@ -115,7 +133,12 @@ Feature: Recorded strategy values
     When I add a bet labeled "Before the change" with odds "2.00" placed at "2026-09-10T10:00"
     And I mark the bet "Before the change" as "Lost"
     And I set the base stake to "0.20"
-    And I add a bet labeled "After the change" with odds "2.00" placed at "2026-09-11T10:00"
+    And I press the plus button for the sequence containing the bet "Before the change"
+    Then I see the new bet dialog
+    When I input the label "After the change"
+    And I input the date and time "2026-09-11T10:00"
+    And I input "2.00" in the odds field
+    And I press the Add button
     Then the bet "Before the change" should have a stake of "€0.10"
     And the bet "After the change" should have a stake of "€0.40"
     And the sequence containing the bet "After the change" should be "Active"

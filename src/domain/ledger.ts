@@ -439,7 +439,8 @@ export function calculateLedger(bets: Bet[], settings: StrategySettings): Ledger
   const hasActiveRecoveryAllocation = sequences.some(
     (sequence) =>
       sequence.status === "active" &&
-      sequence.bets.some((bet) => (bet.sequenceStartRecoveryGap ?? 0) > 0),
+      (sequence.recoveryGap > 0 ||
+        sequence.bets.some((bet) => (bet.sequenceStartRecoveryGap ?? 0) > 0)),
   );
   const newSequenceRecoveryGap = hasActiveRecoveryAllocation ? 0 : ledgerWideRecoveryGap;
   const nextOddsGuide = calculatedBets.at(-1)?.odds ?? 1.3;
