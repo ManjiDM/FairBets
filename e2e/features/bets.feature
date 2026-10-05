@@ -47,10 +47,14 @@ Feature: Bet management
     And I press the Add button
     And I mark the bet "Icon sequence second" as "Won"
     Then the collapsed sequence should have no View button
+    When I request deletion of the collapsed sequence containing bet "Icon sequence first"
+    Then the sequence details for bet "Icon sequence first" should be collapsed
     When I toggle the sequence summary for bet "Icon sequence first"
     Then the sequence details for bet "Icon sequence first" should be expanded
-    When I toggle the sequence summary for bet "Icon sequence first"
+    When I press Enter on the sequence summary for bet "Icon sequence first"
     Then the sequence details for bet "Icon sequence first" should be collapsed
+    When I press Space on the sequence summary for bet "Icon sequence first"
+    Then the sequence details for bet "Icon sequence first" should be expanded
  
   Scenario: Add an independent bet while another sequence is open
     When I start a fresh ledger
@@ -255,6 +259,7 @@ Feature: Bet management
     And I add a bet labeled "Accepted loss" with odds "2.00" and a manual stake of "1" placed at "2026-09-13T12:00"
     And I mark the bet "Accepted loss" as "Lost"
     Then the close button for the sequence containing the bet "Accepted loss" should be visible
+    And the button named "Close sequence" should be icon-only
     And the settled P&L should be "-€1.00"
     When I close the sequence containing the bet "Accepted loss"
     Then the sequence containing the bet "Accepted loss" should be "Closed"

@@ -363,7 +363,7 @@ Then("the Add Bet button should be disabled", async function () {
 });
 
 Then("the button named {string} should be icon-only", async function (name) {
-  const button = this.page.getByRole("button", { name, exact: true });
+  const button = this.page.getByRole("button", { name, exact: true }).last();
   await expect(button).toBeVisible();
   await expect(button.locator("svg[aria-hidden='true']")).toHaveCount(1);
   await expect(button).toHaveAttribute("title", name);
@@ -376,12 +376,33 @@ Then("the collapsed sequence should have no View button", async function () {
   await expect(sequence.getByRole("button", { name: "View", exact: true })).toHaveCount(0);
 });
 
+When(
+  "I request deletion of the collapsed sequence containing bet {string}",
+  async function (label) {
+    const sequence = this.page.locator("details.compact-sequence-card").filter({
+      has: this.page.getByText(label, { exact: true }),
+    });
+    await sequence.getByRole("button", { name: "Delete", exact: true }).click();
+  },
+);
+
 When("I toggle the sequence summary for bet {string}", async function (label) {
   const sequence = this.page.locator("details.compact-sequence-card").filter({
     has: this.page.getByText(label, { exact: true }),
   });
   await sequence.locator("summary").click();
 });
+
+When(
+  "I press {word} on the sequence summary for bet {string}",
+  async function (key, label) {
+    const sequence = this.page.locator("details.compact-sequence-card").filter({
+      has: this.page.getByText(label, { exact: true }),
+    });
+    await sequence.locator("summary").focus();
+    await this.page.keyboard.press(key);
+  },
+);
 
 Then(
   "the sequence details for bet {string} should be {word}",
