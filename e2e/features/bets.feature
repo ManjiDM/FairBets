@@ -90,10 +90,13 @@ Feature: Bet management
     And I add a bet labeled "First same-second bet" with odds "1.50" placed at "2026-09-13T12:00:15"
     And I add a bet labeled "Second same-second bet" with odds "1.50" placed at "2026-09-13T12:00:15"
     Then the recording timestamps for "First same-second bet" and "Second same-second bet" should be unique within the same second
+    And the saved recording timestamps should be ordered as "First same-second bet" then "Second same-second bet"
+    And the sequence card titles should be ordered as "Second same-second bet" then "First same-second bet"
     And the recording time should display seconds without milliseconds for "Second same-second bet"
 
   Scenario: Legacy duplicate recording timestamps are normalized on load
     When I start a fresh ledger
+    And I freeze the browser clock at "2026-10-05T12:00:59.999"
     And I add a bet labeled "Legacy first" with odds "1.50" placed at "2026-09-13T12:00:15"
     And I add a bet labeled "Legacy second" with odds "1.50" placed at "2026-09-13T12:00:45"
     And I set the recording timestamps for "Legacy first" and "Legacy second" to the same value
