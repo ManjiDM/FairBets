@@ -20,6 +20,37 @@ Feature: Bet management
     And the sequence containing the bet "Single bet to close" should be "Closed"
     And I should see the bet settlement message
     Then I see the available balance as "€39.07"
+
+  Scenario: Add Bet and outcome actions are accessible icon-only buttons
+    When I start a fresh ledger
+    Then the button named "Add bet" should be icon-only
+    When I press the Add Bet button
+    Then I see the new bet dialog
+    And the button named "Add bet" should be icon-only
+    When I cancel the bet form
+    And I add a bet labeled "Icon actions" with odds "2.00" placed at "2026-09-13T12:00"
+    Then the button named "Won" should be icon-only
+    And the button named "Lost" should be icon-only
+    And the button named "Cancelled" should be icon-only
+
+  Scenario: Sequence actions use icons and the summary toggles details
+    When I start a fresh ledger
+    And I add a bet labeled "Icon sequence first" with odds "2.00" and a manual stake of "1" placed at "2026-09-13T12:00"
+    And I mark the bet "Icon sequence first" as "Lost"
+    Then the button named "Close sequence" should be icon-only
+    And the button named "Add bet to sequence 1" should be icon-only
+    When I press the plus button for the sequence containing the bet "Icon sequence first"
+    Then I see the new bet dialog
+    When I input the label "Icon sequence second"
+    And I input the date and time "2026-09-13T13:00"
+    And I input "2.00" in the odds field
+    And I press the Add button
+    And I mark the bet "Icon sequence second" as "Won"
+    Then the collapsed sequence should have no View button
+    When I toggle the sequence summary for bet "Icon sequence first"
+    Then the sequence details for bet "Icon sequence first" should be expanded
+    When I toggle the sequence summary for bet "Icon sequence first"
+    Then the sequence details for bet "Icon sequence first" should be collapsed
  
   Scenario: Add an independent bet while another sequence is open
     When I start a fresh ledger

@@ -362,6 +362,37 @@ Then("the Add Bet button should be disabled", async function () {
   ).toBeDisabled();
 });
 
+Then("the button named {string} should be icon-only", async function (name) {
+  const button = this.page.getByRole("button", { name, exact: true });
+  await expect(button).toBeVisible();
+  await expect(button.locator("svg[aria-hidden='true']")).toHaveCount(1);
+  await expect(button).toHaveAttribute("title", name);
+  expect((await button.innerText()).trim()).toBe("");
+});
+
+Then("the collapsed sequence should have no View button", async function () {
+  const sequence = this.page.locator("details.compact-sequence-card").first();
+  await expect(sequence).toBeVisible();
+  await expect(sequence.getByRole("button", { name: "View", exact: true })).toHaveCount(0);
+});
+
+When("I toggle the sequence summary for bet {string}", async function (label) {
+  const sequence = this.page.locator("details.compact-sequence-card").filter({
+    has: this.page.getByText(label, { exact: true }),
+  });
+  await sequence.locator("summary").click();
+});
+
+Then(
+  "the sequence details for bet {string} should be {word}",
+  async function (label, state) {
+    const sequence = this.page.locator("details.compact-sequence-card").filter({
+      has: this.page.getByText(label, { exact: true }),
+    });
+    await expect(sequence).toHaveJSProperty("open", state === "expanded");
+  },
+);
+
 Then("I see the new bet dialog", async function () {
   await expect(this.page.getByRole("dialog")).toBeVisible();
   await expect(this.page.getByRole("heading", { name: "Add a bet" })).toBeVisible();
