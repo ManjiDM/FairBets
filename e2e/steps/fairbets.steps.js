@@ -18,6 +18,10 @@ When("I reload the app", async function () {
   await this.page.reload({ waitUntil: "domcontentloaded" });
 });
 
+When("I freeze the browser clock at {string}", async function (dateTime) {
+  await this.page.clock.install({ time: new Date(dateTime) });
+});
+
 When("I remove recording timestamps from saved bets and reload", async function () {
   await this.page.evaluate(() => {
     const stored = window.localStorage.getItem("fairbets-ledger-state-v2");
@@ -437,10 +441,122 @@ Then(
   },
 );
 
-Then("no recording timestamp should be displayed", async function () {
-  const sequenceText = await this.page.locator(".sequence-list").innerText();
-  expect(sequenceText).not.toMatch(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z/);
+Then(
+  "the recording time should display seconds without milliseconds for {string}",
+  async function (label) {
+    await revealBet(this.page, label);
+    const displayedTime = await betCard(this.page, label)
+      .locator(".single-bet-info > span")
+      .first()
+      .innerText();
+    expect(displayedTime).toMatch(/\d{2}:\d{2}:\d{2}/);
+    expect(displayedTime).not.toMatch(/\.\d{3}/);
+  },
+);
+
+Then(
+  "the saved placement time for bet {string} should be {string}",
+  async function (label, placedAt) {
+    const savedPlacementTime = await this.page.evaluate((betLabel) => {
+      const stored = window.localStorage.getItem("fairbets-ledger-state-v2");
+      if (!stored) {
+        throw new Error("Saved FairBets ledger was not found.");
+      }
+      return JSON.parse(stored).bets.find((bet) => bet.label === betLabel)?.placedAt;
+    }, label);
+    expect(savedPlacementTime).toBe(placedAt);
+  },
+);
+
+When("I open the edit form for bet {string}", async function (label) {
+  await revealBet(this.page, label);
+  await betCard(this.page, label).getByRole("button", { name: "Edit", exact: true }).click();
 });
+
+Then("the date and time field should contain {string}", async function (dateTime) {
+  await expect(this.page.getByLabel("Date and time")).toHaveValue(dateTime);
+});
+
+When("I edit the placement time to {string}", async function (dateTime) {
+  await this.page.getByLabel("Date and time").fill(dateTime);
+  await this.page.getByRole("button", { name: "Save changes" }).click();
+  await expect(this.page.getByRole("dialog")).toHaveCount(0);
+});
+
+Then(
+  "the bet rows should be ordered by recording time as {string} then {string}",
+  async function (firstLabel, secondLabel) {
+    await expect(
+      this.page.locator(".active-sequence-bet-list .bet-description > strong"),
+    ).toHaveText([firstLabel, secondLabel]);
+  },
+);
+
+Then(
+  "the bet {string} should show calculated position {string}",
+  async function (label, position) {
+    await revealBet(this.page, label);
+    const card = betCard(this.page, label);
+    await expect(card.locator(".single-bet-state > span").first()).toHaveText(position);
+  },
+);
+
+When(
+  "I set the recording timestamps for {string} and {string} to the same value",
+  async function (firstLabel, secondLabel) {
+    await this.page.evaluate(([first, second]) => {
+      const stored = window.localStorage.getItem("fairbets-ledger-state-v2");
+      if (!stored) {
+        throw new Error("Saved FairBets ledger was not found.");
+      }
+      const ledger = JSON.parse(stored);
+      const firstBet = ledger.bets.find((bet) => bet.label === first);
+      const secondBet = ledger.bets.find((bet) => bet.label === second);
+      if (!firstBet?.createdAt || !secondBet) {
+        throw new Error("Both recorded bets must exist before creating a timestamp collision.");
+      }
+      secondBet.createdAt = firstBet.createdAt;
+      window.localStorage.setItem("fairbets-ledger-state-v2", JSON.stringify(ledger));
+    }, [firstLabel, secondLabel]);
+  },
+);
+
+Then(
+  "the recording timestamps for {string} and {string} should be unique within the same second",
+  async function (firstLabel, secondLabel) {
+    const timestamps = await this.page.evaluate(([first, second]) => {
+      const stored = window.localStorage.getItem("fairbets-ledger-state-v2");
+      if (!stored) {
+        throw new Error("Saved FairBets ledger was not found.");
+      }
+      const bets = JSON.parse(stored).bets;
+      return [first, second].map((label) => bets.find((bet) => bet.label === label)?.createdAt);
+    }, [firstLabel, secondLabel]);
+    expect(timestamps[0]).toBeTruthy();
+    expect(timestamps[1]).toBeTruthy();
+    expect(timestamps[0]).not.toBe(timestamps[1]);
+    expect(Math.floor(Date.parse(timestamps[0]) / 1000)).toBe(
+      Math.floor(Date.parse(timestamps[1]) / 1000),
+    );
+  },
+);
+
+Then(
+  "the saved recording timestamps should be ordered as {string} then {string}",
+  async function (firstLabel, secondLabel) {
+    const timestamps = await this.page.evaluate(([first, second]) => {
+      const stored = window.localStorage.getItem("fairbets-ledger-state-v2");
+      if (!stored) {
+        throw new Error("Saved FairBets ledger was not found.");
+      }
+      const bets = JSON.parse(stored).bets;
+      return [first, second].map((label) => bets.find((bet) => bet.label === label)?.createdAt);
+    }, [firstLabel, secondLabel]);
+    expect(timestamps[0]).toBeTruthy();
+    expect(timestamps[1]).toBeTruthy();
+    expect(Date.parse(timestamps[0])).toBeLessThan(Date.parse(timestamps[1]));
+  },
+);
 
 Then("the prominent title should show {string}", async function (title) {
   await expect(
