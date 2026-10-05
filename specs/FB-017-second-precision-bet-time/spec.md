@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | ID | `FB-017-second-precision-bet-time` |
-| Status | Draft |
+| Status | Clarified |
 | Created | 2026-10-05 |
 | Related | [FB-013](../FB-013-recording-order-and-odds-title/spec.md) |
 
@@ -43,30 +43,30 @@ bet is edited, saved, and reloaded.
 ## Functional requirements
 
 - **FR-1** The placement date/time input MUST allow second-level precision.
-- **FR-2** The user-entered placement timestamp MUST preserve seconds when saved and
-  when the bet is edited.
+- **FR-2** The user-entered placement time MUST preserve seconds when saved and when
+  the bet is edited. Displayed placement date/time MUST include seconds.
 - **FR-3** Bet chronological ordering MUST compare the placement timestamp, including
-  seconds, and MUST NOT use a bet ID or another unrelated value to order bets with
-  different timestamps.
-- **FR-4** Displayed placement date/time MUST include the seconds precision entered by
-  the user.
-- **FR-5** Existing bets saved with minute precision MUST remain readable and retain
-  their existing timestamp value.
+  seconds and milliseconds. The timestamp MUST be the sole chronological sort key;
+  bet IDs or other unrelated values MUST NOT be used as ordering tie-breakers.
+- **FR-4** When a user enters a time that collides with another bet at second precision,
+  the app MUST assign a unique millisecond value within that same second. The visible
+  input and displayed placement date/time MUST show only through seconds.
+- **FR-5** Existing bets saved with minute precision MUST remain readable. If multiple
+  existing bets have identical timestamps, the app MUST assign distinct milliseconds
+  in their existing stable order without changing their displayed second.
 - **FR-6** Internal recording timestamps used by FB-013 for ordering sequence cards
   MUST remain unchanged.
-- **FR-7** This change MUST NOT alter monetary calculations for bets whose chronological
-  order does not change.
-- **FR-8** When multiple bets have exactly the same placement timestamp, the required
-  ordering behavior is `[NEEDS CLARIFICATION: What should happen when two bets have
-  identical placement timestamps down to the second?]`.
+- **FR-7** Sequence progression MUST follow the resulting placement timestamps. Bets
+  whose timestamps do not collide MUST retain their existing chronological order.
+- **FR-8** Changing placement time MUST NOT alter any other entered bet value.
 
 ## Business rules
 
 | Input | Expected result | Notes |
 | --- | --- | --- |
 | Bet A is entered at 12:00:15 and bet B at 12:00:45 | B is later than A for chronological ordering | Same minute, distinct seconds |
-| A legacy bet has placement time 12:00 | It remains readable as 12:00:00 precision | No persisted-data migration required unless implementation shows otherwise |
-| Two bets share the same placement timestamp | `[NEEDS CLARIFICATION: Define tie behavior, such as preserve existing order, automatically make timestamps unique, or reject duplicates.]` | Must not rely on a bet ID if ordering is exclusively by timestamp |
+| Two bets are entered at 12:00:15 | Their stored timestamps receive distinct milliseconds within second 15 | Same visible time; timestamp remains the sole sort key |
+| Two legacy bets have the same minute-precision timestamp | Assign distinct milliseconds in existing stable order | Displayed second remains :00 |
 
 ## Acceptance scenarios
 
@@ -94,18 +94,22 @@ Scenario: Keep sequence-card recording order independent
 ```
 
 ```gherkin
-Scenario: Resolve identical second-precision timestamps
-  Given two bets have identical placement timestamps down to the second
-  When the ledger orders the bets
-  Then [NEEDS CLARIFICATION: specify the required behavior]
+Scenario: Distinguish bets entered at the same second
+  Given a bet has placement time 12:00:15
+  When I record another bet with placement time 12:00:15
+  Then each bet has a unique millisecond timestamp within second 15
+  And the bet order is determined only by those timestamps
+  And both displayed times remain 12:00:15
 ```
 
 ## Edge cases
 
 - Existing bet timestamps do not contain seconds.
 - An edited bet must not lose its seconds.
-- Two independent bets can be entered with identical second-precision timestamps.
-- Two bets in one sequence can be entered with identical timestamps.
+- Two independent bets can be entered with identical second-precision timestamps;
+  the stored millisecond values distinguish their order.
+- Two bets in one sequence can be entered with identical second-precision timestamps;
+  the stored millisecond values distinguish chronological progression.
 - A timestamp edit can change chronological ordering and therefore sequence progression.
 - Internal sequence-card recording order remains independent of placement-time edits.
 - Workbook imports retain their existing source precision and remain compatible.
@@ -114,7 +118,8 @@ Scenario: Resolve identical second-precision timestamps
 
 - `LedgerState` shape: unchanged; `placedAt` already stores a date/time string.
 - `localStorage` migration: not expected for existing minute-precision values.
-- Cloud schema: unchanged; the existing placement timestamp column stores seconds.
+- Cloud schema: unchanged; the existing placement timestamp column stores
+  millisecond precision.
 - Workbook import layout: unchanged; imported values keep their current precision.
 
 ## Constitution check
@@ -132,11 +137,9 @@ Scenario: Resolve identical second-precision timestamps
 
 ## Open questions
 
-- [NEEDS CLARIFICATION: What should happen when two bets have exactly the same
-  placement timestamp down to the second? Should their existing order be preserved,
-  should the app make timestamps unique, or should duplicate timestamps be rejected?]
-- [NEEDS CLARIFICATION: Should seconds be visible in the displayed bet date/time, or
-  should seconds only be available in the entry/edit control and ordering?]
+None. Seconds are visible in the entry/edit control and displayed date/time. Bets
+entered at the same second receive unique millisecond values within that second; the
+timestamp is the sole chronological sort key.
 
 ## Out of scope for now
 
