@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | ID | `FB-016-bet-description-filter` |
-| Status | Draft |
+| Status | Done |
 | Created | 2026-10-05 |
 | Related | None |
 
@@ -126,7 +126,7 @@ Scenario: Clear the description search
 - [x] VII. Data compatibility preserved
 - [x] VIII. No secrets introduced
 - [x] IX. Behaviour specified in Gherkin
-- [ ] X. Gates pass
+- [x] X. Gates pass
 
 ## Open questions
 

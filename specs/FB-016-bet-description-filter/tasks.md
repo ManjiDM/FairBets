@@ -11,13 +11,13 @@
 
 ## 1. Acceptance tests
 
-- [ ] **T-001** — Cover partial, case-insensitive search, odds formatting, and
+- [x] **T-001** — Cover partial, case-insensitive search, odds formatting, and
   multi-bet sequence child filtering.
   - Files: `e2e/features/bets.feature`, `e2e/steps/fairbets.steps.js`
   - Done when: tests express the spec and fail without the UI implementation.
   - Verify: `pnpm test:e2e`
 
-- [ ] **T-002** — Cover clearing search, no-match feedback, and standalone cancelled
+- [x] **T-002** — Cover clearing search, no-match feedback, and standalone cancelled
   record filtering.
   - Files: `e2e/features/bets.feature`, `e2e/steps/fairbets.steps.js`
   - Done when: all visible record collections respond consistently to the query.
@@ -25,13 +25,13 @@
 
 ## 2. UI
 
-- [ ] **T-010** — Render the search control and format descriptions with `@ <odds>`.
+- [x] **T-010** — Render the search control and format descriptions with `@ <odds>`.
   - Files: `src/App.tsx`, `src/App.css`
   - Done when: every bet card shows its custom description and odds together, or just
     odds when no custom description exists.
   - Verify: E2E description-format cases
 
-- [ ] **T-020** — Filter matching sequences, child bets, and standalone cancellations.
+- [x] **T-020** — Filter matching sequences, child bets, and standalone cancellations.
   - Files: `src/App.tsx`
   - Done when: matching is case-insensitive and partial, empty search restores prior
     visibility, and ledger calculations remain unchanged.
@@ -39,15 +39,15 @@
 
 ## 3. Documentation and gates
 
-- [ ] **T-030** — Align spec, plan, and tasks with shipped behavior.
+- [x] **T-030** — Align spec, plan, and tasks with shipped behavior.
   - Files: `specs/FB-016-bet-description-filter/*`
   - Done when: requirements, approach, and tests match implementation.
   - Verify: review
 
-- [ ] **T-040** — `pnpm lint` passes
-- [ ] **T-041** — `pnpm build` passes
-- [ ] **T-042** — `pnpm test:e2e` passes
-- [ ] **T-043** — Every acceptance scenario in `spec.md` is satisfied
+- [x] **T-040** — `pnpm lint` passes
+- [x] **T-041** — `pnpm build` passes
+- [x] **T-042** — `pnpm test:e2e` passes
+- [x] **T-043** — Every acceptance scenario in `spec.md` is satisfied
 
 ## Deferred
 

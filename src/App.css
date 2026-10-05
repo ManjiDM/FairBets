@@ -650,10 +650,22 @@ h3 {
   color: #f4fbf6;
 }
 
+.sequence-filter-controls {
+  display: flex;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.description-filter {
+  width: min(360px, 100%);
+}
+
 .filter-bar {
   display: inline-flex;
   gap: 4px;
-  margin-bottom: 20px;
+  margin-bottom: 0;
   padding: 4px;
   border: 1px solid var(--line);
   border-radius: 12px;
@@ -970,11 +982,30 @@ h3 {
   display: block;
 }
 
-.single-bet-info strong {
-  overflow: hidden;
+.bet-description {
+  display: flex;
+  align-items: baseline;
+  min-width: 0;
+  gap: 4px;
   margin-bottom: 4px;
+}
+
+.single-bet-info strong {
+  min-width: 0;
+  flex: 0 1 auto;
+  overflow: hidden;
+  margin-bottom: 0;
   font-size: 14px;
   text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.single-bet-info .bet-description-odds {
+  flex: 0 0 auto;
+  margin-left: 0;
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 700;
   white-space: nowrap;
 }
 

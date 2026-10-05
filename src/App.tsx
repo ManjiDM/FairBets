@@ -362,11 +362,40 @@ function formatOdds(odds: number): string {
   }).format(odds);
 }
 
-function betTitle(bet: Bet): string {
+function betLabel(bet: Bet): string {
   const label = bet.label.trim();
-  return bet.labelIsAutomatic || (!label && bet.labelIsAutomatic === undefined)
-    ? `${formatOdds(bet.odds)} odds`
-    : label;
+  return bet.labelIsAutomatic || (!label && bet.labelIsAutomatic === undefined) ? "" : label;
+}
+
+function betTitle(bet: Bet): string {
+  const label = betLabel(bet);
+  return label ? `${label} @ ${formatOdds(bet.odds)}` : `@ ${formatOdds(bet.odds)}`;
+}
+
+function matchesBetDescription(bet: Bet, filter: string): boolean {
+  const normalizedFilter = filter.trim().toLocaleLowerCase();
+  return !normalizedFilter || betTitle(bet).toLocaleLowerCase().includes(normalizedFilter);
+}
+
+function visibleSequenceBets(sequence: BetSequence, filter: string): CalculatedBet[] {
+  return filter.trim()
+    ? sequence.bets.filter((bet) => matchesBetDescription(bet, filter))
+    : sequence.bets;
+}
+
+function BetDescription({ bet }: { bet: Bet }) {
+  const label = betLabel(bet);
+  return (
+    <div className="bet-description">
+      <strong>{label || `@ ${formatOdds(bet.odds)}`}</strong>
+      {label ? (
+        <span className="bet-description-odds">
+          {" "}
+          @ {formatOdds(bet.odds)}
+        </span>
+      ) : null}
+    </div>
+  );
 }
 
 function formatPercent(value: number): string {
@@ -575,10 +604,8 @@ function SequenceBetRow({
         <span className={`status-badge status-${bet.outcome}`}>{outcomeLabel(bet.outcome)}</span>
       </div>
       <div className="single-bet-info">
-        <strong>{betTitle(bet)}</strong>
-        <span>
-          {formatDateTime(bet.placedAt)} | {formatOdds(bet.odds)} odds
-        </span>
+        <BetDescription bet={bet} />
+        <span>{formatDateTime(bet.placedAt)}</span>
       </div>
       <div className="single-bet-metrics">
         <span>
@@ -677,10 +704,8 @@ function StandaloneCancelledBetCard({
         <span className="status-badge status-cancelled">Cancelled</span>
       </div>
       <div className="single-bet-info">
-        <strong>{betTitle(bet)}</strong>
-        <span>
-          {formatDateTime(bet.placedAt)} | {formatOdds(bet.odds)} odds
-        </span>
+        <BetDescription bet={bet} />
+        <span>{formatDateTime(bet.placedAt)}</span>
       </div>
       <div className="single-bet-metrics">
         <span>
@@ -763,10 +788,8 @@ function SingleBetSequenceCard({
         </span>
       </div>
       <div className="single-bet-info">
-        <strong>{betTitle(bet)}</strong>
-        <span>
-          {formatDateTime(bet.placedAt)} | {formatOdds(bet.odds)} odds
-        </span>
+        <BetDescription bet={bet} />
+        <span>{formatDateTime(bet.placedAt)}</span>
       </div>
       <div className="single-bet-metrics">
         <span>
@@ -832,6 +855,7 @@ function SingleBetSequenceCard({
 
 function MultiBetSequenceCard({
   sequence,
+  descriptionFilter,
   currency,
   onSettle,
   onEdit,
@@ -842,6 +866,7 @@ function MultiBetSequenceCard({
   onConfirmSequenceDelete,
 }: {
   sequence: BetSequence;
+  descriptionFilter: string;
   currency: Currency;
   onSettle: (id: string, outcome: SettledOutcome) => void;
   onEdit: (bet: CalculatedBet) => void;
@@ -852,6 +877,7 @@ function MultiBetSequenceCard({
   onConfirmSequenceDelete: (key: string) => void;
 }) {
   const sequenceDeleteKey = `sequence:${sequence.id}`;
+  const visibleBets = visibleSequenceBets(sequence, descriptionFilter);
   const sequenceStatusLabel = sequence.status === "closed" ? "Closed" : "Active";
   const dateRange = sequence.endedAt
     ? `${formatDateTime(sequence.startedAt)} to ${formatDateTime(sequence.endedAt)}`
@@ -902,7 +928,7 @@ function MultiBetSequenceCard({
       </summary>
       <div className="compact-sequence-details">
         <div className="sequence-bet-list">
-          {sequence.bets.map((bet) => (
+          {visibleBets.map((bet) => (
             <SequenceBetRow
               key={bet.id}
               bet={bet}
@@ -922,6 +948,7 @@ function MultiBetSequenceCard({
 
 function ActiveSequenceCard({
   sequence,
+  descriptionFilter,
   currency,
   onSettle,
   onEdit,
@@ -934,6 +961,7 @@ function ActiveSequenceCard({
   onConfirmSequenceDelete,
 }: {
   sequence: BetSequence;
+  descriptionFilter: string;
   currency: Currency;
   onSettle: (id: string, outcome: SettledOutcome) => void;
   onEdit: (bet: CalculatedBet) => void;
@@ -946,6 +974,7 @@ function ActiveSequenceCard({
   onConfirmSequenceDelete: (key: string) => void;
 }) {
   const sequenceDeleteKey = `sequence:${sequence.id}`;
+  const visibleBets = visibleSequenceBets(sequence, descriptionFilter);
   return (
     <article className="sequence-card sequence-active">
       <div className="sequence-card-heading">
@@ -994,7 +1023,7 @@ function ActiveSequenceCard({
         </div>
       </div>
       <div className="sequence-bet-list active-sequence-bet-list">
-        {sequence.bets.map((bet) => (
+        {visibleBets.map((bet) => (
           <SequenceBetRow
             key={bet.id}
             bet={bet}
@@ -1021,6 +1050,7 @@ function App() {
   const [dismissedRiskKey, setDismissedRiskKey] = useState<string | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [historyFilter, setHistoryFilter] = useState<HistoryFilter>("all");
+  const [descriptionFilter, setDescriptionFilter] = useState("");
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [pendingDeleteKey, setPendingDeleteKey] = useState<string | null>(null);
   const [editingBetId, setEditingBetId] = useState<string | null>(null);
@@ -1075,16 +1105,24 @@ function App() {
   const historySequences = useMemo(() => {
     const matchingSequences = calculation.sequences.filter((sequence) => {
       if (historyFilter === "active") {
-        return sequence.status === "active";
+        if (sequence.status !== "active") {
+          return false;
+        }
+      } else if (historyFilter === "closed" && sequence.status !== "closed") {
+        return false;
       }
-      if (historyFilter === "closed") {
-        return sequence.status === "closed";
-      }
-      return true;
+      return sequence.bets.some((bet) => matchesBetDescription(bet, descriptionFilter));
     });
 
     return [...matchingSequences].reverse();
-  }, [calculation.sequences, historyFilter]);
+  }, [calculation.sequences, historyFilter, descriptionFilter]);
+  const standaloneCancelledBets = useMemo(
+    () =>
+      calculation.standaloneCancelledBets.filter((bet) =>
+        matchesBetDescription(bet, descriptionFilter),
+      ),
+    [calculation.standaloneCancelledBets, descriptionFilter],
+  );
   const goalProgress = Math.max(0, Math.min(calculation.goalProgress, 1));
   const riskKey = calculation.riskFlags.join("|");
   const showRiskBanner = calculation.riskFlags.length > 0 && dismissedRiskKey !== riskKey;
@@ -1842,21 +1880,32 @@ function App() {
               title={`${calculation.sequences.length} sequences`}
             />
 
-            <div className="filter-bar" aria-label="Sequence filter">
-              {(["all", "active", "closed"] as HistoryFilter[]).map((filter) => (
-                <button
-                  key={filter}
-                  type="button"
-                  className={historyFilter === filter ? "active" : ""}
-                  onClick={() => setHistoryFilter(filter)}
-                >
-                  {filter === "all"
-                    ? "All sequences"
-                    : filter === "active"
-                      ? "Active"
-                      : "Closed"}
-                </button>
-              ))}
+            <div className="sequence-filter-controls">
+              <label className="form-field description-filter">
+                <span>Filter by bet description</span>
+                <input
+                  type="search"
+                  value={descriptionFilter}
+                  onChange={(event) => setDescriptionFilter(event.target.value)}
+                  placeholder="Type part of a description"
+                />
+              </label>
+              <div className="filter-bar" aria-label="Sequence filter">
+                {(["all", "active", "closed"] as HistoryFilter[]).map((filter) => (
+                  <button
+                    key={filter}
+                    type="button"
+                    className={historyFilter === filter ? "active" : ""}
+                    onClick={() => setHistoryFilter(filter)}
+                  >
+                    {filter === "all"
+                      ? "All sequences"
+                      : filter === "active"
+                        ? "Active"
+                        : "Closed"}
+                  </button>
+                ))}
+              </div>
             </div>
 
             {historySequences.length ? (
@@ -1884,6 +1933,7 @@ function App() {
                       <ActiveSequenceCard
                         key={sequence.id}
                         sequence={sequence}
+                        descriptionFilter={descriptionFilter}
                         currency={tracker.settings.currency}
                         onSettle={settleBet}
                         onEdit={openEditBetForm}
@@ -1902,6 +1952,7 @@ function App() {
                     <MultiBetSequenceCard
                       key={sequence.id}
                       sequence={sequence}
+                      descriptionFilter={descriptionFilter}
                       currency={tracker.settings.currency}
                       onSettle={settleBet}
                       onEdit={openEditBetForm}
@@ -1915,34 +1966,67 @@ function App() {
                 })}
               </div>
             ) : calculation.sequences.length === 0 &&
-              calculation.standaloneCancelledBets.length === 0 ? (
+              standaloneCancelledBets.length === 0 ? (
               <div className="empty-state history-empty">
-                <strong>No bets recorded yet.</strong>
-                <p>Add a bet to calculate the first suggested stake.</p>
-                <button
-                  type="button"
-                  className="button button-primary"
-                  onClick={openNewBetForm}
-                >
-                  Add the first bet
-                </button>
+                {descriptionFilter.trim() ? (
+                  <>
+                    <strong>No bets match that description.</strong>
+                    <p>Try a different search.</p>
+                  </>
+                ) : (
+                  <>
+                    <strong>No bets recorded yet.</strong>
+                    <p>Add a bet to calculate the first suggested stake.</p>
+                    <button
+                      type="button"
+                      className="button button-primary"
+                      onClick={openNewBetForm}
+                    >
+                      Add the first bet
+                    </button>
+                  </>
+                )}
               </div>
             ) : calculation.sequences.length === 0 ? (
               <div className="empty-state history-empty">
-                <strong>No sequences yet.</strong>
-                <p>Cancelled bets are listed separately below.</p>
+                <strong>
+                  {descriptionFilter.trim() && standaloneCancelledBets.length > 0
+                    ? "No matching sequences."
+                    : descriptionFilter.trim()
+                      ? "No bets match that description."
+                      : "No sequences yet."}
+                </strong>
+                <p>
+                  {descriptionFilter.trim() && standaloneCancelledBets.length > 0
+                    ? "Matching cancelled bets are listed below."
+                    : descriptionFilter.trim()
+                      ? "Try a different search."
+                      : "Cancelled bets are listed separately below."}
+                </p>
               </div>
             ) : (
               <div className="empty-state history-empty">
-                <strong>No sequences match this filter.</strong>
-                <p>Use a different filter or add a new bet.</p>
+                <strong>
+                  {descriptionFilter.trim() && standaloneCancelledBets.length > 0
+                    ? "No matching sequences."
+                    : descriptionFilter.trim()
+                      ? "No bets match that description."
+                      : "No sequences match this filter."}
+                </strong>
+                <p>
+                  {descriptionFilter.trim() && standaloneCancelledBets.length > 0
+                    ? "Matching cancelled bets are listed below."
+                    : descriptionFilter.trim()
+                      ? "Try a different search."
+                      : "Use a different filter or add a new bet."}
+                </p>
               </div>
             )}
-            {calculation.standaloneCancelledBets.length > 0 ? (
+            {standaloneCancelledBets.length > 0 ? (
               <section className="standalone-cancelled-section">
                 <SectionTitle eyebrow="History" title="Cancelled bets" />
                 <div className="standalone-cancelled-list">
-                  {calculation.standaloneCancelledBets.map((bet) => (
+                  {standaloneCancelledBets.map((bet) => (
                     <StandaloneCancelledBetCard
                       key={bet.id}
                       bet={bet}
