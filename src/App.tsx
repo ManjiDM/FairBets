@@ -101,7 +101,7 @@ interface StoredLedgerState {
 }
 
 function isOutcome(value: unknown): value is Outcome {
-  return value === "open" || value === "won" || value === "lost";
+  return value === "open" || value === "won" || value === "lost" || value === "cancelled";
 }
 
 function isCurrency(value: unknown): value is Currency {
@@ -408,6 +408,9 @@ function outcomeLabel(outcome: Outcome): string {
   if (outcome === "lost") {
     return "Lost";
   }
+  if (outcome === "cancelled") {
+    return "Cancelled";
+  }
   return "Open";
 }
 
@@ -607,6 +610,13 @@ function SequenceBetRow({
             >
               Lost
             </button>
+            <button
+              type="button"
+              className="compact-outcome compact-cancelled"
+              onClick={() => onSettle(bet.id, "cancelled")}
+            >
+              Cancelled
+            </button>
           </>
         ) : null}
         <span className="compact-sequence-actions">
@@ -641,6 +651,61 @@ function SequenceAddBetButton({
     >
       <span aria-hidden="true">+</span>
     </button>
+  );
+}
+
+function StandaloneCancelledBetCard({
+  bet,
+  currency,
+  onEdit,
+  pendingDelete,
+  onRequestDelete,
+  onConfirmDelete,
+}: {
+  bet: CalculatedBet;
+  currency: Currency;
+  onEdit: (bet: CalculatedBet) => void;
+  pendingDelete: boolean;
+  onRequestDelete: (key: string) => void;
+  onConfirmDelete: (key: string) => void;
+}) {
+  const deleteKey = `bet:${bet.id}`;
+  return (
+    <article className="single-bet-card standalone-cancelled-card">
+      <div className="single-bet-state">
+        <span>Cancelled bet</span>
+        <span className="status-badge status-cancelled">Cancelled</span>
+      </div>
+      <div className="single-bet-info">
+        <strong>{betTitle(bet)}</strong>
+        <span>
+          {formatDateTime(bet.placedAt)} | {formatOdds(bet.odds)} odds
+        </span>
+      </div>
+      <div className="single-bet-metrics">
+        <span>
+          Stake <strong>{formatMoney(bet.stake, currency)}</strong>
+        </span>
+        <span>
+          P&amp;L{" "}
+          <strong className="amount-positive">
+            {formatSignedMoney(bet.profit, currency)}
+          </strong>
+        </span>
+      </div>
+      <div className="single-bet-actions">
+        <span className="compact-sequence-actions">
+          <button type="button" className="compact-action" onClick={() => onEdit(bet)}>
+            Edit
+          </button>
+          <InlineDeleteAction
+            pending={pendingDelete}
+            onRequest={() => onRequestDelete(deleteKey)}
+            onConfirm={() => onConfirmDelete(deleteKey)}
+          />
+        </span>
+      </div>
+    </article>
   );
 }
 
@@ -733,12 +798,20 @@ function SingleBetSequenceCard({
             >
               Lost
             </button>
+            <button
+              type="button"
+              className="compact-outcome compact-cancelled"
+              onClick={() => onSettle(bet.id, "cancelled")}
+            >
+              Cancelled
+            </button>
           </>
         ) : null}
         {sequence.status === "active" && bet.outcome === "lost" ? (
           <SequenceCloseButton sequence={sequence} onCloseSequence={onCloseSequence} />
         ) : null}
-        {sequence.status === "active" && bet.outcome === "lost" ? (
+        {sequence.status === "active" &&
+        (bet.outcome === "lost" || bet.outcome === "cancelled") ? (
           <SequenceAddBetButton sequence={sequence} onAddToSequence={onAddToSequence} />
         ) : null}
         <span className="compact-sequence-actions">
@@ -883,10 +956,12 @@ function ActiveSequenceCard({
         </div>
         <div className="sequence-card-actions">
           <span className="status-badge status-active">Active</span>
-          {sequence.bets.at(-1)?.outcome === "lost" &&
+          {["lost", "cancelled"].includes(sequence.bets.at(-1)?.outcome ?? "") &&
           !sequence.bets.some((bet) => bet.outcome === "open") ? (
             <>
-              <SequenceCloseButton sequence={sequence} onCloseSequence={onCloseSequence} />
+              {sequence.bets.at(-1)?.outcome === "lost" ? (
+                <SequenceCloseButton sequence={sequence} onCloseSequence={onCloseSequence} />
+              ) : null}
               <SequenceAddBetButton sequence={sequence} onAddToSequence={onAddToSequence} />
             </>
           ) : null}
@@ -1338,10 +1413,10 @@ function App() {
       if (
         !targetSequence ||
         targetSequence.status !== "active" ||
-        latestBet?.outcome !== "lost" ||
+        (latestBet?.outcome !== "lost" && latestBet?.outcome !== "cancelled") ||
         targetSequence.bets.some((bet) => bet.outcome === "open")
       ) {
-        setFormError("Only a sequence whose latest bet was lost can be continued.");
+        setFormError("Only a sequence whose latest bet was lost or cancelled can be continued.");
         return;
       }
     }
@@ -1839,7 +1914,8 @@ function App() {
                   );
                 })}
               </div>
-            ) : tracker.bets.length === 0 ? (
+            ) : calculation.sequences.length === 0 &&
+              calculation.standaloneCancelledBets.length === 0 ? (
               <div className="empty-state history-empty">
                 <strong>No bets recorded yet.</strong>
                 <p>Add a bet to calculate the first suggested stake.</p>
@@ -1851,12 +1927,35 @@ function App() {
                   Add the first bet
                 </button>
               </div>
+            ) : calculation.sequences.length === 0 ? (
+              <div className="empty-state history-empty">
+                <strong>No sequences yet.</strong>
+                <p>Cancelled bets are listed separately below.</p>
+              </div>
             ) : (
               <div className="empty-state history-empty">
                 <strong>No sequences match this filter.</strong>
                 <p>Use a different filter or add a new bet.</p>
               </div>
             )}
+            {calculation.standaloneCancelledBets.length > 0 ? (
+              <section className="standalone-cancelled-section">
+                <SectionTitle eyebrow="History" title="Cancelled bets" />
+                <div className="standalone-cancelled-list">
+                  {calculation.standaloneCancelledBets.map((bet) => (
+                    <StandaloneCancelledBetCard
+                      key={bet.id}
+                      bet={bet}
+                      currency={tracker.settings.currency}
+                      onEdit={openEditBetForm}
+                      pendingDelete={pendingDeleteKey === `bet:${bet.id}`}
+                      onRequestDelete={requestDelete}
+                      onConfirmDelete={confirmDelete}
+                    />
+                  ))}
+                </div>
+              </section>
+            ) : null}
             </section>
 
             <aside
@@ -2263,6 +2362,7 @@ function App() {
                     {!isEditingSettledBet && <option value="open">Open</option>}
                     <option value="won">Won</option>
                     <option value="lost">Lost</option>
+                    <option value="cancelled">Cancelled</option>
                   </select>
                 </label>
                 <label className="form-field">

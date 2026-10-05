@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | ID | `FB-015-cancelled-bets` |
-| Status | Draft |
+| Status | Done |
 | Created | 2026-10-05 |
 | Related | [FB-009](../FB-009-recover-settled-profit-gap/spec.md), [FB-010](../FB-010-parallel-sequences/spec.md), [FB-014](../FB-014-manually-close-sequence/spec.md) |
 
@@ -202,7 +202,7 @@ manual close closes it; cancellation leaves recovery continuation available.
 - [x] VII. Data compatibility preserved
 - [x] VIII. No secrets introduced
 - [x] IX. Behaviour specified in Gherkin
-- [ ] X. Gates pass
+- [x] X. Gates pass
 
 ## Open questions
 

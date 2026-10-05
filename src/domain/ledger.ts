@@ -1,6 +1,6 @@
 export type Currency = "EUR" | "GBP" | "USD";
 
-export type Outcome = "open" | "won" | "lost";
+export type Outcome = "open" | "won" | "lost" | "cancelled";
 export type SequenceStatus = "active" | "closed";
 
 export interface BetStrategy {
@@ -91,6 +91,7 @@ export interface LedgerCalculation {
   bets: CalculatedBet[];
   sequences: BetSequence[];
   activeSequences: BetSequence[];
+  standaloneCancelledBets: CalculatedBet[];
   settledProfit: number;
   expectedProfit: number;
   openExposure: number;
@@ -423,7 +424,9 @@ export function calculateLedger(bets: Bet[], settings: StrategySettings): Ledger
       : toMoneyUnits(suggestion.amount);
     const potentialProfitUnits = stakeProfitUnits(stakeUnits, safeOdds);
     const expectedProfitUnits =
-      bet.outcome === "open" ? 0 : stakeProfitUnits(baseStakeUnits, safeOdds);
+      bet.outcome === "won" || bet.outcome === "lost"
+        ? stakeProfitUnits(baseStakeUnits, safeOdds)
+        : 0;
     const profitUnits =
       bet.outcome === "won"
         ? potentialProfitUnits
@@ -442,7 +445,7 @@ export function calculateLedger(bets: Bet[], settings: StrategySettings): Ledger
       totalProfitUnits += profitUnits;
       if (bet.outcome === "won") {
         wins += 1;
-      } else {
+      } else if (bet.outcome === "lost") {
         losses += 1;
       }
     }
@@ -488,7 +491,7 @@ export function calculateLedger(bets: Bet[], settings: StrategySettings): Ledger
     const latestBet = sequence.bets.at(-1);
     if (
       sequence.status === "active" &&
-      latestBet?.outcome === "lost" &&
+      latestBet &&
       latestBet.sequenceManuallyClosed
     ) {
       sequence.status = "closed";
@@ -504,13 +507,19 @@ export function calculateLedger(bets: Bet[], settings: StrategySettings): Ledger
       ? dateDifference
       : left.id.localeCompare(right.id);
   });
-  sequenceAccumulators.forEach((sequence, index) => {
+  const standaloneCancelledBets = sequenceAccumulators
+    .filter((sequence) => sequence.bets.every((bet) => bet.outcome === "cancelled"))
+    .flatMap((sequence) => sequence.bets);
+  const visibleSequenceAccumulators = sequenceAccumulators.filter((sequence) =>
+    sequence.bets.some((bet) => bet.outcome !== "cancelled"),
+  );
+  visibleSequenceAccumulators.forEach((sequence, index) => {
     sequence.number = index + 1;
     sequence.bets.forEach((bet) => {
       bet.sequenceNumber = sequence.number;
     });
   });
-  const sequences = sequenceAccumulators.map(toBetSequence);
+  const sequences = visibleSequenceAccumulators.map(toBetSequence);
   const activeSequences = sequences.filter((sequence) => sequence.status === "active");
   const settledProfit = fromMoneyUnits(totalProfitUnits);
   const expectedProfit = fromMoneyUnits(totalExpectedUnits);
@@ -549,6 +558,7 @@ export function calculateLedger(bets: Bet[], settings: StrategySettings): Ledger
     bets: calculatedBets,
     sequences,
     activeSequences,
+    standaloneCancelledBets,
     settledProfit,
     expectedProfit,
     openExposure,

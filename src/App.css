@@ -603,6 +603,11 @@ h3 {
   background: var(--open-surface);
 }
 
+.status-cancelled {
+  color: #4f5e63;
+  background: #edf1f2;
+}
+
 .status-active {
   color: #78520d;
   background: var(--open-surface);
@@ -675,6 +680,20 @@ h3 {
 .sequence-list {
   display: grid;
   gap: 10px;
+}
+
+.standalone-cancelled-section {
+  margin-top: 24px;
+}
+
+.standalone-cancelled-list {
+  display: grid;
+  gap: 10px;
+}
+
+.standalone-cancelled-card {
+  border-color: #d3dcdf;
+  background: #f8fafb;
 }
 
 .compact-sequence-card {
@@ -916,6 +935,11 @@ h3 {
   background: var(--open-surface);
 }
 
+.nested-bet-cancelled {
+  border-color: #d3dcdf;
+  background: #f8fafb;
+}
+
 .single-bet-state {
   display: grid;
   gap: 5px;
@@ -1070,6 +1094,12 @@ h3 {
   border-color: #efc4c0;
   color: #98362e;
   background: #fff6f4;
+}
+
+.compact-cancelled {
+  border-color: #d3dcdf;
+  color: #4f5e63;
+  background: #f8fafb;
 }
 
 .sequence-bet-list {

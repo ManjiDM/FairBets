@@ -178,3 +178,107 @@ Feature: Bet management
     Then the bet "Three decimal odds" should display odds "1.235"
     When I reload the app
     Then the bet "Three decimal odds" should display odds "1.235"
+
+  Scenario: Cancel an open bet and return its stake
+    When I start a fresh ledger
+    And I set the starting balance to "100"
+    And I set the base stake to "1"
+    And I add a bet labeled "Open cancellation" with odds "2.00" and a manual stake of "1" placed at "2026-09-13T12:00"
+    Then I see the available balance as "€99.00"
+    When I cancel the open bet "Open cancellation"
+    Then the bet "Open cancellation" should be "Cancelled"
+    And the bet "Open cancellation" should have a stake of "€1.00"
+    And the settled P&L should be "€0.00"
+    And cancellation should leave no open exposure, wins, or losses
+    And I see the available balance as "€100.00"
+
+  Scenario: A cancelled standalone bet stays visible but is not a sequence
+    When I start a fresh ledger
+    And I set the starting balance to "100"
+    And I set the base stake to "1"
+    And I add a bet labeled "Standalone cancellation" with odds "2.00" and a manual stake of "1" placed at "2026-09-13T12:00"
+    When I mark the bet "Standalone cancellation" as "Cancelled"
+    Then the cancelled bet "Standalone cancellation" should be visible outside sequences
+    And I should see 0 sequences
+    And the settled P&L should be "€0.00"
+    And cancellation should leave no open exposure, wins, or losses
+    And the goal target should be "€0.00"
+
+  Scenario: Cancelling the latest sequence bet preserves recovery for continuation
+    When I start a fresh ledger
+    And I set the starting balance to "100"
+    And I set the base stake to "1"
+    And I set the goal rate to "100" with full recovery weighting
+    And I add a bet labeled "Sequence loss" with odds "1.50" and a manual stake of "1" placed at "2026-09-13T12:00"
+    And I mark the bet "Sequence loss" as "Lost"
+    And I press the plus button for the sequence containing the bet "Sequence loss"
+    Then I see the new bet dialog
+    When I input the label "Cancelled recovery attempt"
+    And I input the date and time "2026-09-13T13:00"
+    And I input "1.50" in the odds field
+    And I press the Add button
+    And I mark the bet "Cancelled recovery attempt" as "Cancelled"
+    Then the sequence containing the bet "Cancelled recovery attempt" should be "Active"
+    And the settled P&L should be "-€1.00"
+    And the plus button for the sequence containing the bet "Cancelled recovery attempt" should be visible
+    When I press the plus button for the sequence containing the bet "Cancelled recovery attempt"
+    Then I see the new bet dialog
+    When I input "1.50" in the odds field
+    And the suggested stake should be "€4.00"
+    When I cancel the bet form
+    And I reload the app
+    Then the sequence containing the bet "Cancelled recovery attempt" should be "Active"
+    And the plus button for the sequence containing the bet "Cancelled recovery attempt" should be visible
+
+  Scenario: Correcting a loss to Cancelled reverses the loss and persists
+    When I start a fresh ledger
+    And I set the starting balance to "100"
+    And I set the base stake to "1"
+    And I add a bet labeled "Loss corrected to cancellation" with odds "2.00" and a manual stake of "1" placed at "2026-09-13T12:00"
+    And I mark the bet "Loss corrected to cancellation" as "Lost"
+    Then the settled P&L should be "-€1.00"
+    When I mark the bet "Loss corrected to cancellation" as "Cancelled"
+    Then the settled P&L should be "€0.00"
+    And I see the available balance as "€100.00"
+    When I reload the app
+    Then the cancelled bet "Loss corrected to cancellation" should be visible outside sequences
+    When I mark the bet "Loss corrected to cancellation" as "Lost"
+    Then the settled P&L should be "-€1.00"
+    And I should see 1 sequences
+
+  Scenario: Correcting the only closing win to Cancelled reopens the sequence
+    When I start a fresh ledger
+    And I set the starting balance to "100"
+    And I set the base stake to "1"
+    And I add a bet labeled "Prior sequence loss" with odds "2.00" and a manual stake of "1" placed at "2026-09-13T12:00"
+    And I mark the bet "Prior sequence loss" as "Lost"
+    And I press the plus button for the sequence containing the bet "Prior sequence loss"
+    Then I see the new bet dialog
+    When I input the label "Closing win corrected"
+    And I input the date and time "2026-09-13T13:00"
+    And I input "2.00" in the odds field
+    And I input "2" in the Manual Stake field
+    And I press the Add button
+    And I mark the bet "Closing win corrected" as "Won"
+    Then the sequence containing the bet "Closing win corrected" should be "Closed"
+    When I mark the bet "Closing win corrected" as "Cancelled"
+    Then the sequence containing the bet "Closing win corrected" should be "Active"
+    And the settled P&L should be "-€1.00"
+    And the goal target should be "€0.75"
+    And the plus button for the sequence containing the bet "Closing win corrected" should be visible
+
+  Scenario: A sequence containing only cancelled bets is not counted
+    When I start a fresh ledger
+    And I add a bet labeled "First cancelled bet" with odds "2.00" and a manual stake of "1" placed at "2026-09-13T12:00"
+    And I mark the bet "First cancelled bet" as "Lost"
+    And I press the plus button for the sequence containing the bet "First cancelled bet"
+    Then I see the new bet dialog
+    When I input the label "Second cancelled bet"
+    And I input the date and time "2026-09-13T13:00"
+    And I input "2.00" in the odds field
+    And I press the Add button
+    And I mark the bet "First cancelled bet" as "Cancelled"
+    And I mark the bet "Second cancelled bet" as "Cancelled"
+    Then I should see 0 sequences
+    And the cancelled bet "First cancelled bet" should be visible outside sequences
+    And the cancelled bet "Second cancelled bet" should be visible outside sequences

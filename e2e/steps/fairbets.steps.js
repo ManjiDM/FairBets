@@ -468,6 +468,12 @@ Then("the prominent title {string} should be visible", async function (title) {
 
 Then("the bet {string} should be {string}", async function (label, outcome) {
   const normalizedOutcome = outcome.toLowerCase();
+  if (normalizedOutcome === "cancelled") {
+    const cancelledBet = betCard(this.page, label);
+    await expect(cancelledBet.locator(".status-cancelled")).toBeVisible();
+    return;
+  }
+
   const sequence = this.page.locator(".sequence-list > *").filter({
     has: this.page.getByText(label, { exact: true }),
   });
@@ -496,11 +502,35 @@ Then(
 );
 
 When("I mark the bet {string} as {string}", async function (label, outcome) {
+  if (outcome.toLowerCase() === "cancelled") {
+    await openBetEditor(this.page, label);
+    await this.page.locator(".bet-modal select").first().selectOption("cancelled");
+    await this.page.getByRole("button", { name: "Save changes" }).click();
+    await expect(this.page.getByRole("dialog")).toHaveCount(0);
+    return;
+  }
+
   await revealBet(this.page, label);
   const betCard = this.page.locator(".single-bet-card").filter({
     has: this.page.getByText(label, { exact: true }),
   }).first();
-  await betCard.getByRole("button", { name: outcome, exact: true }).click();
+  const directAction = betCard.getByRole("button", { name: outcome, exact: true });
+  if ((await directAction.count()) > 0) {
+    await directAction.click();
+    return;
+  }
+
+  await openBetEditor(this.page, label);
+  await this.page.locator(".bet-modal select").first().selectOption(outcome.toLowerCase());
+  await this.page.getByRole("button", { name: "Save changes" }).click();
+  await expect(this.page.getByRole("dialog")).toHaveCount(0);
+});
+
+When("I cancel the open bet {string}", async function (label) {
+  await revealBet(this.page, label);
+  await betCard(this.page, label)
+    .getByRole("button", { name: "Cancelled", exact: true })
+    .click();
 });
 
 Then("I should see the bet settlement message", async function () {
@@ -673,6 +703,33 @@ Then("the settled P&L should be {string}", async function (profit) {
   });
   await expect(metric.locator("strong")).toHaveText(profit);
 });
+
+Then("cancellation should leave no open exposure, wins, or losses", async function () {
+  const balance = this.page.locator(".metric-card").filter({
+    has: this.page.getByText("Available balance", { exact: true }),
+  });
+  await expect(balance.locator("span")).toHaveText("€0.00 committed to open bets");
+
+  const settled = this.page.locator(".metric-card").filter({
+    has: this.page.getByText("Settled P&L", { exact: true }),
+  });
+  await expect(settled.locator("span")).toHaveText("0 won and 0 lost");
+});
+
+Then("the goal target should be {string}", async function (target) {
+  const goal = this.page.locator(".goal-panel .goal-values strong").nth(1);
+  await expect(goal).toHaveText(target);
+});
+
+Then(
+  "the cancelled bet {string} should be visible outside sequences",
+  async function (label) {
+    const cancelledRecord = this.page.locator(".standalone-cancelled-list").filter({
+      has: this.page.getByText(label, { exact: true }),
+    });
+    await expect(cancelledRecord).toBeVisible();
+  },
+);
 
 Then(
   "the saved outcome for the bet {string} should be {string}",

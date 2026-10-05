@@ -66,7 +66,7 @@ function readCurrency(value: unknown): Currency {
 }
 
 function readOutcome(value: unknown): Outcome {
-  if (value === "open" || value === "won" || value === "lost") {
+  if (value === "open" || value === "won" || value === "lost" || value === "cancelled") {
     return value;
   }
 
