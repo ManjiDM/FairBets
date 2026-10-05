@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | ID | `FB-017-second-precision-bet-time` |
-| Status | Clarified |
+| Status | Done |
 | Created | 2026-10-05 |
 | Related | [FB-013](../FB-013-recording-order-and-odds-title/spec.md) |
 
@@ -55,8 +55,8 @@ their milliseconds, while the UI shows only seconds.
   calculations. Adding seconds may change progression where bets previously shared a
   minute timestamp.
 - **FR-3** The time a bet was added to FairBets MUST be the sole timestamp used to
-  order visible sequence cards and bet rows. Placement time and bet ID MUST NOT be
-  used to order this visible history.
+  order visible sequence cards, bet rows, and standalone cancelled bet cards.
+  Placement time and bet ID MUST NOT be used to order this visible history.
 - **FR-4** The recording timestamp MUST be shown with each bet through seconds.
   Milliseconds MUST remain hidden.
 - **FR-5** Recording timestamps MUST retain millisecond precision internally. Bets
@@ -66,7 +66,8 @@ their milliseconds, while the UI shows only seconds.
   MUST assign distinct milliseconds in their existing stable order.
 - **FR-7** Sequence cards MUST be ordered by the recording timestamp of their first
   recorded bet, newest first. Bet rows within a sequence MUST be ordered by their
-  individual recording timestamps, oldest first.
+  individual recording timestamps, oldest first. Standalone cancelled bet cards MUST
+  be ordered by recording timestamp, newest first.
 - **FR-8** Editing placement time MUST NOT change the recording timestamp or move the
   bet in the visible recording order.
 - **FR-9** Existing minute-precision placement times and records without a valid
@@ -151,7 +152,7 @@ Scenario: Editing placement time does not move a recorded bet
 - [x] VII. Data compatibility preserved
 - [x] VIII. No secrets introduced
 - [x] IX. Behaviour specified in Gherkin
-- [ ] X. Gates pass
+- [x] X. Gates pass
 
 ## Open questions
 

@@ -212,12 +212,13 @@ function loadLedger(): LoadedLedger {
     if (isLedgerState(currentValue)) {
       const bets = stampBets(currentValue.bets, currentValue.settings);
       if (
-        currentValue.bets.some(
-          (bet) =>
-            !bet.createdAt ||
-            !Number.isFinite(Date.parse(bet.createdAt)) ||
-            bet.labelIsAutomatic === undefined,
-        )
+        currentValue.bets.some((bet, index) => {
+          const stampedBet = bets[index];
+          return (
+            bet.createdAt !== stampedBet?.createdAt ||
+            bet.labelIsAutomatic === undefined
+          );
+        })
       ) {
         window.localStorage.setItem(
           STORAGE_KEY,
@@ -271,7 +272,7 @@ function loadLedger(): LoadedLedger {
 
 function toDateTimeInput(date = new Date()): string {
   const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60_000);
-  return localDate.toISOString().slice(0, 16);
+  return localDate.toISOString().slice(0, 19);
 }
 
 function toStrategyDraft(strategy: BetStrategy): BetStrategyDraft {
@@ -378,9 +379,29 @@ function matchesBetDescription(bet: Bet, filter: string): boolean {
 }
 
 function visibleSequenceBets(sequence: BetSequence, filter: string): CalculatedBet[] {
-  return filter.trim()
-    ? sequence.bets.filter((bet) => matchesBetDescription(bet, filter))
-    : sequence.bets;
+  return sequence.bets
+    .filter((bet) => matchesBetDescription(bet, filter))
+    .sort(compareBetsByRecordingTime);
+}
+
+function compareBetsByRecordingTime(left: Bet, right: Bet): number {
+  const leftTimestamp = left.createdAt ? Date.parse(left.createdAt) : Number.NaN;
+  const rightTimestamp = right.createdAt ? Date.parse(right.createdAt) : Number.NaN;
+  if (Number.isFinite(leftTimestamp) && Number.isFinite(rightTimestamp)) {
+    return leftTimestamp - rightTimestamp;
+  }
+  if (Number.isFinite(leftTimestamp)) {
+    return -1;
+  }
+  if (Number.isFinite(rightTimestamp)) {
+    return 1;
+  }
+  return 0;
+}
+
+function sequenceRecordingRange(sequence: BetSequence): [string, string] {
+  const orderedBets = [...sequence.bets].sort(compareBetsByRecordingTime);
+  return [orderedBets[0]?.createdAt ?? "", orderedBets.at(-1)?.createdAt ?? ""];
 }
 
 function BetDescription({ bet }: { bet: Bet }) {
@@ -416,6 +437,7 @@ function formatDateTime(value: string): string {
     month: "short",
     hour: "2-digit",
     minute: "2-digit",
+    second: "2-digit",
   }).format(date);
 }
 
@@ -605,7 +627,7 @@ function SequenceBetRow({
       </div>
       <div className="single-bet-info">
         <BetDescription bet={bet} />
-        <span>{formatDateTime(bet.placedAt)}</span>
+        <span>{formatDateTime(bet.createdAt ?? "")}</span>
       </div>
       <div className="single-bet-metrics">
         <span>
@@ -705,7 +727,7 @@ function StandaloneCancelledBetCard({
       </div>
       <div className="single-bet-info">
         <BetDescription bet={bet} />
-        <span>{formatDateTime(bet.placedAt)}</span>
+        <span>{formatDateTime(bet.createdAt ?? "")}</span>
       </div>
       <div className="single-bet-metrics">
         <span>
@@ -789,7 +811,7 @@ function SingleBetSequenceCard({
       </div>
       <div className="single-bet-info">
         <BetDescription bet={bet} />
-        <span>{formatDateTime(bet.placedAt)}</span>
+        <span>{formatDateTime(bet.createdAt ?? "")}</span>
       </div>
       <div className="single-bet-metrics">
         <span>
@@ -879,9 +901,10 @@ function MultiBetSequenceCard({
   const sequenceDeleteKey = `sequence:${sequence.id}`;
   const visibleBets = visibleSequenceBets(sequence, descriptionFilter);
   const sequenceStatusLabel = sequence.status === "closed" ? "Closed" : "Active";
+  const [firstRecordedAt, lastRecordedAt] = sequenceRecordingRange(sequence);
   const dateRange = sequence.endedAt
-    ? `${formatDateTime(sequence.startedAt)} to ${formatDateTime(sequence.endedAt)}`
-    : `Started ${formatDateTime(sequence.startedAt)}`;
+    ? `${formatDateTime(firstRecordedAt)} to ${formatDateTime(lastRecordedAt)}`
+    : `Recorded ${formatDateTime(firstRecordedAt)}`;
 
   return (
     <details className={`compact-sequence-card compact-sequence-${sequence.status}`}>
@@ -981,7 +1004,7 @@ function ActiveSequenceCard({
         <div>
           <p className="sequence-number">Sequence {sequence.number}</p>
           <h3>In progress</h3>
-          <span>Started {formatDateTime(sequence.startedAt)}</span>
+          <span>Recorded {formatDateTime(sequenceRecordingRange(sequence)[0])}</span>
         </div>
         <div className="sequence-card-actions">
           <span className="status-badge status-active">Active</span>
@@ -1118,9 +1141,9 @@ function App() {
   }, [calculation.sequences, historyFilter, descriptionFilter]);
   const standaloneCancelledBets = useMemo(
     () =>
-      calculation.standaloneCancelledBets.filter((bet) =>
-        matchesBetDescription(bet, descriptionFilter),
-      ),
+      calculation.standaloneCancelledBets
+        .filter((bet) => matchesBetDescription(bet, descriptionFilter))
+        .sort((left, right) => compareBetsByRecordingTime(right, left)),
     [calculation.standaloneCancelledBets, descriptionFilter],
   );
   const goalProgress = Math.max(0, Math.min(calculation.goalProgress, 1));
@@ -1410,7 +1433,7 @@ function App() {
     setTargetSequenceId(null);
     setDraft({
       label: bet.labelIsAutomatic ? "" : bet.label,
-      placedAt: bet.placedAt.slice(0, 16),
+      placedAt: toDateTimeInput(new Date(bet.placedAt)),
       odds: String(bet.odds),
       outcome: bet.outcome,
       stakeOverride: bet.stakeOverride === undefined ? "" : String(bet.stakeOverride),
@@ -2414,6 +2437,7 @@ function App() {
                   <span>Date and time</span>
                   <input
                     type="datetime-local"
+                    step="1"
                     value={draft.placedAt}
                     onChange={(event) =>
                       setDraft((current) => ({ ...current, placedAt: event.target.value }))

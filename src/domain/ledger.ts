@@ -236,13 +236,75 @@ export function stampBets(bets: UnstampedBet[], settings: StrategySettings): Bet
       Number.isFinite(placedAt) ? placedAt : 0,
     );
   }, 0);
+  const existingTimestamps = bets.map((bet) =>
+    bet.createdAt ? Date.parse(bet.createdAt) : Number.NaN,
+  );
+  const timestampGroups = new Map<number, number[]>();
+  existingTimestamps.forEach((timestamp, index) => {
+    if (Number.isFinite(timestamp)) {
+      const group = timestampGroups.get(timestamp) ?? [];
+      group.push(index);
+      timestampGroups.set(timestamp, group);
+    }
+  });
+  const usedTimestamps = new Set(
+    existingTimestamps.filter((timestamp) => Number.isFinite(timestamp)),
+  );
+  const normalizedTimestamps = new Map<number, number>();
   let nextTimestamp = latestExistingTimestamp;
 
-  return bets.map((bet) => {
-    const createdAt =
-      bet.createdAt && Number.isFinite(Date.parse(bet.createdAt))
-        ? bet.createdAt
-        : new Date(++nextTimestamp).toISOString();
+  for (const [timestamp, indices] of timestampGroups) {
+    if (indices.length < 2) {
+      continue;
+    }
+
+    const secondStart = Math.floor(timestamp / 1000) * 1000;
+    const availableInSecond = Array.from(
+      { length: 1000 },
+      (_, offset) => secondStart + offset,
+    ).filter((candidate) => candidate === timestamp || !usedTimestamps.has(candidate));
+    const afterTimestamp = availableInSecond.filter((candidate) => candidate >= timestamp);
+    // Keep the original displayed second when possible, even when its last millisecond collides.
+    let assignments =
+      afterTimestamp.length >= indices.length
+        ? afterTimestamp.slice(0, indices.length)
+        : availableInSecond
+            .filter((candidate) => candidate <= timestamp)
+            .slice(-indices.length);
+
+    if (assignments.length < indices.length) {
+      assignments = indices.map(() => {
+        do {
+          nextTimestamp += 1;
+        } while (usedTimestamps.has(nextTimestamp));
+        usedTimestamps.add(nextTimestamp);
+        return nextTimestamp;
+      });
+    }
+
+    indices.forEach((index, assignmentIndex) => {
+      const assignedTimestamp = assignments[assignmentIndex];
+      normalizedTimestamps.set(index, assignedTimestamp);
+      usedTimestamps.add(assignedTimestamp);
+    });
+  }
+
+  return bets.map((bet, index) => {
+    const existingCreatedAt = bet.createdAt;
+    const existingTimestamp = existingTimestamps[index];
+    let createdAt = existingCreatedAt;
+    if (!Number.isFinite(existingTimestamp)) {
+      do {
+        nextTimestamp += 1;
+      } while (usedTimestamps.has(nextTimestamp));
+      usedTimestamps.add(nextTimestamp);
+      createdAt = new Date(nextTimestamp).toISOString();
+    } else if (normalizedTimestamps.has(index)) {
+      const normalizedTimestamp = normalizedTimestamps.get(index);
+      if (normalizedTimestamp !== undefined && normalizedTimestamp !== existingTimestamp) {
+        createdAt = new Date(normalizedTimestamp).toISOString();
+      }
+    }
 
     return {
       ...bet,

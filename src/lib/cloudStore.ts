@@ -168,8 +168,7 @@ function betFromCloud(value: unknown): UnstampedBet {
   if (
     typeof id !== "string" ||
     typeof placedAt !== "string" ||
-    typeof createdAt !== "string" ||
-    !Number.isFinite(Date.parse(createdAt)) ||
+    (createdAt !== undefined && createdAt !== null && typeof createdAt !== "string") ||
     typeof label !== "string" ||
     typeof labelIsAutomatic !== "boolean" ||
     typeof sequenceManuallyClosed !== "boolean"
@@ -195,7 +194,7 @@ function betFromCloud(value: unknown): UnstampedBet {
   return {
     id,
     placedAt,
-    createdAt,
+    ...(typeof createdAt === "string" ? { createdAt } : {}),
     label,
     labelIsAutomatic,
     odds,
@@ -311,7 +310,8 @@ export async function loadLatestCloudLedger(): Promise<CloudLedger | null> {
       "id,placed_at,created_at,label,label_is_automatic,odds,outcome,sequence_id,sequence_manually_closed,stake_override,sequence_start_recovery_gap,base_stake,threshold,recovery_weight,stake_rounding,max_stake",
     )
     .eq("ledger_id", ledger.id)
-    .order("placed_at", { ascending: true });
+    .order("placed_at", { ascending: true })
+    .order("created_at", { ascending: true });
 
   if (betError) {
     throw new Error(`Cloud bets could not be loaded: ${betError.message}`);

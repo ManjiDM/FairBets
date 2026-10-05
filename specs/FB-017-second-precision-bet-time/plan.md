@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | Spec | [`spec.md`](./spec.md) |
-| Status | Approved |
+| Status | Done |
 | Updated | 2026-10-05 |
 
 > How the spec will be built. Written after every `[NEEDS CLARIFICATION]` marker in the
@@ -36,7 +36,7 @@ sort keys; either would contradict the clarified requirement.
 | File | Change | Notes |
 | --- | --- | --- |
 | `src/domain/ledger.ts` | Normalize missing/duplicate `createdAt` values deterministically; retain strictly increasing recording timestamp generation | Leave placement-time calculation comparator unchanged |
-| `src/App.tsx` | Make placement input second-precision; display `createdAt` to seconds; sort bet rows by `createdAt`; show recording time in sequence headers | Keep `placedAt` editable and used for calculation only |
+| `src/App.tsx` | Make placement input second-precision; display `createdAt` to seconds; sort bet rows and standalone cancelled cards by `createdAt`; show recording time in sequence headers | Keep `placedAt` editable and used for calculation only |
 | `src/lib/cloudStore.ts` | Order cloud rows by placement time and recording time before normalization | No schema change |
 | `e2e/features/bets.feature` | Cover placement-second retention, recording-time card/row ordering, same-second creation, and edit/reload stability | Update FB-013 assertion that recording time is not displayed |
 | `e2e/steps/fairbets.steps.js` | Add recording timestamp assertions and seconds display assertions | |

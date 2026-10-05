@@ -11,14 +11,14 @@
 
 ## 1. Regression scenarios
 
-- [ ] **T-001** — Cover second-level placement input and recording-time display/order
+- [x] **T-001** — Cover second-level placement input and recording-time display/order
   for independent bets and bet rows inside one sequence.
   - Files: `e2e/features/bets.feature`, `e2e/steps/fairbets.steps.js`
   - Done when: assertions fail before implementation and distinguish placement order
     from recording order.
   - Verify: `pnpm test:e2e`
 
-- [ ] **T-002** — Cover same-second recording precision, edit/reload stability, and
+- [x] **T-002** — Cover same-second recording precision, edit/reload stability, and
   legacy duplicate/missing recording timestamps.
   - Files: `e2e/features/bets.feature`, `e2e/steps/fairbets.steps.js`
   - Done when: timestamps are unique internally, displayed only to seconds, and
@@ -27,7 +27,7 @@
 
 ## 2. Domain and compatibility
 
-- [ ] **T-010** — Normalize missing or duplicate recording timestamps without changing
+- [x] **T-010** — Normalize missing or duplicate recording timestamps without changing
   placement-time calculation order.
   - Files: `src/domain/ledger.ts`, `src/App.tsx`, `src/lib/cloudStore.ts`
   - Done when: recording timestamps are valid and unique before visible sorting; cloud
@@ -36,14 +36,15 @@
 
 ## 3. UI
 
-- [ ] **T-020** — Add seconds to the editable placement-time control and show the
+- [x] **T-020** — Add seconds to the editable placement-time control and show the
   recording timestamp on bet cards through seconds.
   - Files: `src/App.tsx`
   - Done when: entered placement seconds survive edit/reload and displayed bet cards
     show recording time, not placement time or milliseconds.
   - Verify: precision and display E2E cases
 
-- [ ] **T-030** — Render sequences and their bet rows in recording-time order.
+- [x] **T-030** — Render sequences, bet rows, and standalone cancelled cards in
+  recording-time order.
   - Files: `src/App.tsx`
   - Done when: list ordering uses `createdAt` only while calculations continue to use
     `placedAt`.
@@ -51,15 +52,15 @@
 
 ## 4. Documentation and gates
 
-- [ ] **T-040** — Align spec, plan, and tasks with shipped behavior.
+- [x] **T-040** — Align spec, plan, and tasks with shipped behavior.
   - Files: `specs/FB-017-second-precision-bet-time/*`
   - Done when: implementation and verification match the clarified contract.
   - Verify: review
 
-- [ ] **T-050** — `pnpm lint` passes
-- [ ] **T-051** — `pnpm build` passes
-- [ ] **T-052** — `pnpm test:e2e` passes
-- [ ] **T-053** — Every acceptance scenario in `spec.md` is satisfied
+- [x] **T-050** — `pnpm lint` passes
+- [x] **T-051** — `pnpm build` passes
+- [x] **T-052** — `pnpm test:e2e` passes
+- [x] **T-053** — Every acceptance scenario in `spec.md` is satisfied
 
 ## Deferred
 
