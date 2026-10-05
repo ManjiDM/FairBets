@@ -115,6 +115,46 @@ Feature: Bet management
     And the plus button for the sequence containing the bet "Sequence A open bet" should be hidden
     And the bet "Sequence B open bet" should be "Open"
 
+  Scenario: Close a sequence after accepting its settled loss
+    When I start a fresh ledger
+    And I set the starting balance to "100"
+    And I set the base stake to "1"
+    And I add a bet labeled "Accepted loss" with odds "2.00" and a manual stake of "1" placed at "2026-09-13T12:00"
+    And I mark the bet "Accepted loss" as "Lost"
+    Then the close button for the sequence containing the bet "Accepted loss" should be visible
+    And the settled P&L should be "-€1.00"
+    When I close the sequence containing the bet "Accepted loss"
+    Then the sequence containing the bet "Accepted loss" should be "Closed"
+    And the bet "Accepted loss" should be "Lost"
+    And the settled P&L should be "-€1.00"
+    And the sequence containing the bet "Accepted loss" should not offer a continue action
+    When I reload the app
+    Then the sequence containing the bet "Accepted loss" should be "Closed"
+    And the settled P&L should be "-€1.00"
+    And the sequence containing the bet "Accepted loss" should not offer a continue action
+
+  Scenario: An open bet cannot be manually closed
+    When I start a fresh ledger
+    And I add a bet labeled "Still open" with odds "2.00" placed at "2026-09-13T12:00"
+    Then the close button for the sequence containing the bet "Still open" should be hidden
+    And the bet "Still open" should be "Open"
+
+  Scenario: Close a multi-bet sequence after its latest loss
+    When I start a fresh ledger
+    And I add a bet labeled "First loss" with odds "2.00" placed at "2026-09-13T12:00"
+    And I mark the bet "First loss" as "Lost"
+    And I press the plus button for the sequence containing the bet "First loss"
+    Then I see the new bet dialog
+    When I input the label "Second loss"
+    And I input the date and time "2026-09-13T13:00"
+    And I input "2.00" in the odds field
+    And I press the Add button
+    And I mark the bet "Second loss" as "Lost"
+    Then the close button for the sequence containing the bet "Second loss" should be visible
+    When I close the sequence containing the bet "Second loss"
+    Then the sequence containing the bet "Second loss" should be "Closed"
+    And the sequence containing the bet "Second loss" should not offer a continue action
+
   Scenario: Open exposure from parallel sequences shares the configured limit
     When I start a fresh ledger
     And I add a bet labeled "First exposure" with odds "2.00" and a manual stake of "3" placed at "2026-09-13T12:00"

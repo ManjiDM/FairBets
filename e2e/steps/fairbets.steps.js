@@ -288,6 +288,48 @@ Then(
   },
 );
 
+Then(
+  "the close button for the sequence containing the bet {string} should be {word}",
+  async function (label, visibility) {
+    const sequence = this.page.locator(".sequence-list > *").filter({
+      has: this.page.getByText(label, { exact: true }),
+    });
+    const button = sequence.getByRole("button", {
+      name: "Close sequence",
+      exact: true,
+    });
+    if (visibility === "visible") {
+      await expect(button).toBeVisible();
+    } else {
+      await expect(button).toHaveCount(0);
+    }
+  },
+);
+
+When(
+  "I close the sequence containing the bet {string}",
+  async function (label) {
+    const sequence = this.page.locator(".sequence-list > *").filter({
+      has: this.page.getByText(label, { exact: true }),
+    });
+    await sequence.getByRole("button", {
+      name: "Close sequence",
+      exact: true,
+    }).click();
+  },
+);
+
+Then(
+  "the sequence containing the bet {string} should not offer a continue action",
+  async function (label) {
+    const sequence = this.page.locator(".sequence-list > *").filter({
+      has: this.page.getByText(label, { exact: true }),
+    });
+    await expect(sequence.getByRole("button", { name: "Close sequence" })).toHaveCount(0);
+    await expect(sequence.getByRole("button", { name: /^Add bet to sequence \d+$/ })).toHaveCount(0);
+  },
+);
+
 When(
   "I press the plus button for the sequence containing the bet {string}",
   async function (label) {
