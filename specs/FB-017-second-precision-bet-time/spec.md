@@ -42,7 +42,8 @@ from when they were placed.
 The user continues to enter or edit when a bet was placed, now down to seconds. The app
 continues to use this value for sequence progression. The bet history shows when each
 bet was added to FairBets and uses that timestamp, rather than the placement time or
-bet ID, to order visible bets. Sequence cards and bet rows follow recording order.
+bet ID, to order visible bets. Bet cards show the added time, not the entered placement
+time. Sequence cards and bet rows follow recording order.
 Two bets added during the same displayed second remain distinguishable internally by
 their milliseconds, while the UI shows only seconds.
 
@@ -99,6 +100,7 @@ Scenario: Show and order bets by when they were added in FairBets
   When I later add a bet with a later placement time
   Then the later-added bet appears first in the visible history
   And each bet shows its recording time through seconds
+  And the entered placement time is not shown on the bet card
 ```
 
 ```gherkin
@@ -153,10 +155,10 @@ Scenario: Editing placement time does not move a recorded bet
 
 ## Open questions
 
-None. The user-entered placement time remains for calculations and gains seconds.
-Recording time—the time the bet was added to FairBets—is the sole visible-list ordering
-timestamp and is displayed to seconds only. Milliseconds distinguish records created
-in the same second.
+None. The user-entered placement time remains editable for calculations and gains
+seconds. Recording time—the time the bet was added to FairBets—is the sole visible-list
+ordering timestamp and is displayed to seconds only; cards do not show the entered
+placement time. Milliseconds distinguish records created in the same second.
 
 ## Out of scope for now
 
