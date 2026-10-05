@@ -113,6 +113,19 @@ Feature: Bet management
     Then the cancelled description "Cancelled 123456 @ 1.20" should be visible
     And the cancelled description "Cancelled 654321 @ 1.35" should not be visible
 
+  Scenario: Description search retains the selected sequence status filter
+    When I start a fresh ledger
+    And I add a bet labeled "Active search target" with odds "1.50" placed at "2026-09-13T12:00"
+    And I add a bet labeled "Closed search target" with odds "1.50" placed at "2026-09-13T13:00"
+    And I mark the bet "Closed search target" as "Won"
+    When I filter the bet list by description "search target"
+    And I select the sequence status filter "Closed"
+    Then the description "Closed search target @ 1.50" should be visible
+    And the description "Active search target @ 1.50" should not be visible
+    When I select the sequence status filter "Active"
+    Then the description "Active search target @ 1.50" should be visible
+    And the description "Closed search target @ 1.50" should not be visible
+
   Scenario: A custom label that resembles a generated title is retained
     When I start a fresh ledger
     And I add a bet labeled "Selection 09" with odds "1.50" placed at "2026-09-13T14:00"

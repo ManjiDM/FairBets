@@ -470,6 +470,13 @@ When("I filter the bet list by description {string}", async function (descriptio
   await this.page.getByLabel("Filter by bet description").fill(description);
 });
 
+When("I select the sequence status filter {string}", async function (status) {
+  await this.page
+    .locator(".filter-bar")
+    .getByRole("button", { name: status, exact: true })
+    .click();
+});
+
 Then("the description {string} should be visible", async function (description) {
   await expect(
     this.page.locator(".sequence-list .bet-description").filter({ hasText: description }),
