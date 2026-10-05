@@ -1056,6 +1056,44 @@ h3 {
   font-weight: 800;
 }
 
+.icon-only-button {
+  display: inline-grid;
+  width: 40px;
+  min-width: 40px;
+  height: 40px;
+  min-height: 40px;
+  place-items: center;
+  padding: 0;
+}
+
+.icon-only-button:focus-visible {
+  outline: 2px solid var(--forest);
+  outline-offset: 2px;
+}
+
+.action-icon {
+  display: block;
+  width: 18px;
+  height: 18px;
+}
+
+.compact-outcome.icon-only-button,
+.compact-action.icon-only-button,
+.sequence-add-bet.icon-only-button {
+  width: 30px;
+  min-width: 30px;
+  height: 30px;
+  min-height: 30px;
+  padding: 0;
+}
+
+.compact-outcome.icon-only-button .action-icon,
+.compact-action.icon-only-button .action-icon,
+.sequence-add-bet.icon-only-button .action-icon {
+  width: 16px;
+  height: 16px;
+}
+
 .sequence-add-bet {
   display: inline-grid;
   width: 30px;

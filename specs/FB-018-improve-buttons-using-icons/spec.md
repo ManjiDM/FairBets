@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | ID | `FB-018-improve-buttons-using-icons` |
-| Status | Clarified |
+| Status | Done |
 | Created | 2026-10-05 |
 | Related | [FB-013](../FB-013-recording-order-and-odds-title/spec.md) |
 
@@ -122,7 +122,7 @@ Scenario: Sequence continuation controls use labeled icons
 - [x] VII. Data compatibility preserved
 - [x] VIII. No secrets introduced
 - [x] IX. Behaviour specified in Gherkin
-- [ ] X. Gates pass
+- [x] X. Gates pass
 
 ## Open questions
 

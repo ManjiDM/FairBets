@@ -465,6 +465,40 @@ function outcomeLabel(outcome: Outcome): string {
   return "Open";
 }
 
+type ActionIconName = "add" | "won" | "lost" | "cancelled" | "close-sequence";
+
+function ActionIcon({ name }: { name: ActionIconName }) {
+  return (
+    <svg
+      className="action-icon"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      focusable="false"
+    >
+      {name === "add" ? <path d="M12 5v14M5 12h14" /> : null}
+      {name === "won" ? <path d="m5 12 4 4L19 6" /> : null}
+      {name === "lost" ? <path d="m6 6 12 12M18 6 6 18" /> : null}
+      {name === "cancelled" ? (
+        <>
+          <circle cx="12" cy="12" r="9" />
+          <path d="m5.6 5.6 12.8 12.8" />
+        </>
+      ) : null}
+      {name === "close-sequence" ? (
+        <>
+          <path d="M4 7h16v13H4zM3 4h18v3H3z" />
+          <path d="m8 13 2.5 2.5L16 10" />
+        </>
+      ) : null}
+    </svg>
+  );
+}
+
 function messageFromError(error: unknown, fallback: string): string {
   return error instanceof Error ? error.message : fallback;
 }
@@ -647,24 +681,30 @@ function SequenceBetRow({
           <>
             <button
               type="button"
-              className="compact-outcome compact-won"
+              className="compact-outcome compact-won icon-only-button"
+              aria-label="Won"
+              title="Won"
               onClick={() => onSettle(bet.id, "won")}
             >
-              Won
+              <ActionIcon name="won" />
             </button>
             <button
               type="button"
-              className="compact-outcome compact-lost"
+              className="compact-outcome compact-lost icon-only-button"
+              aria-label="Lost"
+              title="Lost"
               onClick={() => onSettle(bet.id, "lost")}
             >
-              Lost
+              <ActionIcon name="lost" />
             </button>
             <button
               type="button"
-              className="compact-outcome compact-cancelled"
+              className="compact-outcome compact-cancelled icon-only-button"
+              aria-label="Cancelled"
+              title="Cancelled"
               onClick={() => onSettle(bet.id, "cancelled")}
             >
-              Cancelled
+              <ActionIcon name="cancelled" />
             </button>
           </>
         ) : null}
@@ -693,12 +733,12 @@ function SequenceAddBetButton({
   return (
     <button
       type="button"
-      className="sequence-add-bet"
+      className="sequence-add-bet icon-only-button"
       aria-label={`Add bet to sequence ${sequence.number}`}
       title={`Add bet to sequence ${sequence.number}`}
       onClick={() => onAddToSequence(sequence)}
     >
-      <span aria-hidden="true">+</span>
+      <ActionIcon name="add" />
     </button>
   );
 }
@@ -766,11 +806,12 @@ function SequenceCloseButton({
   return (
     <button
       type="button"
-      className="compact-action"
+      className="compact-action icon-only-button"
       aria-label="Close sequence"
+      title="Close sequence"
       onClick={() => onCloseSequence(sequence)}
     >
-      Close sequence
+      <ActionIcon name="close-sequence" />
     </button>
   );
 }
@@ -831,24 +872,30 @@ function SingleBetSequenceCard({
           <>
             <button
               type="button"
-              className="compact-outcome compact-won"
+              className="compact-outcome compact-won icon-only-button"
+              aria-label="Won"
+              title="Won"
               onClick={() => onSettle(bet.id, "won")}
             >
-              Won
+              <ActionIcon name="won" />
             </button>
             <button
               type="button"
-              className="compact-outcome compact-lost"
+              className="compact-outcome compact-lost icon-only-button"
+              aria-label="Lost"
+              title="Lost"
               onClick={() => onSettle(bet.id, "lost")}
             >
-              Lost
+              <ActionIcon name="lost" />
             </button>
             <button
               type="button"
-              className="compact-outcome compact-cancelled"
+              className="compact-outcome compact-cancelled icon-only-button"
+              aria-label="Cancelled"
+              title="Cancelled"
               onClick={() => onSettle(bet.id, "cancelled")}
             >
-              Cancelled
+              <ActionIcon name="cancelled" />
             </button>
           </>
         ) : null}
@@ -927,20 +974,6 @@ function MultiBetSequenceCard({
           </strong>
         </span>
         <span className="compact-sequence-actions">
-          <button
-            type="button"
-            className="compact-action compact-sequence-view"
-            onClick={(event) => {
-              event.preventDefault();
-              event.stopPropagation();
-              const details = event.currentTarget.closest("details");
-              if (details) {
-                details.open = !details.open;
-              }
-            }}
-          >
-            View
-          </button>
           <InlineDeleteAction
             label="Delete"
             pending={pendingDeleteKey === sequenceDeleteKey}
@@ -1891,10 +1924,12 @@ function App() {
               </div>
               <button
                 type="button"
-                className="button button-primary"
+                className="button button-primary icon-only-button"
+                aria-label="Add bet"
+                title="Add bet"
                 onClick={openNewBetForm}
               >
-                <span aria-hidden="true">+</span> Add bet
+                <ActionIcon name="add" />
               </button>
             </div>
 
@@ -2563,8 +2598,13 @@ function App() {
                 <button type="button" className="button button-quiet" onClick={closeBetForm}>
                   Cancel
                 </button>
-                <button type="submit" className="button button-primary">
-                  {editingBetId ? "Save changes" : "Add bet"}
+                <button
+                  type="submit"
+                  className={`button button-primary ${editingBetId ? "" : "icon-only-button"}`}
+                  aria-label={editingBetId ? undefined : "Add bet"}
+                  title={editingBetId ? undefined : "Add bet"}
+                >
+                  {editingBetId ? "Save changes" : <ActionIcon name="add" />}
                 </button>
               </div>
             </form>

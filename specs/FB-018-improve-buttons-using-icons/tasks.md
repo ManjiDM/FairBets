@@ -11,25 +11,25 @@
 
 ## 1. Acceptance tests
 
-- [ ] **T-001** — Cover icon-only bet and toolbar Add Bet controls with accessible names.
+- [x] **T-001** — Cover icon-only bet and toolbar Add Bet controls with accessible names.
   - Files: `e2e/features/bets.feature`, `e2e/steps/fairbets.steps.js`
   - Done when: tests assert the icon-only presentation and accessible names.
   - Verify: `pnpm test:e2e`
 
-- [ ] **T-002** — Cover icon-only close/continue sequence controls and remove View.
+- [x] **T-002** — Cover icon-only close/continue sequence controls and remove View.
   - Files: `e2e/features/bets.feature`, `e2e/steps/fairbets.steps.js`
   - Done when: tests verify summary toggle behavior and no redundant View control.
   - Verify: `pnpm test:e2e`
 
 ## 2. UI
 
-- [ ] **T-010** — Render icon-only action buttons with names and tooltips.
+- [x] **T-010** — Render icon-only action buttons with names and tooltips.
   - Files: `src/App.tsx`, `src/App.css`
   - Done when: named actions have decorative SVGs, no visible action text, preserved
     accessible names, and visible keyboard focus.
   - Verify: E2E icon assertions
 
-- [ ] **T-020** — Remove the redundant View control.
+- [x] **T-020** — Remove the redundant View control.
   - Files: `src/App.tsx`, `src/App.css`
   - Done when: clicking the sequence summary expands/collapses details and nested
     controls remain functional.
@@ -37,15 +37,15 @@
 
 ## 3. Documentation and gates
 
-- [ ] **T-030** — Align spec, plan, and tasks with shipped behavior.
+- [x] **T-030** — Align spec, plan, and tasks with shipped behavior.
   - Files: `specs/FB-018-improve-buttons-using-icons/*`
   - Done when: requirements, approach, and tests match implementation.
   - Verify: review
 
-- [ ] **T-040** — `pnpm lint` passes
-- [ ] **T-041** — `pnpm build` passes
-- [ ] **T-042** — `pnpm test:e2e` passes
-- [ ] **T-043** — Every acceptance scenario in `spec.md` is satisfied
+- [x] **T-040** — `pnpm lint` passes
+- [x] **T-041** — `pnpm build` passes
+- [x] **T-042** — `pnpm test:e2e` passes
+- [x] **T-043** — Every acceptance scenario in `spec.md` is satisfied
 
 ## Deferred
 
