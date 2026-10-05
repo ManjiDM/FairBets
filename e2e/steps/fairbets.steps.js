@@ -424,7 +424,7 @@ Then(
     const betCard = this.page.locator(".sequence-list article").filter({
       has: this.page.getByText(label, { exact: true }),
     });
-    await expect(betCard).toContainText(`${odds} odds`);
+    await expect(betCard).toContainText(`@ ${odds}`);
   },
 );
 
@@ -432,7 +432,7 @@ Then(
   "the sequence card titles should be ordered as {string} then {string}",
   async function (firstTitle, secondTitle) {
     await expect(
-      this.page.locator(".sequence-list > article .single-bet-info > strong"),
+      this.page.locator(".sequence-list > article .bet-description > strong"),
     ).toHaveText([firstTitle, secondTitle]);
   },
 );
@@ -444,7 +444,7 @@ Then("no recording timestamp should be displayed", async function () {
 
 Then("the prominent title should show {string}", async function (title) {
   await expect(
-    this.page.locator(".sequence-list > article .single-bet-info > strong"),
+    this.page.locator(".sequence-list > article .bet-description > strong"),
   ).toHaveText([title]);
 });
 
@@ -462,8 +462,44 @@ Then("no generated Selection title should be shown", async function () {
 
 Then("the prominent title {string} should be visible", async function (title) {
   await expect(
-    this.page.locator(".sequence-list .single-bet-info > strong").filter({ hasText: title }),
+    this.page.locator(".sequence-list .bet-description > strong").filter({ hasText: title }),
   ).toBeVisible();
+});
+
+When("I filter the bet list by description {string}", async function (description) {
+  await this.page.getByLabel("Filter by bet description").fill(description);
+});
+
+Then("the description {string} should be visible", async function (description) {
+  await expect(
+    this.page.locator(".sequence-list .bet-description").filter({ hasText: description }),
+  ).toHaveCount(1);
+});
+
+Then("the description {string} should not be visible", async function (description) {
+  await expect(
+    this.page.locator(".sequence-list .bet-description").filter({ hasText: description }),
+  ).toHaveCount(0);
+});
+
+Then("the cancelled description {string} should be visible", async function (description) {
+  await expect(
+    this.page
+      .locator(".standalone-cancelled-list .bet-description")
+      .filter({ hasText: description }),
+  ).toHaveCount(1);
+});
+
+Then("the cancelled description {string} should not be visible", async function (description) {
+  await expect(
+    this.page
+      .locator(".standalone-cancelled-list .bet-description")
+      .filter({ hasText: description }),
+  ).toHaveCount(0);
+});
+
+Then("the bet list should say no descriptions match", async function () {
+  await expect(this.page.getByText("No bets match that description.", { exact: true })).toBeVisible();
 });
 
 Then("the bet {string} should be {string}", async function (label, outcome) {

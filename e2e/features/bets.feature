@@ -64,12 +64,54 @@ Feature: Bet management
     And I input the date and time "2026-09-13T12:00"
     And I input "1.30" in the odds field
     And I press the Add button
-    Then the prominent title should show "1.30 odds"
+    Then the prominent title should show "@ 1.30"
     When I update the odds for the generated-title bet to "1.35"
-    Then the prominent title should show "1.35 odds"
+    Then the prominent title should show "@ 1.35"
     And no generated Selection title should be shown
     When I add a bet labeled "Home team" with odds "1.40" placed at "2026-09-13T13:00"
     Then the prominent title "Home team" should be visible
+
+  Scenario: Filter bet descriptions by a partial match
+    When I start a fresh ledger
+    And I add a bet labeled "Home 123456" with odds "1.20" placed at "2026-09-13T12:00"
+    And I add a bet labeled "Away 654321" with odds "1.35" placed at "2026-09-13T13:00"
+    Then the description "Home 123456 @ 1.20" should be visible
+    And the description "Away 654321 @ 1.35" should be visible
+    When I filter the bet list by description "1234"
+    Then the description "Home 123456 @ 1.20" should be visible
+    And the description "Away 654321 @ 1.35" should not be visible
+    When I filter the bet list by description "hOmE 1234"
+    Then the description "Home 123456 @ 1.20" should be visible
+    And the description "Away 654321 @ 1.35" should not be visible
+    When I filter the bet list by description "not a match"
+    Then the bet list should say no descriptions match
+    When I filter the bet list by description ""
+    Then the description "Home 123456 @ 1.20" should be visible
+    And the description "Away 654321 @ 1.35" should be visible
+
+  Scenario: Filter individual bets within a sequence
+    When I start a fresh ledger
+    And I add a bet labeled "Sequence 123456" with odds "1.50" and a manual stake of "1" placed at "2026-09-13T12:00"
+    And I mark the bet "Sequence 123456" as "Lost"
+    And I press the plus button for the sequence containing the bet "Sequence 123456"
+    Then I see the new bet dialog
+    When I input the label "Another sequence bet"
+    And I input the date and time "2026-09-13T13:00"
+    And I input "1.50" in the odds field
+    And I press the Add button
+    When I filter the bet list by description "1234"
+    Then the description "Sequence 123456 @ 1.50" should be visible
+    And the description "Another sequence bet @ 1.50" should not be visible
+
+  Scenario: Filter standalone cancelled bet descriptions
+    When I start a fresh ledger
+    And I add a bet labeled "Cancelled 123456" with odds "1.20" placed at "2026-09-13T12:00"
+    And I add a bet labeled "Cancelled 654321" with odds "1.35" placed at "2026-09-13T13:00"
+    And I mark the bet "Cancelled 123456" as "Cancelled"
+    And I mark the bet "Cancelled 654321" as "Cancelled"
+    When I filter the bet list by description "1234"
+    Then the cancelled description "Cancelled 123456 @ 1.20" should be visible
+    And the cancelled description "Cancelled 654321 @ 1.35" should not be visible
 
   Scenario: A custom label that resembles a generated title is retained
     When I start a fresh ledger
