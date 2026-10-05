@@ -1,4 +1,4 @@
-# Tasks: Add seconds to bet placement time
+# Tasks: Show bet recording time with second precision
 
 | Field | Value |
 | --- | --- |
@@ -6,53 +6,54 @@
 | Plan | [`plan.md`](./plan.md) |
 | Updated | 2026-10-05 |
 
-> Ordered, small, individually verifiable steps. Keep placement timestamps as the sole
-> chronological sort key and recording timestamps as sequence-card display ordering.
+> Ordered, small, individually verifiable steps. Placement time drives calculations;
+> recording time drives visible order.
 
 ## 1. Regression scenarios
 
-- [ ] **T-001** — Cover second-level ordering, exact-second collision allocation, and
-  displayed seconds.
+- [ ] **T-001** — Cover second-level placement input and recording-time display/order
+  for independent bets and bet rows inside one sequence.
   - Files: `e2e/features/bets.feature`, `e2e/steps/fairbets.steps.js`
-  - Done when: the scenarios fail before implementation and assert timestamp-only
-    order with distinct millisecond values for same-second entries.
+  - Done when: assertions fail before implementation and distinguish placement order
+    from recording order.
   - Verify: `pnpm test:e2e`
 
-- [ ] **T-002** — Cover edit/reload precision, legacy collision normalization, and
-  unchanged FB-013 recording order.
+- [ ] **T-002** — Cover same-second recording precision, edit/reload stability, and
+  legacy duplicate/missing recording timestamps.
   - Files: `e2e/features/bets.feature`, `e2e/steps/fairbets.steps.js`
-  - Done when: existing same-second data is stable and editing does not erase its
-    assigned milliseconds.
+  - Done when: timestamps are unique internally, displayed only to seconds, and
+    existing records receive stable order.
   - Verify: `pnpm test:e2e`
 
-## 2. Domain ordering
+## 2. Domain and compatibility
 
-- [ ] **T-010** — Normalize duplicate placement timestamps deterministically and add
-  unique millisecond allocation for a new/changed visible second.
-  - Files: `src/domain/ledger.ts`
-  - Done when: normalized timestamps are unique, deterministic, and stay in the entered
-    second; bet comparison uses only timestamp.
-  - Verify: `pnpm build`, targeted E2E
+- [ ] **T-010** — Normalize missing or duplicate recording timestamps without changing
+  placement-time calculation order.
+  - Files: `src/domain/ledger.ts`, `src/App.tsx`, `src/lib/cloudStore.ts`
+  - Done when: recording timestamps are valid and unique before visible sorting; cloud
+    ties have a deterministic source order; no schema migration is required.
+  - Verify: `pnpm build`, legacy data E2E, cloud query review
 
-## 3. UI and compatibility
+## 3. UI
 
-- [ ] **T-020** — Add seconds to placement-time input and display while preserving
-  milliseconds on unchanged edits.
+- [ ] **T-020** — Add seconds to the editable placement-time control and show the
+  recording timestamp on bet cards through seconds.
   - Files: `src/App.tsx`
-  - Done when: new, edited, and loaded records preserve seconds and hidden milliseconds.
-  - Verify: E2E input/edit/reload scenarios
+  - Done when: entered placement seconds survive edit/reload and displayed bet cards
+    show recording time, not placement time or milliseconds.
+  - Verify: precision and display E2E cases
 
-- [ ] **T-030** — Normalize local/cloud/imported legacy timestamps before calculating.
-  - Files: `src/App.tsx`, `src/lib/cloudStore.ts`, `src/domain/ledger.ts`
-  - Done when: legacy duplicates are stable and cloud results have deterministic source
-  order before normalization; no schema migration is needed.
-  - Verify: E2E legacy fixture and cloud-query review
+- [ ] **T-030** — Render sequences and their bet rows in recording-time order.
+  - Files: `src/App.tsx`
+  - Done when: list ordering uses `createdAt` only while calculations continue to use
+    `placedAt`.
+  - Verify: backdated, same-second, and multi-bet E2E cases
 
 ## 4. Documentation and gates
 
-- [ ] **T-040** — Align spec, plan, and tasks with implemented behavior.
+- [ ] **T-040** — Align spec, plan, and tasks with shipped behavior.
   - Files: `specs/FB-017-second-precision-bet-time/*`
-  - Done when: shipped timestamp semantics and verification are recorded.
+  - Done when: implementation and verification match the clarified contract.
   - Verify: review
 
 - [ ] **T-050** — `pnpm lint` passes
@@ -64,4 +65,4 @@
 
 | Task | Reason | Follow-up |
 | --- | --- | --- |
-| Workbook layout changes | User asked to keep workbook compatibility | Preserve source precision through existing import |
+| Workbook format changes | Not requested; keep import compatibility | Separate spec if needed |

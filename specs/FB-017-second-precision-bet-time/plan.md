@@ -1,4 +1,4 @@
-# Plan: Add seconds to bet placement time
+# Plan: Show bet recording time with second precision
 
 | Field | Value |
 | --- | --- |
@@ -12,112 +12,116 @@
 
 ## Approach
 
-Keep `placedAt` as the single chronological source of truth. Make the entry/edit
-control use second precision and preserve the timestamp's fractional milliseconds in
-saved state. Display the placement time through seconds, while keeping milliseconds
-hidden. Remove the bet-ID fallback from chronological sorting.
+Keep the two existing time values for distinct purposes:
 
-When a new or edited placement time collides at second precision, assign the next
-available millisecond within that second. Preserve an edited bet's existing millisecond
-when its visible second has not changed. On load/import, normalize exact duplicate
-timestamps deterministically in stable source order so legacy minute-precision records
-also become uniquely timestamp-ordered. Keep timestamps as local wall-clock strings,
-consistent with the existing `datetime-local` input and Supabase timestamp-without-time-zone
-column.
+- `placedAt` remains the editable, user-entered time used by chronological sequence
+  calculations. Extend the input to seconds and preserve that precision on save/edit.
+- `createdAt` remains the time a bet is added to FairBets and becomes the only key for
+  visible sequence and bet-row ordering. Display this time through seconds, without
+  milliseconds. Do not display `placedAt` on bet cards.
 
-The alternative of retaining the ID tie-breaker was rejected because it makes bet
-order unrelated to the placement timestamp. Using the internal recording timestamp
-for collisions was also rejected: it represents entry time and must remain separate
-from the user-entered placement time under FB-013.
+The existing recording-time generator already advances by milliseconds beyond the
+latest recorded bet, so newly created records in one displayed second can be uniquely
+ordered. Extend local/cloud stamping to normalize duplicate valid `createdAt` values,
+as well as missing values, in deterministic source order. Keep financial calculation
+ordering based on `placedAt`. Keep sequence-card grouping and the FB-013 newest-first
+sequence ordering based on the first bet's recording timestamp.
+
+Do not replace `createdAt` with a second-resolution timestamp: that would reintroduce
+ties for quick successive entries. Do not use placement time or IDs as visible-list
+sort keys; either would contradict the clarified requirement.
 
 ## Affected modules
 
 | File | Change | Notes |
 | --- | --- | --- |
-| `src/domain/ledger.ts` | Sort chronologically by placement timestamp only; add deterministic millisecond collision normalization and allocation | Pure helpers; preserve input order when normalizing legacy duplicates |
-| `src/App.tsx` | Use a seconds-precision date/time input, retain milliseconds on unchanged edits, allocate collision milliseconds on changed/new timestamps, display seconds, and persist normalized legacy values | Keep FB-013 recording timestamp behavior unchanged |
-| `src/lib/cloudStore.ts` | Order cloud rows deterministically by placement time then recording time before duplicate normalization | Existing database column supports fractional seconds |
-| `e2e/features/bets.feature` | Cover second ordering, same-second collisions, reload/edit retention, and unchanged sequence-card recording order | |
-| `e2e/steps/fairbets.steps.js` | Add any required precision and timestamp-order assertions | |
+| `src/domain/ledger.ts` | Normalize missing/duplicate `createdAt` values deterministically; retain strictly increasing recording timestamp generation | Leave placement-time calculation comparator unchanged |
+| `src/App.tsx` | Make placement input second-precision; display `createdAt` to seconds; sort bet rows by `createdAt`; show recording time in sequence headers | Keep `placedAt` editable and used for calculation only |
+| `src/lib/cloudStore.ts` | Order cloud rows by placement time and recording time before normalization | No schema change |
+| `e2e/features/bets.feature` | Cover placement-second retention, recording-time card/row ordering, same-second creation, and edit/reload stability | Update FB-013 assertion that recording time is not displayed |
+| `e2e/steps/fairbets.steps.js` | Add recording timestamp assertions and seconds display assertions | |
 | `specs/FB-017-second-precision-bet-time/*` | Track plan, implementation, and verification | |
 
 ## Domain changes
 
 ```ts
-export function normalizePlacementTimestamps(bets: Bet[]): Bet[];
-export function nextPlacementTimestamp(bets: Bet[], enteredAt: string): string;
+export function stampBets(bets: UnstampedBet[], settings: StrategySettings): Bet[];
+export function nextBetRecordingTimestamp(bets: Bet[], now: number): string;
 ```
 
-`normalizePlacementTimestamps` is pure and deterministic. It preserves unique
-timestamps, and assigns unused millisecond values within the same visible second to
-duplicate timestamps in input order. `nextPlacementTimestamp` preserves the entered
-second and uses the next available millisecond in that second, or `.000` if unused.
-Both reject invalid dates and fail explicitly if no millisecond remains in a second.
+`stampBets` continues to backfill missing recording timestamps and strategy metadata.
+It will additionally detect duplicate valid `createdAt` values and assign distinct
+millisecond values in input order, without changing the displayed second. The operation
+is pure and deterministic.
 
-`compareBets` uses only parsed `placedAt` timestamp values. The normalization invariant
-ensures persisted duplicate timestamps are resolved before ledger calculation; sorting
-does not use bet IDs or recording timestamps.
+`nextBetRecordingTimestamp` continues to return a timestamp greater than `now` and all
+existing recording times, ensuring same-second additions remain unique. The
+calculation comparator continues to use `placedAt`; visible row sorting uses
+`createdAt` in the UI. Sequence ordering continues to use the recording time of the
+first recorded sequence bet.
 
 ## Data and migration
 
-- **`LedgerState` shape:** unchanged; `placedAt` retains its existing string type.
-- **`localStorage` migration:** no shape migration. Normalize duplicate timestamps when
-  loading and persist the normalized values along with existing metadata backfills.
-- **Cloud schema:** no new migration. The existing timestamp-without-time-zone column
-  supports milliseconds. Sort cloud rows by `placed_at` then `created_at` before
-  deterministic normalization.
-- **Backward compatibility:** minute-precision values parse as second-zero values.
-  Duplicate exact timestamps are assigned milliseconds in stable input order without
-  changing their displayed second.
-- **Workbook import:** no layout change. Imported timestamps pass through the same
-  normalization before calculation.
+- **`LedgerState` shape:** unchanged; use existing `placedAt` and `createdAt`.
+- **`localStorage` migration:** no shape change. Persist when `stampBets` adds missing
+  metadata or normalizes duplicate recording timestamps.
+- **Cloud schema:** no migration; timestamp columns already retain fractional seconds.
+  Fetch ties with deterministic `created_at` ordering before normalization.
+- **Backward compatibility:** minute-precision `placedAt` remains valid. Missing or
+  duplicate recording timestamps receive stable unique values. Displayed card time is
+  recording time, not placement time.
+- **Workbook import:** keep columns unchanged. Imported bets already pass through
+  recording-time stamping and duplicate normalization.
 
 ## UI changes
 
-Set the placement `datetime-local` input step to one second and generate default draft
-values through seconds. Editing presents local wall time through seconds; if the user
-does not change that visible value, retain the exact existing millisecond timestamp.
-For a changed or new visible second, use the domain helper to allocate an unused
-millisecond within that second. Display dates as before but include numeric seconds;
-never display milliseconds.
+Set the placement `datetime-local` input to one-second steps. Format default drafts and
+edit values through seconds so old minute-precision values become `:00` and saved
+seconds survive editing. Continue saving the entered placement time for calculations.
 
-Sequence card ordering continues to use FB-013's `createdAt`. Financial progression,
-legacy grouping, and sequence calculations use only normalized `placedAt` timestamps.
+Display each bet's `createdAt` using the current date/time style plus numeric seconds.
+Do not show milliseconds or `placedAt` on bet cards. Display sequence-card date
+information from recording times. Render rows inside active and collapsed sequences in
+ascending `createdAt` order, independent of calculation order.
 
 ## Test strategy
 
-- Add a red E2E case for two bets within one minute and verify chronological placement
-  ordering at second resolution.
-- Add same-second collision coverage, assert unique stored millisecond timestamps and
-  identical displayed seconds.
-- Edit and reload a bet to confirm seconds and its millisecond ordering are preserved.
-- Verify legacy minute-precision duplicate records load and normalize deterministically.
-- Verify changing placement times does not change FB-013 sequence-card recording order.
+- Add acceptance cases that fail before implementation for second-precision input and
+  recording-time display/order.
+- Add two bets within the same displayed recording second and assert distinct,
+  increasing stored `createdAt` millisecond values while display hides milliseconds.
+- Verify a backdated bet still appears first when it was recorded later.
+- Verify bet rows in a sequence follow recording order even when placement-time order
+  differs.
+- Verify editing placement time does not change `createdAt` or the visible order.
+- Verify legacy records with duplicate or missing `createdAt` values normalize
+  deterministically and survive reload.
 - Run `pnpm test:e2e`, `pnpm lint`, and `pnpm build`.
 
 ## Risks and mitigations
 
 | Risk | Impact | Mitigation |
 | --- | --- | --- |
-| Editing loses subsecond precision | Existing same-second order changes unexpectedly | Preserve the original stored timestamp when the visible second is unchanged |
-| Legacy exact-time duplicates remain unresolved | ID fallback continues to affect order | Normalize duplicates in deterministic stored/imported order before calculation |
-| Millisecond allocation crosses into the next second | Displayed time changes without user input | Fail explicitly when all 1000 millisecond slots are used |
-| Cloud duplicates normalize differently on reload | Order changes after restore | Order cloud rows by placement time and recording time before normalization |
-| Recording order and placement order are conflated | Backdated sequence cards move unexpectedly | Keep `createdAt` sequence-card ordering untouched |
+| Placement time accidentally controls list order | Backdated entries appear in the wrong visible position | Sort rendered bet rows by `createdAt` and assert it in E2E |
+| Milliseconds leak into the UI | Unreadable timestamps | Format recording time to whole seconds |
+| Duplicate legacy `createdAt` values remain | Ordering falls back to IDs or input accident | Normalize duplicates by deterministic source order before rendering |
+| Editing placement time changes recording order | User sees a bet move unexpectedly | Preserve `createdAt` when editing an existing bet |
+| Recording timestamps are confused with calculation chronology | Financial progression changes unexpectedly | Keep domain calculations on `placedAt` |
 
 ## Constitution check
 
-- I-II: The control remains local-first and usable offline.
-- III-IV: Timestamp allocation and normalization are pure deterministic domain rules;
-  UI submits and renders values only.
-- V-VI: Existing sequence and risk rules remain; changed chronological timestamps
-  intentionally recalculate progression according to the spec.
-- VII: Existing data remains readable; timestamp column and ledger shape do not change.
+- I-II: Recording time is local-first and does not require network access.
+- III-IV: Calculation chronology remains deterministic domain behavior; the UI only
+  presents rows in recording order.
+- V-VI: Sequence calculations and risk limits remain intact, except expected
+  chronological refinements from second-level placement input.
+- VII: No persisted shape or database migration is needed; legacy records are normalized
+  compatibly.
 - VIII: No secrets are introduced.
-- IX-X: Gherkin covers precision, ties, persistence, and ordering; all gates run.
+- IX-X: Gherkin covers visible ordering/precision and all required gates run.
 
 ## Rollback
 
-Revert seconds display/input and collision assignment. Millisecond values serialize in
-the existing timestamp field, remain valid to older readers, and display as the same
-second, so no destructive rollback migration is required.
+Revert second-level placement input, recording-time card presentation, and row
+presentation ordering. Fractional recording timestamps remain compatible with older
+readers and do not require a destructive migration.
