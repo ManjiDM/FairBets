@@ -158,6 +158,7 @@ function betFromCloud(value: unknown): UnstampedBet {
   const label = value.label;
   const labelIsAutomatic = value.label_is_automatic;
   const sequenceId = value.sequence_id;
+  const sequenceManuallyClosed = value.sequence_manually_closed;
   const stakeOverride = value.stake_override;
   const sequenceStartRecoveryGap = optionalNonNegativeNumber(
     value.sequence_start_recovery_gap,
@@ -170,7 +171,8 @@ function betFromCloud(value: unknown): UnstampedBet {
     typeof createdAt !== "string" ||
     !Number.isFinite(Date.parse(createdAt)) ||
     typeof label !== "string" ||
-    typeof labelIsAutomatic !== "boolean"
+    typeof labelIsAutomatic !== "boolean" ||
+    typeof sequenceManuallyClosed !== "boolean"
   ) {
     throw new Error("Cloud data contains an incomplete bet.");
   }
@@ -199,6 +201,7 @@ function betFromCloud(value: unknown): UnstampedBet {
     odds,
     outcome: readOutcome(value.outcome),
     ...(typeof sequenceId === "string" ? { sequenceId } : {}),
+    sequenceManuallyClosed,
     ...(parsedStakeOverride === undefined ? {} : { stakeOverride: parsedStakeOverride }),
     ...(sequenceStartRecoveryGap === undefined ? {} : { sequenceStartRecoveryGap }),
     ...(strategy === undefined ? {} : { strategy }),
@@ -305,7 +308,7 @@ export async function loadLatestCloudLedger(): Promise<CloudLedger | null> {
   const { data: betData, error: betError } = await client
     .from("bets")
     .select(
-      "id,placed_at,created_at,label,label_is_automatic,odds,outcome,sequence_id,stake_override,sequence_start_recovery_gap,base_stake,threshold,recovery_weight,stake_rounding,max_stake",
+      "id,placed_at,created_at,label,label_is_automatic,odds,outcome,sequence_id,sequence_manually_closed,stake_override,sequence_start_recovery_gap,base_stake,threshold,recovery_weight,stake_rounding,max_stake",
     )
     .eq("ledger_id", ledger.id)
     .order("placed_at", { ascending: true });
@@ -385,6 +388,7 @@ export async function saveLedgerToCloud(
         odds: bet.odds,
         outcome: bet.outcome,
         sequence_id: bet.sequenceId ?? null,
+        sequence_manually_closed: bet.sequenceManuallyClosed ?? false,
         stake_override: bet.stakeOverride ?? null,
         sequence_start_recovery_gap: bet.sequenceStartRecoveryGap ?? null,
         base_stake: bet.strategy.baseStake,

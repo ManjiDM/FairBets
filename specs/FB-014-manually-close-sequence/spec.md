@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | ID | `FB-014-manually-close-sequence` |
-| Status | Draft |
+| Status | Shipped |
 | Created | 2026-10-05 |
 | Related | [FB-009](../FB-009-recover-settled-profit-gap/spec.md), [FB-010](../FB-010-parallel-sequences/spec.md), [FB-012](../FB-012-single-active-global-recovery/spec.md) |
 
@@ -165,7 +165,7 @@ rules.
 - [x] VII. Data compatibility preserved
 - [x] VIII. No secrets introduced
 - [x] IX. Behaviour specified in Gherkin
-- [ ] X. Gates pass
+- [x] X. Gates pass
 
 ## Open questions
 
@@ -173,6 +173,23 @@ None. Manual closure is available only after the latest bet is settled as lost.
 Closing never changes bet outcomes. Any remaining recovery uses the existing
 goal-rate-adjusted expected-profit target, and FB-012 continues to prevent duplicate
 global recovery allocations while another active sequence reserves one.
+
+## Verification
+
+- [x] A lost single-bet sequence can be closed without changing its outcome or settled
+  P&L.
+- [x] An open bet cannot be manually closed.
+- [x] A multi-bet sequence can be closed after its latest bet is lost.
+- [x] Closing the only recovery-reserving sequence releases recovery for a new
+  independent bet using the current FB-009 shortfall.
+- [x] Closing one sequence does not release another active sequence's FB-012 recovery
+  reservation.
+- [x] Manual closure remains after reload and after editing the closed bet's label.
+- [x] `pnpm lint`
+- [x] `pnpm build`
+- [x] `pnpm test:e2e` (42 scenarios, 474 steps)
+- [x] Cloud schema, migration, and parser/writer updates reviewed; a live cloud
+  round-trip remains environment-dependent.
 
 ## Out of scope for now
 

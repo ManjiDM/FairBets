@@ -674,6 +674,21 @@ Then("the settled P&L should be {string}", async function (profit) {
   await expect(metric.locator("strong")).toHaveText(profit);
 });
 
+Then(
+  "the saved outcome for the bet {string} should be {string}",
+  async function (label, outcome) {
+    const savedOutcome = await this.page.evaluate((betLabel) => {
+      const stored = window.localStorage.getItem("fairbets-ledger-state-v2");
+      if (!stored) {
+        throw new Error("Saved FairBets ledger was not found.");
+      }
+      const ledger = JSON.parse(stored);
+      return ledger.bets.find((bet) => bet.label === betLabel)?.outcome;
+    }, label);
+    expect(savedOutcome).toBe(outcome);
+  },
+);
+
 When(
   "I add a bet labeled {string} with odds {string} placed at {string}",
   async function (label, odds, placedAt) {

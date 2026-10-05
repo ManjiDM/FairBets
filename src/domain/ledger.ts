@@ -20,6 +20,7 @@ export interface Bet {
   odds: number;
   outcome: Outcome;
   sequenceId?: string;
+  sequenceManuallyClosed?: boolean;
   stakeOverride?: number;
   sequenceStartRecoveryGap?: number;
   strategy: BetStrategy;
@@ -261,6 +262,35 @@ export function nextBetRecordingTimestamp(bets: Bet[], now: number): string {
   return new Date(Math.max(now, latestTimestamp + 1)).toISOString();
 }
 
+export function closeSequenceAfterLoss(
+  bets: Bet[],
+  sequenceId: string,
+  settings: StrategySettings,
+): Bet[] {
+  const sequence = calculateLedger(bets, settings).sequences.find(
+    (candidate) => candidate.id === sequenceId,
+  );
+  if (!sequence) {
+    throw new Error("The sequence could not be found.");
+  }
+  if (sequence.status !== "active") {
+    throw new Error("Only an active sequence can be closed manually.");
+  }
+
+  const latestBet = sequence.bets.at(-1);
+  if (
+    !latestBet ||
+    latestBet.outcome !== "lost" ||
+    sequence.bets.some((bet) => bet.outcome === "open")
+  ) {
+    throw new Error("A sequence can only be closed after its latest bet is lost.");
+  }
+
+  return bets.map((bet) =>
+    bet.id === latestBet.id ? { ...bet, sequenceManuallyClosed: true } : bet,
+  );
+}
+
 function sequenceRecordingTimestamp(sequence: SequenceAccumulator): number {
   const recordingTimes = sequence.bets
     .map((bet) => (bet.createdAt ? Date.parse(bet.createdAt) : Number.NaN))
@@ -451,6 +481,18 @@ export function calculateLedger(bets: Bet[], settings: StrategySettings): Ledger
     if (bet.outcome === "won") {
       sequence.status = "closed";
       sequence.endedAt = bet.placedAt;
+    }
+  }
+
+  for (const sequence of sequenceAccumulators) {
+    const latestBet = sequence.bets.at(-1);
+    if (
+      sequence.status === "active" &&
+      latestBet?.outcome === "lost" &&
+      latestBet.sequenceManuallyClosed
+    ) {
+      sequence.status = "closed";
+      sequence.endedAt = latestBet.placedAt;
     }
   }
 

@@ -125,13 +125,16 @@ Feature: Bet management
     And the settled P&L should be "-€1.00"
     When I close the sequence containing the bet "Accepted loss"
     Then the sequence containing the bet "Accepted loss" should be "Closed"
-    And the bet "Accepted loss" should be "Lost"
+    And the saved outcome for the bet "Accepted loss" should be "lost"
     And the settled P&L should be "-€1.00"
     And the sequence containing the bet "Accepted loss" should not offer a continue action
+    When I rename the bet "Accepted loss" to "Accepted loss, edited"
+    Then the sequence containing the bet "Accepted loss, edited" should be "Closed"
+    And the sequence containing the bet "Accepted loss, edited" should not offer a continue action
     When I reload the app
-    Then the sequence containing the bet "Accepted loss" should be "Closed"
+    Then the sequence containing the bet "Accepted loss, edited" should be "Closed"
     And the settled P&L should be "-€1.00"
-    And the sequence containing the bet "Accepted loss" should not offer a continue action
+    And the sequence containing the bet "Accepted loss, edited" should not offer a continue action
 
   Scenario: An open bet cannot be manually closed
     When I start a fresh ledger

@@ -4,6 +4,7 @@ import type { Session } from "@supabase/supabase-js";
 import "./App.css";
 import {
   calculateLedger,
+  closeSequenceAfterLoss,
   createBlankLedger,
   createDemoLedger,
   nextBetRecordingTimestamp,
@@ -149,6 +150,8 @@ function isBet(value: unknown): value is UnstampedBet {
     isOutcome(value.outcome) &&
     (value.sequenceId === undefined ||
       (typeof value.sequenceId === "string" && value.sequenceId.length > 0)) &&
+    (value.sequenceManuallyClosed === undefined ||
+      typeof value.sequenceManuallyClosed === "boolean") &&
     (value.stakeOverride === undefined || typeof value.stakeOverride === "number") &&
     (value.createdAt === undefined || typeof value.createdAt === "string") &&
     (value.labelIsAutomatic === undefined || typeof value.labelIsAutomatic === "boolean") &&
@@ -641,12 +644,32 @@ function SequenceAddBetButton({
   );
 }
 
+function SequenceCloseButton({
+  sequence,
+  onCloseSequence,
+}: {
+  sequence: BetSequence;
+  onCloseSequence: (sequence: BetSequence) => void;
+}) {
+  return (
+    <button
+      type="button"
+      className="compact-action"
+      aria-label="Close sequence"
+      onClick={() => onCloseSequence(sequence)}
+    >
+      Close sequence
+    </button>
+  );
+}
+
 function SingleBetSequenceCard({
   sequence,
   currency,
   onSettle,
   onEdit,
   onAddToSequence,
+  onCloseSequence,
   pendingDeleteKey,
   onRequestSequenceDelete,
   onConfirmSequenceDelete,
@@ -656,6 +679,7 @@ function SingleBetSequenceCard({
   onSettle: (id: string, outcome: SettledOutcome) => void;
   onEdit: (bet: CalculatedBet) => void;
   onAddToSequence: (sequence: BetSequence) => void;
+  onCloseSequence: (sequence: BetSequence) => void;
   pendingDeleteKey: string | null;
   onRequestSequenceDelete: (key: string) => void;
   onConfirmSequenceDelete: (key: string) => void;
@@ -711,7 +735,10 @@ function SingleBetSequenceCard({
             </button>
           </>
         ) : null}
-        {bet.outcome === "lost" ? (
+        {sequence.status === "active" && bet.outcome === "lost" ? (
+          <SequenceCloseButton sequence={sequence} onCloseSequence={onCloseSequence} />
+        ) : null}
+        {sequence.status === "active" && bet.outcome === "lost" ? (
           <SequenceAddBetButton sequence={sequence} onAddToSequence={onAddToSequence} />
         ) : null}
         <span className="compact-sequence-actions">
@@ -826,6 +853,7 @@ function ActiveSequenceCard({
   onSettle,
   onEdit,
   onAddToSequence,
+  onCloseSequence,
   pendingDeleteKey,
   onRequestDelete,
   onConfirmDelete,
@@ -837,6 +865,7 @@ function ActiveSequenceCard({
   onSettle: (id: string, outcome: SettledOutcome) => void;
   onEdit: (bet: CalculatedBet) => void;
   onAddToSequence: (sequence: BetSequence) => void;
+  onCloseSequence: (sequence: BetSequence) => void;
   pendingDeleteKey: string | null;
   onRequestDelete: (key: string) => void;
   onConfirmDelete: (key: string) => void;
@@ -856,7 +885,10 @@ function ActiveSequenceCard({
           <span className="status-badge status-active">Active</span>
           {sequence.bets.at(-1)?.outcome === "lost" &&
           !sequence.bets.some((bet) => bet.outcome === "open") ? (
-            <SequenceAddBetButton sequence={sequence} onAddToSequence={onAddToSequence} />
+            <>
+              <SequenceCloseButton sequence={sequence} onCloseSequence={onCloseSequence} />
+              <SequenceAddBetButton sequence={sequence} onAddToSequence={onAddToSequence} />
+            </>
           ) : null}
           <InlineDeleteAction
             label="Delete"
@@ -1366,6 +1398,9 @@ function App() {
           ? {}
           : { sequenceId: editingBet.sequenceId }
         : { sequenceId: targetSequenceId ?? `parallel-${createBetId()}` }),
+      ...(editingBet?.sequenceManuallyClosed
+        ? { sequenceManuallyClosed: true }
+        : {}),
       ...(manualStake === undefined ? {} : { stakeOverride: manualStake }),
       ...(sequenceStartRecoveryGap === undefined ? {} : { sequenceStartRecoveryGap }),
       strategy,
@@ -1408,6 +1443,31 @@ function App() {
       setFeedback({
         tone: "success",
         text: `Bet marked as ${outcome}.`,
+      });
+    }
+  }
+
+  function manuallyCloseSequence(sequence: BetSequence) {
+    let bets: Bet[];
+    try {
+      bets = closeSequenceAfterLoss(tracker.bets, sequence.id, tracker.settings);
+    } catch (error) {
+      setFeedback({
+        tone: "warning",
+        text: messageFromError(error, "This sequence cannot be closed manually."),
+      });
+      return;
+    }
+
+    if (
+      commitTracker({
+        ...tracker,
+        bets,
+      })
+    ) {
+      setFeedback({
+        tone: "success",
+        text: "Sequence closed. Its recorded results and settled P&L are unchanged.",
       });
     }
   }
@@ -1736,6 +1796,7 @@ function App() {
                         onSettle={settleBet}
                         onEdit={openEditBetForm}
                         onAddToSequence={openSequenceBetForm}
+                        onCloseSequence={manuallyCloseSequence}
                         pendingDeleteKey={pendingDeleteKey}
                         onRequestSequenceDelete={requestDelete}
                         onConfirmSequenceDelete={confirmDeleteSequence}
@@ -1752,6 +1813,7 @@ function App() {
                         onSettle={settleBet}
                         onEdit={openEditBetForm}
                         onAddToSequence={openSequenceBetForm}
+                        onCloseSequence={manuallyCloseSequence}
                         pendingDeleteKey={pendingDeleteKey}
                         onRequestDelete={requestDelete}
                         onConfirmDelete={confirmDelete}
