@@ -155,6 +155,7 @@ Feature: Bet management
     And I add a bet labeled "Cancelled 654321" with odds "1.35" placed at "2026-09-13T13:00"
     And I mark the bet "Cancelled 123456" as "Cancelled"
     And I mark the bet "Cancelled 654321" as "Cancelled"
+    Then the standalone cancelled cards should be ordered as "Cancelled 654321" then "Cancelled 123456"
     When I filter the bet list by description "1234"
     Then the cancelled description "Cancelled 123456 @ 1.20" should be visible
     And the cancelled description "Cancelled 654321 @ 1.35" should not be visible

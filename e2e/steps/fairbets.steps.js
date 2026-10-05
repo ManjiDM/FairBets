@@ -493,6 +493,15 @@ Then(
 );
 
 Then(
+  "the standalone cancelled cards should be ordered as {string} then {string}",
+  async function (firstLabel, secondLabel) {
+    await expect(
+      this.page.locator(".standalone-cancelled-list .bet-description > strong"),
+    ).toHaveText([firstLabel, secondLabel]);
+  },
+);
+
+Then(
   "the bet {string} should show calculated position {string}",
   async function (label, position) {
     await revealBet(this.page, label);
