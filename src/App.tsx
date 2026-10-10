@@ -1090,11 +1090,10 @@ function ActiveSequenceCard({
       <div className="sequence-card-heading">
         <div>
           <p className="sequence-number">Sequence {sequence.number}</p>
-          <h3>In progress</h3>
+          <span className="status-badge status-active">Active</span>
           <span>Recorded {formatDateTime(sequenceRecordingRange(sequence)[0])}</span>
         </div>
         <div className="sequence-card-actions">
-          <span className="status-badge status-active">Active</span>
           {["lost", "cancelled"].includes(sequence.bets.at(-1)?.outcome ?? "") &&
           !sequence.bets.some((bet) => bet.outcome === "open") ? (
             <>

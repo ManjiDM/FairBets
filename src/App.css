@@ -843,11 +843,19 @@ h3 {
   text-transform: uppercase;
 }
 
-.sequence-card-heading h3 {
-  margin-bottom: 5px;
+.sequence-card-heading > div:first-child {
+  display: grid;
+  justify-items: start;
+  gap: 5px;
 }
 
-.sequence-card-heading div > span {
+.sequence-card-heading .status-badge {
+  min-width: auto;
+  padding: 3px 6px;
+  font-size: 10px;
+}
+
+.sequence-card-heading div > span:not(.status-badge) {
   color: var(--muted);
   font-size: 12px;
 }

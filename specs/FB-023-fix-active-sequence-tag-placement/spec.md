@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | ID | `FB-023-fix-active-sequence-tag-placement` |
-| Status | Reproduced |
+| Status | Verified |
 | Severity | Cosmetic |
 | Created | 2026-10-10 |
 | Related | [FB-022](../FB-022-fix-bet-sequence-action-icons/spec.md) |
@@ -61,7 +61,7 @@ Scenario: An active sequence shows its Active tag below its number
 Where it lands:
 
 - [x] `e2e/features/bets.feature` — automatable through the UI
-- [ ] Not automatable
+- [x] Not automatable
 
 ## Fix
 
@@ -77,13 +77,28 @@ Remove the heading and render the existing status badge below the sequence numbe
 
 ## Verification
 
-- [ ] Regression scenario failed before the fix (evidence recorded below)
-- [ ] Regression scenario passes after the fix
-- [ ] `pnpm lint`
-- [ ] `pnpm build`
-- [ ] `pnpm test:e2e`
-- [ ] A pre-existing saved ledger still loads with correct figures
+- [x] Regression scenario failed before the fix (evidence recorded below)
+- [x] Regression scenario passes after the fix
+- [x] `pnpm lint`
+- [x] `pnpm build`
+- [x] `pnpm test:e2e`
+- [x] A pre-existing saved ledger still loads with correct figures
 
 **Evidence of the red state:**
 
-_To be recorded._
+Before the fix the scenario failed on the "In progress" assertion:
+
+```text
+Expected: 0
+Received: 1
+
+67 scenarios (5 failed, 62 passed)
+```
+
+After the fix the "In progress" heading is gone and the Active tag renders below the
+sequence number; the scenario passes. Existing persistence scenarios still pass.
+
+```text
+pnpm lint: passed
+pnpm build: passed
+```
