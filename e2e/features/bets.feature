@@ -515,3 +515,9 @@ Feature: Bet management
     And I add a bet labeled "Aligned open" with odds "2.00" and a manual stake of "1" placed at "2026-09-13T12:00"
     Then the "Won" button in the card containing the bet "Aligned open" should be at the left edge of the card
     And the "Delete" button in the card containing the bet "Aligned open" should be at the right edge of the card
+  Scenario: The Add Bet button is flat
+    When I navigate to the Sequences view
+    Then the Add Bet button should have no drop shadow
+    When I hover over the Add Bet button
+    Then the Add Bet button should have no drop shadow
+    And the Add Bet button should not be lifted

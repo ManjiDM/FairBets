@@ -1254,3 +1254,19 @@ Then(
     expect(cardBox.x + cardBox.width - (buttonBox.x + buttonBox.width)).toBeLessThanOrEqual(20);
   },
 );
+
+When("I hover over the Add Bet button", async function () {
+  await this.page.getByRole("button", { name: "Add bet", exact: true }).hover();
+});
+
+Then("the Add Bet button should have no drop shadow", async function () {
+  await expect(
+    this.page.getByRole("button", { name: "Add bet", exact: true }),
+  ).toHaveCSS("box-shadow", "none");
+});
+
+Then("the Add Bet button should not be lifted", async function () {
+  await expect(
+    this.page.getByRole("button", { name: "Add bet", exact: true }),
+  ).toHaveCSS("transform", "none");
+});
