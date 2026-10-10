@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | ID | `FB-019-consistent-icon-library` |
-| Status | Draft |
+| Status | Clarified |
 | Created | 2026-10-10 |
 | Related | [FB-018](../FB-018-improve-buttons-using-icons/spec.md) |
 
@@ -37,8 +37,8 @@ technology and pointer tooltips, and all existing actions remain usable.
 
 ## Functional requirements
 
-- **FR-1** All application action and navigation icons MUST use a single coherent visual
-  icon set.
+- **FR-1** All visible application action, navigation, and alert icons MUST use a single
+  coherent visual icon set.
 - **FR-2** Repeated actions MUST use the same icon consistently wherever they appear.
 - **FR-3** Replacing icons MUST preserve each control's accessible name, tooltip where
   present, keyboard focus behavior, and action behavior.
@@ -71,6 +71,14 @@ Scenario: Sequence controls retain their accessible actions
   Then the add-bet and close-sequence controls remain identifiable by their accessible names
   When I expand or collapse a sequence
   Then its details open or close as requested
+```
+
+```gherkin
+Scenario: Guardrail warnings use the same icon style
+  Given a guardrail limit is breached
+  When the warning is displayed
+  Then the warning message remains visible
+  And its alert icon is decorative
 ```
 
 ## Edge cases
