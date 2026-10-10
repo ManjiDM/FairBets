@@ -1638,9 +1638,9 @@ function App() {
         nextBetRecordingTimestamp(tracker.bets, Date.now()),
       label: label || `Selection ${tracker.bets.length + 1}`,
       labelIsAutomatic: !label,
-      placedAt: draft.placedAt,
+      placedAt: editingBetId ? draft.placedAt : toDateTimeInput(new Date()),
       odds,
-      outcome: draft.outcome,
+      outcome: editingBetId ? draft.outcome : "open",
       ...(editingBetId
         ? editingBet?.sequenceId === undefined
           ? {}
@@ -2550,13 +2550,23 @@ function App() {
                 <p className="eyebrow">{editingBetId ? "Edit record" : "New record"}</p>
                 <h2 id="bet-form-title">{editingBetId ? "Update bet" : "Add a bet"}</h2>
               </div>
-              <button type="button" className="close-button" onClick={closeBetForm}>
-                Close
-              </button>
             </div>
 
             <form onSubmit={saveBet}>
               <div className="form-grid">
+                <label className="form-field form-field-wide">
+                  <span>Date and time</span>
+                  <input
+                    type="datetime-local"
+                    step="1"
+                    value={draft.placedAt}
+                    readOnly={!editingBetId}
+                    onChange={(event) =>
+                      setDraft((current) => ({ ...current, placedAt: event.target.value }))
+                    }
+                    required
+                  />
+                </label>
                 <label className="form-field form-field-wide">
                   <span>Label</span>
                   <input
@@ -2566,20 +2576,9 @@ function App() {
                     placeholder="Optional — leave blank to show odds"
                   />
                 </label>
+                <div className="form-field-pair">
                 <label className="form-field">
-                  <span>Date and time</span>
-                  <input
-                    type="datetime-local"
-                    step="1"
-                    value={draft.placedAt}
-                    onChange={(event) =>
-                      setDraft((current) => ({ ...current, placedAt: event.target.value }))
-                    }
-                    required
-                  />
-                </label>
-                <label className="form-field">
-                  <span>Decimal odds</span>
+                  <span>Odd</span>
                   <input
                     type="number"
                     min="1.01"
@@ -2590,24 +2589,7 @@ function App() {
                   />
                 </label>
                 <label className="form-field">
-                  <span>{isEditingSettledBet ? "Result (settled)" : "Result"}</span>
-                  <select
-                    value={draft.outcome}
-                    onChange={(event) =>
-                      setDraft((current) => ({
-                        ...current,
-                        outcome: outcomeFromInput(event.target.value),
-                      }))
-                    }
-                  >
-                    {!isEditingSettledBet && <option value="open">Open</option>}
-                    <option value="won">Won</option>
-                    <option value="lost">Lost</option>
-                    <option value="cancelled">Cancelled</option>
-                  </select>
-                </label>
-                <label className="form-field">
-                  <span>Manual stake (optional)</span>
+                  <span>Stake</span>
                   <input
                     type="number"
                     min="0.01"
@@ -2620,6 +2602,26 @@ function App() {
                     placeholder={formatMoney(draftSuggestion.amount, tracker.settings.currency)}
                   />
                 </label>
+                </div>
+                {editingBetId && (
+                  <label className="form-field form-field-wide">
+                    <span>{isEditingSettledBet ? "Result (settled)" : "Result"}</span>
+                    <select
+                      value={draft.outcome}
+                      onChange={(event) =>
+                        setDraft((current) => ({
+                          ...current,
+                          outcome: outcomeFromInput(event.target.value),
+                        }))
+                      }
+                    >
+                      {!isEditingSettledBet && <option value="open">Open</option>}
+                      <option value="won">Won</option>
+                      <option value="lost">Lost</option>
+                      <option value="cancelled">Cancelled</option>
+                    </select>
+                  </label>
+                )}
               </div>
 
               <div className="suggestion-preview">

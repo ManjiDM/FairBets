@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | ID | `FB-029-simplify-new-bet-form` |
-| Status | Draft |
+| Status | Shipped |
 | Created | 2026-10-10 |
 | Related | — |
 
