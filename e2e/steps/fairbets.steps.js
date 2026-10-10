@@ -1377,3 +1377,120 @@ Then("the description filter should be the full width of the filter row", async 
   const { input, row } = await filterGeometry(this.page);
   expect(Math.abs(input.width - row.width)).toBeLessThanOrEqual(1);
 });
+
+function ledgersDialog(page) {
+  return page.getByRole("dialog", { name: "Ledgers and funds" });
+}
+
+When("I open the ledgers dialog", async function () {
+  await this.page.getByRole("button", { name: "Open ledgers", exact: true }).click();
+  await expect(ledgersDialog(this.page)).toBeVisible();
+});
+
+When("I close the ledgers dialog", async function () {
+  await ledgersDialog(this.page).getByRole("button", { name: "Done", exact: true }).click();
+  await expect(ledgersDialog(this.page)).toHaveCount(0);
+});
+
+Then("the {string} figure should be {string}", async function (label, value) {
+  await expect(
+    ledgersDialog(this.page)
+      .locator(".funds-summary > div")
+      .filter({ hasText: label })
+      .locator("strong"),
+  ).toHaveText(value);
+});
+
+When("I add an investment of {string}", async function (amount) {
+  const dialog = ledgersDialog(this.page);
+  await dialog.getByLabel("Investment amount", { exact: true }).fill(amount);
+  await dialog.getByRole("button", { name: "Add investment", exact: true }).click();
+});
+
+Then("the ledgers message should read {string}", async function (message) {
+  await expect(ledgersDialog(this.page).getByRole("alert")).toHaveText(message);
+});
+
+Then("the latest history entry should read {string}", async function (text) {
+  await expect(ledgersDialog(this.page).locator(".ledger-history > li").first()).toContainText(text);
+});
+
+Then("the latest history entry should show a timestamp", async function () {
+  await expect(
+    ledgersDialog(this.page).locator(".ledger-history > li").first().locator("time"),
+  ).toHaveText(/\d{1,2}:\d{2}/);
+});
+
+Then("the history should list {string} before {string}", async function (first, second) {
+  const entries = await ledgersDialog(this.page).locator(".ledger-history > li").allTextContents();
+  const firstIndex = entries.findIndex((entry) => entry.includes(first));
+  const secondIndex = entries.findIndex((entry) => entry.includes(second));
+  expect(firstIndex).toBeGreaterThanOrEqual(0);
+  expect(secondIndex).toBeGreaterThan(firstIndex);
+});
+
+When("I close the active ledger", async function () {
+  const dialog = ledgersDialog(this.page);
+  await dialog.getByRole("button", { name: "Close ledger", exact: true }).click();
+  const confirm = dialog.getByRole("button", { name: "Confirm close", exact: true });
+  if (await confirm.isVisible()) {
+    await confirm.click();
+  }
+});
+
+Then("the ledger should still be active", async function () {
+  await expect(
+    ledgersDialog(this.page).getByRole("button", { name: "Close ledger", exact: true }),
+  ).toBeVisible();
+});
+
+Then("no ledger should be active", async function () {
+  await expect(ledgersDialog(this.page).getByText("No active ledger", { exact: true })).toBeVisible();
+});
+
+Then("I should be told there is no active ledger", async function () {
+  await expect(this.page.locator(".notice, .no-ledger-notice").filter({ hasText: "No active ledger" })).toBeVisible();
+});
+
+Then(
+  "the closed ledger {string} should show {string} as {string}",
+  async function (name, label, value) {
+    const closed = ledgersDialog(this.page)
+      .locator(".closed-ledger")
+      .filter({ hasText: name })
+      .first();
+    await expect(closed.locator(".closed-ledger-stats > div").filter({ hasText: label }).locator("strong").first()).toHaveText(value);
+  },
+);
+
+When(
+  "I start a new ledger named {string} with a starting balance of {string}",
+  async function (name, balance) {
+    const form = ledgersDialog(this.page).locator("form.start-ledger-form");
+    await form.getByLabel("Ledger name", { exact: true }).fill(name);
+    await form.getByLabel("Starting balance", { exact: true }).fill(balance);
+    await form.getByRole("button", { name: "Start ledger", exact: true }).click();
+  },
+);
+
+Then("the new ledger form should have {string} set to {string}", async function (label, value) {
+  await expect(
+    ledgersDialog(this.page)
+      .locator("form.start-ledger-form")
+      .getByLabel(label, { exact: true }),
+  ).toHaveValue(value);
+});
+
+Then("I should not be able to start a new ledger", async function () {
+  await expect(ledgersDialog(this.page).locator("form.start-ledger-form")).toHaveCount(0);
+  await expect(ledgersDialog(this.page)).toContainText("Close the active ledger before starting another.");
+});
+
+Then("the ledger title should be {string}", async function (name) {
+  await expect(this.page.locator("h1")).toHaveText(name);
+});
+
+When("I remove the saved ledger history and reload", async function () {
+  await this.page.evaluate(() => window.localStorage.removeItem("fairbets-portfolio-v1"));
+  await this.page.reload({ waitUntil: "domcontentloaded" });
+});

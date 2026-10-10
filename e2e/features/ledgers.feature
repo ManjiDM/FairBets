@@ -1,0 +1,122 @@
+Feature: Ledger lifecycle with investments and closing statistics
+  As a person tracking my own bets in rounds
+  I want to close a ledger, keep its final statistics and start the next one
+  So that I know how much I invested, what I earned and what I can start with
+
+  Scenario: The funds start from the saved ledger's balance
+    Given the FairBets app is available
+    When I open the ledgers dialog
+    Then the "Total invested" figure should be "€37.92"
+    And the "Realised result" figure should be "€0.00"
+    And the "Available funds" figure should be "€0.00"
+
+  Scenario: An investment is timestamped and adds to the available funds
+    Given the FairBets app is available
+    When I open the ledgers dialog
+    And I add an investment of "20"
+    Then the "Total invested" figure should be "€57.92"
+    And the "Available funds" figure should be "€20.00"
+    And the latest history entry should read "Investment"
+    And the latest history entry should read "€20.00"
+    And the latest history entry should show a timestamp
+
+  Scenario: An investment must be above zero
+    Given the FairBets app is available
+    When I open the ledgers dialog
+    And I add an investment of "0"
+    Then the ledgers message should read "Investment must be above zero."
+    And the "Total invested" figure should be "€37.92"
+
+  Scenario: A ledger with open bets cannot be closed
+    Given the FairBets app is available
+    When I start a fresh ledger
+    And I add a bet labeled "Still open" with odds "2.00"
+    And I open the ledgers dialog
+    And I close the active ledger
+    Then the ledgers message should read "Settle every open bet before closing the ledger."
+    And the ledger should still be active
+
+  Scenario: Closing a ledger keeps its final statistics
+    Given the FairBets app is available
+    When I start a fresh ledger
+    And I add a bet labeled "Closing round" with odds "2.00"
+    And I mark the bet "Closing round" as "Won"
+    And I open the ledgers dialog
+    And I close the active ledger
+    Then the closed ledger "New FairBets ledger" should show "Starting balance" as "€37.92"
+    And the closed ledger "New FairBets ledger" should show "Final balance" as "€38.02"
+    And the closed ledger "New FairBets ledger" should show "Net result" as "+€0.10"
+    And the closed ledger "New FairBets ledger" should show "Wins" as "1"
+    And the "Realised result" figure should be "+€0.10"
+    And the "Available funds" figure should be "€38.02"
+    And no ledger should be active
+
+  Scenario: Bets cannot be added while no ledger is active
+    Given the FairBets app is available
+    When I start a fresh ledger
+    And I open the ledgers dialog
+    And I close the active ledger
+    And I close the ledgers dialog
+    Then I should be told there is no active ledger
+    And the Add Bet button should be disabled
+
+  Scenario: A new ledger cannot start above the available funds
+    Given the FairBets app is available
+    When I start a fresh ledger
+    And I add a bet labeled "Closing round" with odds "2.00"
+    And I mark the bet "Closing round" as "Won"
+    And I open the ledgers dialog
+    And I close the active ledger
+    And I start a new ledger named "Second round" with a starting balance of "38.03"
+    Then the ledgers message should read "Starting balance cannot exceed the available funds of €38.02."
+    And no ledger should be active
+
+  Scenario: A new ledger can start at exactly the available funds
+    Given the FairBets app is available
+    When I start a fresh ledger
+    And I add a bet labeled "Closing round" with odds "2.00"
+    And I mark the bet "Closing round" as "Won"
+    And I open the ledgers dialog
+    And I close the active ledger
+    And I start a new ledger named "Second round" with a starting balance of "38.02"
+    And I close the ledgers dialog
+    Then the ledger title should be "Second round"
+    And I see the available balance as "€38.02"
+    And I open the ledgers dialog
+    And the "Available funds" figure should be "€0.00"
+    And the history should list "Ledger opened" before "Ledger closed"
+
+  Scenario: The new ledger form is pre-filled from the previous ledger
+    Given the FairBets app is available
+    When I start a fresh ledger
+    And I open the ledgers dialog
+    And I close the active ledger
+    Then the new ledger form should have "Base stake" set to "0.1"
+    And the new ledger form should have "Max stake" set to "15"
+
+  Scenario: Only one ledger can be active at a time
+    Given the FairBets app is available
+    When I open the ledgers dialog
+    Then I should not be able to start a new ledger
+    And the ledger should still be active
+
+  Scenario: Closed ledgers and investments are kept after a reload
+    Given the FairBets app is available
+    When I start a fresh ledger
+    And I open the ledgers dialog
+    And I close the active ledger
+    And I add an investment of "5"
+    And I reload the app
+    And I open the ledgers dialog
+    Then the closed ledger "New FairBets ledger" should show "Net result" as "€0.00"
+    And the "Total invested" figure should be "€42.92"
+    And no ledger should be active
+
+  Scenario: A ledger saved before ledgers existed still loads
+    Given the FairBets app is available
+    When I remove the saved ledger history and reload
+    And I open the ledgers dialog
+    Then the "Total invested" figure should be "€37.92"
+    And the ledger should still be active
+    And I close the ledgers dialog
+    And I see the available balance as "€38.07"
