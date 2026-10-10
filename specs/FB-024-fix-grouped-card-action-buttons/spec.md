@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | ID | `FB-024-fix-grouped-card-action-buttons` |
-| Status | Reproduced |
+| Status | Verified |
 | Severity | Cosmetic |
 | Created | 2026-10-10 |
 | Related | [FB-022](../FB-022-fix-bet-sequence-action-icons/spec.md) |
@@ -63,7 +63,7 @@ Scenario: Card action buttons share one size and are nested in groups
 Where it lands:
 
 - [x] `e2e/features/bets.feature` — automatable through the UI
-- [ ] Not automatable
+- [x] Not automatable
 
 ## Fix
 
@@ -80,13 +80,31 @@ size every grouped button identically.
 
 ## Verification
 
-- [ ] Regression scenario failed before the fix (evidence recorded below)
-- [ ] Regression scenario passes after the fix
-- [ ] `pnpm lint`
-- [ ] `pnpm build`
-- [ ] `pnpm test:e2e`
-- [ ] A pre-existing saved ledger still loads with correct figures
+- [x] Regression scenario failed before the fix (evidence recorded below)
+- [x] Regression scenario passes after the fix
+- [x] `pnpm lint`
+- [x] `pnpm build`
+- [x] `pnpm test:e2e`
+- [x] A pre-existing saved ledger still loads with correct figures
 
 **Evidence of the red state:**
 
-_To be recorded._
+Before the fix the outcome buttons were smaller than Edit/Delete:
+
+```text
+Expected: <= 1
+Received: 8   (width difference between Won and Edit)
+
+67 scenarios (5 failed, 62 passed)
+```
+
+The sequence scenario's step selector was then tightened to the card's own actions
+(the card also contains nested bet Delete buttons) before verifying it.
+
+After the fix Won/Lost/Cancelled and the sequence-level Close/Add/Delete buttons share
+the Edit/Delete size and sit in joined groups; both scenarios pass.
+
+```text
+pnpm lint: passed
+pnpm build: passed
+```

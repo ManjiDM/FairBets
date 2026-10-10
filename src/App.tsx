@@ -714,7 +714,7 @@ function SequenceBetRow({
       </div>
       <div className="single-bet-actions">
         {bet.outcome === "open" ? (
-          <>
+          <span className="compact-sequence-actions compact-outcome-actions">
             <button
               type="button"
               className="compact-outcome compact-won icon-only-button"
@@ -742,7 +742,7 @@ function SequenceBetRow({
             >
               <ActionIcon name="cancelled" />
             </button>
-          </>
+          </span>
         ) : null}
         <span className="compact-sequence-actions">
           <button
@@ -917,7 +917,7 @@ function SingleBetSequenceCard({
       </div>
       <div className="single-bet-actions">
         {bet.outcome === "open" ? (
-          <>
+          <span className="compact-sequence-actions compact-outcome-actions">
             <button
               type="button"
               className="compact-outcome compact-won icon-only-button"
@@ -945,16 +945,16 @@ function SingleBetSequenceCard({
             >
               <ActionIcon name="cancelled" />
             </button>
-          </>
-        ) : null}
-        {sequence.status === "active" && bet.outcome === "lost" ? (
-          <SequenceCloseButton sequence={sequence} onCloseSequence={onCloseSequence} />
-        ) : null}
-        {sequence.status === "active" &&
-        (bet.outcome === "lost" || bet.outcome === "cancelled") ? (
-          <SequenceAddBetButton sequence={sequence} onAddToSequence={onAddToSequence} />
+          </span>
         ) : null}
         <span className="compact-sequence-actions">
+          {sequence.status === "active" && bet.outcome === "lost" ? (
+            <SequenceCloseButton sequence={sequence} onCloseSequence={onCloseSequence} />
+          ) : null}
+          {sequence.status === "active" &&
+          (bet.outcome === "lost" || bet.outcome === "cancelled") ? (
+            <SequenceAddBetButton sequence={sequence} onAddToSequence={onAddToSequence} />
+          ) : null}
           <button
             type="button"
             className="compact-action icon-only-button"
@@ -1093,7 +1093,7 @@ function ActiveSequenceCard({
           <span className="status-badge status-active">Active</span>
           <span>Recorded {formatDateTime(sequenceRecordingRange(sequence)[0])}</span>
         </div>
-        <div className="sequence-card-actions">
+        <div className="sequence-card-actions compact-sequence-actions">
           {["lost", "cancelled"].includes(sequence.bets.at(-1)?.outcome ?? "") &&
           !sequence.bets.some((bet) => bet.outcome === "open") ? (
             <>
