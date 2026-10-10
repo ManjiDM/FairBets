@@ -402,8 +402,18 @@ function matchesSequenceFilter(sequence: BetSequence, filter: string): boolean {
   );
 }
 
-function sortedSequenceBets(sequence: BetSequence): CalculatedBet[] {
-  return [...sequence.bets].sort(compareBetsByRecordingTime);
+function visibleSequenceBets(
+  sequence: BetSequence,
+  filter: string,
+  wholeSequences: boolean,
+): CalculatedBet[] {
+  const showAll =
+    wholeSequences ||
+    !filter.trim() ||
+    sequenceCardLabel(sequence).toLocaleLowerCase().includes(filter.trim().toLocaleLowerCase());
+  return sequence.bets
+    .filter((bet) => showAll || matchesBetDescription(bet, filter))
+    .sort(compareBetsByRecordingTime);
 }
 
 function compareBetsByRecordingTime(left: Bet, right: Bet): number {
@@ -989,6 +999,8 @@ function SingleBetSequenceCard({
 
 function MultiBetSequenceCard({
   sequence,
+  descriptionFilter,
+  wholeSequences,
   currency,
   onSettle,
   onEdit,
@@ -999,6 +1011,8 @@ function MultiBetSequenceCard({
   onConfirmSequenceDelete,
 }: {
   sequence: BetSequence;
+  descriptionFilter: string;
+  wholeSequences: boolean;
   currency: Currency;
   onSettle: (id: string, outcome: SettledOutcome) => void;
   onEdit: (bet: CalculatedBet) => void;
@@ -1009,7 +1023,7 @@ function MultiBetSequenceCard({
   onConfirmSequenceDelete: (key: string) => void;
 }) {
   const sequenceDeleteKey = `sequence:${sequence.id}`;
-  const visibleBets = sortedSequenceBets(sequence);
+  const visibleBets = visibleSequenceBets(sequence, descriptionFilter, wholeSequences);
   const sequenceStatusLabel = sequence.status === "closed" ? "Closed" : "Active";
   const [firstRecordedAt, lastRecordedAt] = sequenceRecordingRange(sequence);
   const dateRange = sequence.endedAt
@@ -1067,6 +1081,8 @@ function MultiBetSequenceCard({
 
 function ActiveSequenceCard({
   sequence,
+  descriptionFilter,
+  wholeSequences,
   currency,
   onSettle,
   onEdit,
@@ -1079,6 +1095,8 @@ function ActiveSequenceCard({
   onConfirmSequenceDelete,
 }: {
   sequence: BetSequence;
+  descriptionFilter: string;
+  wholeSequences: boolean;
   currency: Currency;
   onSettle: (id: string, outcome: SettledOutcome) => void;
   onEdit: (bet: CalculatedBet) => void;
@@ -1091,7 +1109,7 @@ function ActiveSequenceCard({
   onConfirmSequenceDelete: (key: string) => void;
 }) {
   const sequenceDeleteKey = `sequence:${sequence.id}`;
-  const visibleBets = sortedSequenceBets(sequence);
+  const visibleBets = visibleSequenceBets(sequence, descriptionFilter, wholeSequences);
   return (
     <article className="sequence-card sequence-active">
       <div className="sequence-card-heading">
@@ -1167,6 +1185,7 @@ function App() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [historyFilter, setHistoryFilter] = useState<HistoryFilter>("all");
   const [descriptionFilter, setDescriptionFilter] = useState("");
+  const [wholeSequences, setWholeSequences] = useState(true);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [pendingDeleteKey, setPendingDeleteKey] = useState<string | null>(null);
   const [editingBetId, setEditingBetId] = useState<string | null>(null);
@@ -1996,12 +2015,23 @@ function App() {
             <div className="sequence-filter-controls">
               <label className="form-field description-filter">
                 <span>Filter by bet description</span>
-                <input
-                  type="search"
-                  value={descriptionFilter}
-                  onChange={(event) => setDescriptionFilter(event.target.value)}
-                  placeholder="Type part of a description"
-                />
+                <span className="description-filter-input">
+                  <input
+                    type="search"
+                    value={descriptionFilter}
+                    onChange={(event) => setDescriptionFilter(event.target.value)}
+                    placeholder="Type part of a description"
+                  />
+                  <button
+                    type="button"
+                    role="switch"
+                    className="scope-switch"
+                    aria-checked={wholeSequences}
+                    aria-label="Show whole sequences"
+                    title="Show whole sequences"
+                    onClick={() => setWholeSequences((current) => !current)}
+                  />
+                </span>
               </label>
               <div className="sequence-filter-actions">
                 <div className="filter-bar" aria-label="Sequence filter">
@@ -2057,6 +2087,8 @@ function App() {
                       <ActiveSequenceCard
                         key={sequence.id}
                         sequence={sequence}
+                        descriptionFilter={descriptionFilter}
+                        wholeSequences={wholeSequences}
                         currency={tracker.settings.currency}
                         onSettle={settleBet}
                         onEdit={openEditBetForm}
@@ -2075,6 +2107,8 @@ function App() {
                     <MultiBetSequenceCard
                       key={sequence.id}
                       sequence={sequence}
+                      descriptionFilter={descriptionFilter}
+                      wholeSequences={wholeSequences}
                       currency={tracker.settings.currency}
                       onSettle={settleBet}
                       onEdit={openEditBetForm}

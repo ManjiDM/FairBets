@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | ID | `FB-028-filter-scope-toggle` |
-| Status | Draft |
+| Status | Shipped |
 | Created | 2026-10-10 |
 | Related | [FB-027](../FB-027-sequence-aware-description-filter/spec.md) |
 
@@ -105,7 +105,7 @@ None.
 - [x] VII. Data compatibility preserved
 - [x] VIII. No secrets introduced
 - [x] IX. Behaviour specified in Gherkin
-- [ ] X. Gates pass (verified at implementation)
+- [x] X. Gates pass (verified at implementation)
 
 ## Open questions
 

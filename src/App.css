@@ -669,6 +669,55 @@ h3 {
   width: min(360px, 100%);
 }
 
+.description-filter-input {
+  position: relative;
+  display: block;
+}
+
+.description-filter-input input {
+  width: 100%;
+  padding-right: 58px;
+}
+
+.scope-switch {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  width: 38px;
+  height: 22px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: #c9d3cc;
+  transform: translateY(-50%);
+  transition: background 160ms ease;
+}
+
+.scope-switch::after {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #fff;
+  content: "";
+  transition: transform 160ms ease;
+}
+
+.scope-switch[aria-checked="true"] {
+  background: #1fb35a;
+}
+
+.scope-switch[aria-checked="true"]::after {
+  transform: translateX(16px);
+}
+
+.scope-switch:focus-visible {
+  outline: 2px solid var(--forest);
+  outline-offset: 2px;
+}
+
 .sequence-filter-actions {
   display: flex;
   flex: 1;
