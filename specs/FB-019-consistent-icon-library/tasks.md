@@ -20,7 +20,7 @@ Not required; no persisted data changes.
 
 ## 3. UI
 
-- [ ] **T-020** — Add Lucide React and replace application-owned custom icons.
+- [x] **T-020** — Add Lucide React and replace application-owned custom icons.
   - Files: `package.json`, `pnpm-lock.yaml`, `src/App.tsx`, `src/App.css`
   - Done when: all active action, drawer, and guardrail icons use the same library;
     names, titles, behavior, and sizing are preserved.
@@ -28,7 +28,7 @@ Not required; no persisted data changes.
 
 ## 4. Scenarios
 
-- [ ] **T-030** — Confirm icon and sequence behavior coverage.
+- [x] **T-030** — Confirm icon and sequence behavior coverage.
   - Files: `e2e/features/fairbets.feature`, `e2e/steps/fairbets.steps.js`
   - Done when: current icon-only and sequence disclosure scenarios remain valid; update
     assertions only if needed for the library-rendered icons.
@@ -36,7 +36,7 @@ Not required; no persisted data changes.
 
 ## 5. Documentation
 
-- [ ] **T-040** — Record the selected icon system and finished implementation in the
+- [x] **T-040** — Record the selected icon system and finished implementation in the
   spec artifacts.
   - Files: `specs/FB-019-consistent-icon-library/*`
   - Done when: plan, task status, and spec status match the delivered implementation.
@@ -44,10 +44,10 @@ Not required; no persisted data changes.
 
 ## 6. Gates
 
-- [ ] **T-050** — `pnpm lint` passes
-- [ ] **T-051** — `pnpm build` passes
-- [ ] **T-052** — `pnpm test:e2e` passes
-- [ ] **T-053** — Each acceptance scenario in `spec.md` is confirmed satisfied
+- [x] **T-050** — `pnpm lint` passes
+- [x] **T-051** — `pnpm build` passes
+- [x] **T-052** — `pnpm test:e2e` passes
+- [x] **T-053** — Each acceptance scenario in `spec.md` is confirmed satisfied
 
 ## Deferred
 

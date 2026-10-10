@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | ID | `FB-019-consistent-icon-library` |
-| Status | Clarified |
+| Status | Shipped |
 | Created | 2026-10-10 |
 | Related | [FB-018](../FB-018-improve-buttons-using-icons/spec.md) |
 
@@ -103,7 +103,7 @@ Scenario: Guardrail warnings use the same icon style
 - [x] VII. Data compatibility preserved
 - [x] VIII. No secrets introduced
 - [x] IX. Behaviour specified in Gherkin
-- [ ] X. Gates pass
+- [x] X. Gates pass
 
 ## Open questions
 
