@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | ID | `FB-020-sequences-toolbar-add-bet` |
-| Status | Draft |
+| Status | Shipped |
 | Created | 2026-10-10 |
 | Related | None |
 
@@ -79,7 +79,7 @@ Scenario: The sequence toolbar remains usable on mobile
 
 ## Edge cases
 
-- The Add Bet button retains its disabled state while an open bet prevents adding.
+- The Add Bet control preserves its existing availability behavior.
 - The mobile layout keeps the description search and status/action row usable.
 - The active all-status filter remains visually selected.
 
@@ -101,7 +101,7 @@ Scenario: The sequence toolbar remains usable on mobile
 - [x] VII. Data compatibility preserved
 - [x] VIII. No secrets introduced
 - [x] IX. Behaviour specified in Gherkin
-- [ ] X. Gates pass
+- [x] X. Gates pass
 
 ## Open questions
 

@@ -20,7 +20,7 @@ Not required; no data shape or storage changes.
 
 ## 3. UI
 
-- [ ] **T-020** — Move the global Add Bet control beside the status filters and shorten
+- [x] **T-020** — Move the global Add Bet control beside the status filters and shorten
   the "All" label.
   - Files: `src/App.tsx`, `src/App.css`
   - Done when: the Add Bet and status filter controls share a row at desktop and small
@@ -29,7 +29,7 @@ Not required; no data shape or storage changes.
 
 ## 4. Scenarios
 
-- [ ] **T-030** — Cover toolbar label, placement, activation, and mobile overflow.
+- [x] **T-030** — Cover toolbar label, placement, activation, and mobile overflow.
   - Files: `e2e/features/bets.feature`, `e2e/steps/fairbets.steps.js`
   - Done when: acceptance scenarios from `spec.md` pass through the single Playwright-
     backed Cucumber suite.
@@ -41,10 +41,10 @@ Not required; this is self-contained UI behavior documented in the feature and s
 
 ## 6. Gates
 
-- [ ] **T-050** — `pnpm lint` passes
-- [ ] **T-051** — `pnpm build` passes
-- [ ] **T-052** — `pnpm test:e2e` passes
-- [ ] **T-053** — Each acceptance scenario in `spec.md` is confirmed satisfied
+- [x] **T-050** — `pnpm lint` passes
+- [x] **T-051** — `pnpm build` passes
+- [x] **T-052** — `pnpm test:e2e` passes
+- [x] **T-053** — Each acceptance scenario in `spec.md` is confirmed satisfied
 
 ## Deferred
 

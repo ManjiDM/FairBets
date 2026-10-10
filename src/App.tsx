@@ -1923,15 +1923,6 @@ function App() {
                   </span>
                 </div>
               </div>
-              <button
-                type="button"
-                className="button button-primary icon-only-button"
-                aria-label="Add bet"
-                title="Add bet"
-                onClick={openNewBetForm}
-              >
-                <ActionIcon name="add" />
-              </button>
             </div>
 
             <SectionTitle
@@ -1949,21 +1940,32 @@ function App() {
                   placeholder="Type part of a description"
                 />
               </label>
-              <div className="filter-bar" aria-label="Sequence filter">
-                {(["all", "active", "closed"] as HistoryFilter[]).map((filter) => (
-                  <button
-                    key={filter}
-                    type="button"
-                    className={historyFilter === filter ? "active" : ""}
-                    onClick={() => setHistoryFilter(filter)}
-                  >
-                    {filter === "all"
-                      ? "All sequences"
-                      : filter === "active"
-                        ? "Active"
-                        : "Closed"}
-                  </button>
-                ))}
+              <div className="sequence-filter-actions">
+                <div className="filter-bar" aria-label="Sequence filter">
+                  {(["all", "active", "closed"] as HistoryFilter[]).map((filter) => (
+                    <button
+                      key={filter}
+                      type="button"
+                      className={historyFilter === filter ? "active" : ""}
+                      onClick={() => setHistoryFilter(filter)}
+                    >
+                      {filter === "all"
+                        ? "All"
+                        : filter === "active"
+                          ? "Active"
+                          : "Closed"}
+                    </button>
+                  ))}
+                </div>
+                <button
+                  type="button"
+                  className="button button-primary icon-only-button"
+                  aria-label="Add bet"
+                  title="Add bet"
+                  onClick={openNewBetForm}
+                >
+                  <ActionIcon name="add" />
+                </button>
               </div>
             </div>
 

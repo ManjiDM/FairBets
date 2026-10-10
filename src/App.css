@@ -659,6 +659,12 @@ h3 {
   width: min(360px, 100%);
 }
 
+.sequence-filter-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .filter-bar {
   display: inline-flex;
   gap: 4px;

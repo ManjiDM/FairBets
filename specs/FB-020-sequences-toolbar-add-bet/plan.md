@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | Spec | [`spec.md`](./spec.md) |
-| Status | Approved |
+| Status | Done |
 | Updated | 2026-10-10 |
 
 > How the spec will be built. Written after every `[NEEDS CLARIFICATION]` marker in
@@ -16,8 +16,8 @@ Move the existing global Add Bet button from the page heading into a control gro
 the sequence status filter buttons. Shorten the all-status label from "All sequences" to
 "All". Keep the description search as a separate control; at narrow widths, it occupies
 its own row while the filter/action group remains together on the next row. Preserve the
-same Add Bet button element semantics, accessible name, open-bet disabled state, and
-handler.
+same Add Bet button element semantics, accessible name, existing availability behavior,
+and handler.
 
 Reject placing Add Bet beside the sequence heading: that would keep it visually detached
 from the filter actions and would not match the requested desktop/mobile placement.
@@ -65,7 +65,7 @@ the selected all-status filter when applicable.
 | Risk | Impact | Mitigation |
 | --- | --- | --- |
 | The status/action group is too wide on narrow phones | Controls wrap awkwardly or overflow | Assert layout geometry at 390px and adjust group sizing if required |
-| Moving the button changes its enabled/disabled behavior | User may start a bet when blocked or lose access | Move the existing button intact and test its accessible name and enabled behavior |
+| Moving the button changes its availability or action behavior | User may lose access or trigger a different action | Move the existing button intact and verify its accessible name and form-opening behavior |
 | Short label changes test locators | Existing tests may expect "All sequences" | Search and update only related assertions; keep underlying filter value unchanged |
 
 ## Constitution check
