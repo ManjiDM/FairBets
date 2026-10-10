@@ -389,10 +389,21 @@ function matchesBetDescription(bet: Bet, filter: string): boolean {
   return !normalizedFilter || betTitle(bet).toLocaleLowerCase().includes(normalizedFilter);
 }
 
-function visibleSequenceBets(sequence: BetSequence, filter: string): CalculatedBet[] {
-  return sequence.bets
-    .filter((bet) => matchesBetDescription(bet, filter))
-    .sort(compareBetsByRecordingTime);
+function sequenceCardLabel(sequence: BetSequence): string {
+  return sequence.bets.length === 1 ? `Bet ${sequence.number}` : `Sequence ${sequence.number}`;
+}
+
+function matchesSequenceFilter(sequence: BetSequence, filter: string): boolean {
+  const normalizedFilter = filter.trim().toLocaleLowerCase();
+  return (
+    !normalizedFilter ||
+    sequenceCardLabel(sequence).toLocaleLowerCase().includes(normalizedFilter) ||
+    sequence.bets.some((bet) => matchesBetDescription(bet, filter))
+  );
+}
+
+function sortedSequenceBets(sequence: BetSequence): CalculatedBet[] {
+  return [...sequence.bets].sort(compareBetsByRecordingTime);
 }
 
 function compareBetsByRecordingTime(left: Bet, right: Bet): number {
@@ -978,7 +989,6 @@ function SingleBetSequenceCard({
 
 function MultiBetSequenceCard({
   sequence,
-  descriptionFilter,
   currency,
   onSettle,
   onEdit,
@@ -989,7 +999,6 @@ function MultiBetSequenceCard({
   onConfirmSequenceDelete,
 }: {
   sequence: BetSequence;
-  descriptionFilter: string;
   currency: Currency;
   onSettle: (id: string, outcome: SettledOutcome) => void;
   onEdit: (bet: CalculatedBet) => void;
@@ -1000,7 +1009,7 @@ function MultiBetSequenceCard({
   onConfirmSequenceDelete: (key: string) => void;
 }) {
   const sequenceDeleteKey = `sequence:${sequence.id}`;
-  const visibleBets = visibleSequenceBets(sequence, descriptionFilter);
+  const visibleBets = sortedSequenceBets(sequence);
   const sequenceStatusLabel = sequence.status === "closed" ? "Closed" : "Active";
   const [firstRecordedAt, lastRecordedAt] = sequenceRecordingRange(sequence);
   const dateRange = sequence.endedAt
@@ -1058,7 +1067,6 @@ function MultiBetSequenceCard({
 
 function ActiveSequenceCard({
   sequence,
-  descriptionFilter,
   currency,
   onSettle,
   onEdit,
@@ -1071,7 +1079,6 @@ function ActiveSequenceCard({
   onConfirmSequenceDelete,
 }: {
   sequence: BetSequence;
-  descriptionFilter: string;
   currency: Currency;
   onSettle: (id: string, outcome: SettledOutcome) => void;
   onEdit: (bet: CalculatedBet) => void;
@@ -1084,12 +1091,12 @@ function ActiveSequenceCard({
   onConfirmSequenceDelete: (key: string) => void;
 }) {
   const sequenceDeleteKey = `sequence:${sequence.id}`;
-  const visibleBets = visibleSequenceBets(sequence, descriptionFilter);
+  const visibleBets = sortedSequenceBets(sequence);
   return (
     <article className="sequence-card sequence-active">
       <div className="sequence-card-heading">
         <div>
-          <p className="sequence-number">Sequence {sequence.number}</p>
+          <p className="sequence-number">{sequenceCardLabel(sequence)}</p>
           <span className="status-badge status-active">Active</span>
           <span>Recorded {formatDateTime(sequenceRecordingRange(sequence)[0])}</span>
         </div>
@@ -1220,7 +1227,7 @@ function App() {
       } else if (historyFilter === "closed" && sequence.status !== "closed") {
         return false;
       }
-      return sequence.bets.some((bet) => matchesBetDescription(bet, descriptionFilter));
+      return matchesSequenceFilter(sequence, descriptionFilter);
     });
 
     return [...matchingSequences].reverse();
@@ -2050,7 +2057,6 @@ function App() {
                       <ActiveSequenceCard
                         key={sequence.id}
                         sequence={sequence}
-                        descriptionFilter={descriptionFilter}
                         currency={tracker.settings.currency}
                         onSettle={settleBet}
                         onEdit={openEditBetForm}
@@ -2069,7 +2075,6 @@ function App() {
                     <MultiBetSequenceCard
                       key={sequence.id}
                       sequence={sequence}
-                      descriptionFilter={descriptionFilter}
                       currency={tracker.settings.currency}
                       onSettle={settleBet}
                       onEdit={openEditBetForm}

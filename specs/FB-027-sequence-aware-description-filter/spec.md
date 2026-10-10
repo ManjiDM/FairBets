@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | ID | `FB-027-sequence-aware-description-filter` |
-| Status | Draft |
+| Status | Shipped |
 | Created | 2026-10-10 |
 | Related | — |
 
