@@ -46,6 +46,14 @@ Feature: Bet management
     And the Add Bet button should be in the sequence filter row
     And the page should not overflow horizontally
 
+  Scenario: The Add Bet button is right-aligned on desktop
+    When I navigate to the Sequences view
+    Then the Add Bet button should be right-aligned with the sequence filter controls
+
+  Scenario: The Add Bet button is right-aligned on mobile
+    Given the viewport is a small phone
+    Then the Add Bet button should be right-aligned with the sequence filter controls
+
   Scenario: Sequence actions use icons and the summary toggles details
     When I start a fresh ledger
     And I add a bet labeled "Icon sequence first" with odds "2.00" and a manual stake of "1" placed at "2026-09-13T12:00"

@@ -682,6 +682,24 @@ Then("the Add Bet button should be in the sequence filter row", async function (
   expect(addBetBounds.x).toBeGreaterThanOrEqual(filterBounds.x + filterBounds.width);
 });
 
+Then(
+  "the Add Bet button should be right-aligned with the sequence filter controls",
+  async function () {
+    const addBetButton = this.page.getByRole("button", {
+      name: "Add bet",
+      exact: true,
+    });
+    const controls = this.page.locator(".sequence-filter-controls");
+    const addBetBounds = await addBetButton.boundingBox();
+    const controlsBounds = await controls.boundingBox();
+    expect(addBetBounds).not.toBeNull();
+    expect(controlsBounds).not.toBeNull();
+    expect(Math.abs(
+      addBetBounds.x + addBetBounds.width - (controlsBounds.x + controlsBounds.width),
+    )).toBeLessThanOrEqual(2);
+  },
+);
+
 Then("the page should not overflow horizontally", async function () {
   const { scrollWidth, innerWidth } = await this.page.evaluate(() => ({
     scrollWidth: document.documentElement.scrollWidth,
