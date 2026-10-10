@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | ID | `FB-030-fix-modal-offset-filter-width` |
-| Status | Reproducing |
+| Status | Verified |
 | Severity | Cosmetic |
 | Created | 2026-10-10 |
 | Related | None |
@@ -100,15 +100,16 @@ of the row (100% under the mobile breakpoint).
 
 ## Verification
 
-- [ ] Regression scenarios failed before the fix (evidence recorded below)
-- [ ] Regression scenarios pass after the fix
-- [ ] `pnpm lint`
-- [ ] `pnpm build`
-- [ ] `pnpm test:e2e`
-- [ ] A pre-existing saved ledger still loads with correct figures
+- [x] Regression scenarios failed before the fix (evidence recorded below)
+- [x] Regression scenarios pass after the fix
+- [x] `pnpm lint`
+- [x] `pnpm build`
+- [x] `pnpm test:e2e`
+- [x] A pre-existing saved ledger still loads with correct figures
 
 **Evidence of the red state:**
 
 ```text
-Pending.
+Dialog start: expected >= 75, received 55.3 (desktop).
+Filter width ratio: expected 0.5 +/- 0.03, received 0.054 off (desktop, 360px input).
 ```
