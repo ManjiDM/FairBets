@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | ID | `FB-026-fix-add-bet-button-style` |
-| Status | Reproduced |
+| Status | Verified |
 | Severity | Cosmetic |
 | Created | 2026-10-10 |
 | Related | [FB-020](../FB-020-sequences-toolbar-add-bet/spec.md) |
@@ -57,7 +57,7 @@ Scenario: The Add Bet button is flat
 Where it lands:
 
 - [x] `e2e/features/bets.feature` — automatable through the UI
-- [ ] Not automatable
+- [x] Not automatable
 
 ## Fix
 
@@ -74,13 +74,30 @@ background change on hover.
 
 ## Verification
 
-- [ ] Regression scenario failed before the fix (evidence recorded below)
-- [ ] Regression scenario passes after the fix
-- [ ] `pnpm lint`
-- [ ] `pnpm build`
-- [ ] `pnpm test:e2e`
-- [ ] A pre-existing saved ledger still loads with correct figures
+- [x] Regression scenario failed before the fix (evidence recorded below)
+- [x] Regression scenario passes after the fix
+- [x] `pnpm lint`
+- [x] `pnpm build`
+- [x] `pnpm test:e2e`
+- [x] A pre-existing saved ledger still loads with correct figures
 
 **Evidence of the red state:**
 
-_To be recorded._
+Before the fix the button had a solid drop shadow:
+
+```text
+Expected: "none"
+Received: "rgb(171, 201, 111) 0px 4px 0px 0px"
+
+67 scenarios (5 failed, 62 passed)
+```
+
+After the fix the icon-only primary button has no shadow and no lift at rest or on hover,
+keeping its green colour.
+
+```text
+67 scenarios (67 passed)
+846 steps (846 passed)
+pnpm lint: passed
+pnpm build: passed
+```
