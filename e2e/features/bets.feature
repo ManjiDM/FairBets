@@ -476,3 +476,17 @@ Feature: Bet management
     Then I should see 0 sequences
     And the cancelled bet "First cancelled bet" should be visible outside sequences
     And the cancelled bet "Second cancelled bet" should be visible outside sequences
+
+  Scenario: An active sequence shows its Active tag below its number
+    When I start a fresh ledger
+    And I add a bet labeled "Tag first" with odds "2.00" and a manual stake of "1" placed at "2026-09-13T12:00"
+    And I mark the bet "Tag first" as "Lost"
+    And I press the plus button for the sequence containing the bet "Tag first"
+    And I input the label "Tag second"
+    And I input the date and time "2026-09-13T13:00"
+    And I input "2.00" in the odds field
+    And I input "1" in the Manual Stake field
+    And I press the Add button
+    And I mark the bet "Tag second" as "Lost"
+    Then the sequence card containing the bet "Tag first" should not show "In progress"
+    And the Active tag of the sequence containing the bet "Tag first" should be directly below its number

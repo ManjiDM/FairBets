@@ -1160,3 +1160,32 @@ When("I cancel the bet form", async function () {
   await this.page.getByRole("button", { name: "Cancel", exact: true }).click();
   await expect(this.page.getByRole("dialog")).toHaveCount(0);
 });
+
+
+Then(
+  "the sequence card containing the bet {string} should not show {string}",
+  async function (label, text) {
+    const sequence = this.page.locator(".sequence-card").filter({
+      has: this.page.getByText(label, { exact: true }),
+    });
+    await expect(sequence).toBeVisible();
+    await expect(sequence.getByText(text, { exact: true })).toHaveCount(0);
+  },
+);
+
+Then(
+  "the Active tag of the sequence containing the bet {string} should be directly below its number",
+  async function (label) {
+    const sequence = this.page.locator(".sequence-card").filter({
+      has: this.page.getByText(label, { exact: true }),
+    });
+    const number = await sequence.locator(".sequence-number").boundingBox();
+    const tag = sequence.locator(".sequence-card-heading .status-badge");
+    await expect(tag).toHaveText("Active");
+    await expect(tag.locator("xpath=ancestor::*[contains(@class,'sequence-card-actions')]")).toHaveCount(0);
+    const bounds = await tag.boundingBox();
+    expect(Math.abs(bounds.x - number.x)).toBeLessThanOrEqual(2);
+    expect(bounds.y).toBeGreaterThanOrEqual(number.y + number.height - 1);
+    expect(bounds.y - (number.y + number.height)).toBeLessThanOrEqual(12);
+  },
+);
