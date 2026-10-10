@@ -226,6 +226,12 @@ Then("a guardrail warning should be shown", async function () {
   await expect(this.page.locator(".risk-banner")).toBeVisible();
 });
 
+Then("the guardrail warning icon should be decorative", async function () {
+  const icon = this.page.locator(".risk-banner .risk-list-icon").first();
+  await expect(icon).toBeVisible();
+  await expect(icon).toHaveAttribute("aria-hidden", "true");
+});
+
 When("I dismiss the guardrail warning", async function () {
   await this.page.locator(".risk-banner").getByRole("button", { name: "Dismiss" }).click();
 });

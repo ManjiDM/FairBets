@@ -74,5 +74,6 @@ Feature: FairBets app overview
     When I add a bet labeled "Big bet" with odds "1.50" and a manual stake of "10"
     And I set the maximum stake to "5"
     Then a guardrail warning should be shown
+    And the guardrail warning icon should be decorative
     When I dismiss the guardrail warning
     Then no guardrail warning should be shown
