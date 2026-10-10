@@ -6,7 +6,9 @@ import {
   Ban,
   Check,
   PanelLeft,
+  Pencil,
   Plus,
+  Trash2,
   TriangleAlert,
   X,
 } from "lucide-react";
@@ -474,7 +476,15 @@ function outcomeLabel(outcome: Outcome): string {
   return "Open";
 }
 
-type ActionIconName = "add" | "won" | "lost" | "cancelled" | "close-sequence";
+type ActionIconName =
+  | "add"
+  | "won"
+  | "lost"
+  | "cancelled"
+  | "close-sequence"
+  | "edit"
+  | "delete"
+  | "confirm-delete";
 
 const actionIcons = {
   add: Plus,
@@ -482,6 +492,9 @@ const actionIcons = {
   lost: X,
   cancelled: Ban,
   "close-sequence": Archive,
+  edit: Pencil,
+  delete: Trash2,
+  "confirm-delete": Check,
 };
 
 function ActionIcon({ name }: { name: ActionIconName }) {
@@ -615,18 +628,44 @@ function InlineDeleteAction({
 
   if (pending) {
     return (
-      <span ref={actionRef} onPointerDown={(event) => event.stopPropagation()}>
-        <button type="button" className="compact-action compact-delete" onClick={onConfirm}>
-          Confirm deletion
+      <span
+        ref={actionRef}
+        onPointerDown={(event) => event.stopPropagation()}
+        onClick={(event) => {
+          event.preventDefault();
+          event.stopPropagation();
+        }}
+      >
+        <button
+          type="button"
+          className="compact-action compact-delete icon-only-button"
+          aria-label="Confirm deletion"
+          title="Confirm deletion"
+          onClick={onConfirm}
+        >
+          <ActionIcon name="confirm-delete" />
         </button>
       </span>
     );
   }
 
   return (
-    <span ref={actionRef} onPointerDown={(event) => event.stopPropagation()}>
-      <button type="button" className="compact-action compact-delete" onClick={onRequest}>
-        {label}
+    <span
+      ref={actionRef}
+      onPointerDown={(event) => event.stopPropagation()}
+      onClick={(event) => {
+        event.preventDefault();
+        event.stopPropagation();
+      }}
+    >
+      <button
+        type="button"
+        className="compact-action compact-delete icon-only-button"
+        aria-label={label}
+        title={label}
+        onClick={onRequest}
+      >
+        <ActionIcon name="delete" />
       </button>
     </span>
   );
@@ -706,8 +745,14 @@ function SequenceBetRow({
           </>
         ) : null}
         <span className="compact-sequence-actions">
-          <button type="button" className="compact-action" onClick={() => onEdit(bet)}>
-            Edit
+          <button
+            type="button"
+            className="compact-action icon-only-button"
+            aria-label="Edit"
+            title="Edit"
+            onClick={() => onEdit(bet)}
+          >
+            <ActionIcon name="edit" />
           </button>
           <InlineDeleteAction
             pending={pendingDeleteKey === deleteKey}
@@ -779,8 +824,14 @@ function StandaloneCancelledBetCard({
       </div>
       <div className="single-bet-actions">
         <span className="compact-sequence-actions">
-          <button type="button" className="compact-action" onClick={() => onEdit(bet)}>
-            Edit
+          <button
+            type="button"
+            className="compact-action icon-only-button"
+            aria-label="Edit"
+            title="Edit"
+            onClick={() => onEdit(bet)}
+          >
+            <ActionIcon name="edit" />
           </button>
           <InlineDeleteAction
             pending={pendingDelete}
@@ -904,8 +955,14 @@ function SingleBetSequenceCard({
           <SequenceAddBetButton sequence={sequence} onAddToSequence={onAddToSequence} />
         ) : null}
         <span className="compact-sequence-actions">
-          <button type="button" className="compact-action" onClick={() => onEdit(bet)}>
-            Edit
+          <button
+            type="button"
+            className="compact-action icon-only-button"
+            aria-label="Edit"
+            title="Edit"
+            onClick={() => onEdit(bet)}
+          >
+            <ActionIcon name="edit" />
           </button>
           <InlineDeleteAction
             label="Delete"

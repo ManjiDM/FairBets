@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | ID | `FB-022-fix-bet-sequence-action-icons` |
-| Status | Reproducing |
+| Status | Verified |
 | Severity | Cosmetic |
 | Created | 2026-10-10 |
 | Related | [FB-019](../FB-019-consistent-icon-library/spec.md) |
@@ -104,15 +104,37 @@ Retain accessible labels, tooltips, current action handlers, and joined-control 
 
 ## Verification
 
-- [ ] Regression scenarios failed before the fix (evidence recorded below)
-- [ ] Regression scenarios pass after the fix
-- [ ] `pnpm lint`
-- [ ] `pnpm build`
-- [ ] `pnpm test:e2e`
-- [ ] A pre-existing saved ledger still loads with correct figures
+- [x] Regression scenarios failed before the fix (evidence recorded below)
+- [x] Regression scenarios pass after the fix
+- [x] `pnpm lint`
+- [x] `pnpm build`
+- [x] `pnpm test:e2e`
+- [x] A pre-existing saved ledger still loads with correct figures
 
 **Evidence of the red state:**
 
+````text
+Before the fix, the icon assertion failed on the card's Edit button:
+
 ```text
-Record the failing E2E output before applying the UI fix.
+Expected: 1 decorative SVG inside Edit
+Received: 0
+
+61 of 62 scenarios passed; the new card-action icon scenario failed.
 ```
+
+After the fix, card Edit, Delete, Confirm deletion, and sequence Delete controls use
+decorative Lucide icons while retaining their accessible names and titles. Clicking
+Delete in a collapsed sequence leaves it collapsed, and clicking outside pending
+confirmation cancels without deleting the bet.
+
+```text
+62 scenarios (62 passed)
+793 steps (793 passed)
+pnpm lint: passed
+pnpm build: passed
+```
+
+The full suite also passed the existing persistence scenarios, confirming saved ledger
+data still loads and remains unchanged.
+````
