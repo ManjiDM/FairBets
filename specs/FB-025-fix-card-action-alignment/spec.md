@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | ID | `FB-025-fix-card-action-alignment` |
-| Status | Reproduced |
+| Status | Verified |
 | Severity | Cosmetic |
 | Created | 2026-10-10 |
 | Related | [FB-024](../FB-024-fix-grouped-card-action-buttons/spec.md) |
@@ -59,7 +59,7 @@ Scenario: Bet card action groups are aligned to opposite edges on mobile
 Where it lands:
 
 - [x] `e2e/features/bets.feature` — automatable through the UI
-- [ ] Not automatable
+- [x] Not automatable
 
 ## Fix
 
@@ -76,13 +76,28 @@ Space the action row's groups apart, keeping the outcome group left and the Edit
 
 ## Verification
 
-- [ ] Regression scenario failed before the fix (evidence recorded below)
-- [ ] Regression scenario passes after the fix
-- [ ] `pnpm lint`
-- [ ] `pnpm build`
-- [ ] `pnpm test:e2e`
-- [ ] A pre-existing saved ledger still loads with correct figures
+- [x] Regression scenario failed before the fix (evidence recorded below)
+- [x] Regression scenario passes after the fix
+- [x] `pnpm lint`
+- [x] `pnpm build`
+- [x] `pnpm test:e2e`
+- [x] A pre-existing saved ledger still loads with correct figures
 
 **Evidence of the red state:**
 
-_To be recorded._
+Before the fix on a 390px viewport the Delete button was far from the card's right edge:
+
+```text
+Expected: <= 20
+Received: 158   (distance from Delete to the card's right edge)
+
+67 scenarios (5 failed, 62 passed)
+```
+
+After the fix the Edit/Delete (and sequence) group is pushed to the right edge while
+Won/Lost/Cancelled stay at the left; the scenario passes.
+
+```text
+pnpm lint: passed
+pnpm build: passed
+```

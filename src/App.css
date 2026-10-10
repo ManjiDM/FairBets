@@ -1039,6 +1039,10 @@ h3 {
   gap: 6px;
 }
 
+.single-bet-actions > .compact-sequence-actions:last-child {
+  margin-left: auto;
+}
+
 .compact-action,
 .compact-outcome {
   min-height: 30px;
