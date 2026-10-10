@@ -1228,3 +1228,29 @@ Then(
     }
   },
 );
+
+async function cardEdges(page, label, name) {
+  const card = page
+    .locator(".sequence-card, .single-bet-card")
+    .filter({ has: page.getByText(label, { exact: true }) })
+    .first();
+  const cardBox = await card.boundingBox();
+  const buttonBox = await card.getByRole("button", { name, exact: true }).boundingBox();
+  return { cardBox, buttonBox };
+}
+
+Then(
+  "the {string} button in the card containing the bet {string} should be at the left edge of the card",
+  async function (name, label) {
+    const { cardBox, buttonBox } = await cardEdges(this.page, label, name);
+    expect(buttonBox.x - cardBox.x).toBeLessThanOrEqual(20);
+  },
+);
+
+Then(
+  "the {string} button in the card containing the bet {string} should be at the right edge of the card",
+  async function (name, label) {
+    const { cardBox, buttonBox } = await cardEdges(this.page, label, name);
+    expect(cardBox.x + cardBox.width - (buttonBox.x + buttonBox.width)).toBeLessThanOrEqual(20);
+  },
+);

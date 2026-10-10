@@ -509,3 +509,9 @@ Feature: Bet management
     And I mark the bet "Grouped second" as "Lost"
     Then the buttons "Close sequence, Add bet to sequence 1, Delete" in the card containing the bet "Grouped first" should have the same size
     And the buttons "Close sequence, Add bet to sequence 1, Delete" in the card containing the bet "Grouped first" should be nested without gaps
+  Scenario: Bet card action groups are aligned to opposite edges on mobile
+    Given the viewport is a small phone
+    When I start a fresh ledger
+    And I add a bet labeled "Aligned open" with odds "2.00" and a manual stake of "1" placed at "2026-09-13T12:00"
+    Then the "Won" button in the card containing the bet "Aligned open" should be at the left edge of the card
+    And the "Delete" button in the card containing the bet "Aligned open" should be at the right edge of the card
