@@ -33,6 +33,19 @@ Feature: Bet management
     And the button named "Lost" should be icon-only
     And the button named "Cancelled" should be icon-only
 
+  Scenario: The sequence toolbar groups Add Bet with filters
+    When I navigate to the Sequences view
+    Then the all-status filter should be named "All"
+    And the Add Bet button should be in the sequence filter row
+    When I press the Add Bet button
+    Then I see the new bet dialog
+
+  Scenario: The sequence toolbar remains usable on mobile
+    Given the viewport is a small phone
+    Then the all-status filter should be named "All"
+    And the Add Bet button should be in the sequence filter row
+    And the page should not overflow horizontally
+
   Scenario: Sequence actions use icons and the summary toggles details
     When I start a fresh ledger
     And I add a bet labeled "Icon sequence first" with odds "2.00" and a manual stake of "1" placed at "2026-09-13T12:00"

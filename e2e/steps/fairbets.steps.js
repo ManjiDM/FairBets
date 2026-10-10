@@ -660,6 +660,36 @@ When("I select the sequence status filter {string}", async function (status) {
     .click();
 });
 
+Then("the all-status filter should be named {string}", async function (name) {
+  const allFilter = this.page
+    .locator(".filter-bar")
+    .getByRole("button", { name, exact: true });
+  await expect(allFilter).toBeVisible();
+  await expect(allFilter).toHaveClass(/active/);
+});
+
+Then("the Add Bet button should be in the sequence filter row", async function () {
+  const addBetButton = this.page.getByRole("button", {
+    name: "Add bet",
+    exact: true,
+  });
+  const sequenceFilter = this.page.locator(".filter-bar");
+  const addBetBounds = await addBetButton.boundingBox();
+  const filterBounds = await sequenceFilter.boundingBox();
+  expect(addBetBounds).not.toBeNull();
+  expect(filterBounds).not.toBeNull();
+  expect(Math.abs(addBetBounds.y - filterBounds.y)).toBeLessThanOrEqual(2);
+  expect(addBetBounds.x).toBeGreaterThanOrEqual(filterBounds.x + filterBounds.width);
+});
+
+Then("the page should not overflow horizontally", async function () {
+  const { scrollWidth, innerWidth } = await this.page.evaluate(() => ({
+    scrollWidth: document.documentElement.scrollWidth,
+    innerWidth: window.innerWidth,
+  }));
+  expect(scrollWidth).toBeLessThanOrEqual(innerWidth);
+});
+
 Then("the description {string} should be visible", async function (description) {
   await expect(
     this.page.locator(".sequence-list .bet-description").filter({ hasText: description }),
