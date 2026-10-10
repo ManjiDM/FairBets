@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | ID | `FB-021-fix-add-bet-alignment` |
-| Status | Reproduced |
+| Status | Verified |
 | Severity | Cosmetic |
 | Created | 2026-10-10 |
 | Related | None |
@@ -91,10 +91,10 @@ positions and sizes.
 ## Verification
 
 - [x] Regression scenario failed before the fix (evidence recorded below)
-- [ ] Regression scenario passes after the fix
-- [ ] `pnpm lint`
-- [ ] `pnpm build`
-- [ ] `pnpm test:e2e`
+- [x] Regression scenario passes after the fix
+- [x] `pnpm lint`
+- [x] `pnpm build`
+- [x] `pnpm test:e2e`
 - [x] A pre-existing saved ledger still loads with correct figures
 
 **Evidence of the red state:**
@@ -107,4 +107,7 @@ Scenario: The Add Bet button is right-aligned on mobile
 Expected difference <= 2 CSS pixels; received 133.078125
 
 59 of 61 scenarios passed; both new right-alignment regressions failed.
+
+After the fix, both desktop and mobile right-alignment scenarios pass; the full suite
+passes 61 scenarios and 757 steps. Lint and build pass.
 ```

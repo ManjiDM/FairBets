@@ -661,7 +661,9 @@ h3 {
 
 .sequence-filter-actions {
   display: flex;
+  flex: 1;
   align-items: center;
+  justify-content: space-between;
   gap: 8px;
 }
 
