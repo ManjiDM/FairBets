@@ -226,7 +226,7 @@ Feature: Bet management
     Then the description "Home 123456 @ 1.20" should be visible
     And the description "Away 654321 @ 1.35" should be visible
 
-  Scenario: Filter individual bets within a sequence
+  Scenario: A matching bet shows the rest of its sequence
     When I start a fresh ledger
     And I add a bet labeled "Sequence 123456" with odds "1.50" and a manual stake of "1" placed at "2026-09-13T12:00"
     And I mark the bet "Sequence 123456" as "Lost"
@@ -238,8 +238,30 @@ Feature: Bet management
     And I press the Add button
     When I filter the bet list by description "1234"
     Then the description "Sequence 123456 @ 1.50" should be visible
-    And the description "Another sequence bet @ 1.50" should not be visible
+    And the description "Another sequence bet @ 1.50" should be visible
 
+  Scenario: Filter sequences by the number label on their card
+    When I start a fresh ledger
+    And I add a bet labeled "Label first" with odds "2.00" and a manual stake of "1" placed at "2026-09-13T12:00"
+    And I mark the bet "Label first" as "Lost"
+    And I press the plus button for the sequence containing the bet "Label first"
+    And I input the label "Label second"
+    And I input the date and time "2026-09-13T13:00"
+    And I input "2.00" in the odds field
+    And I input "1" in the Manual Stake field
+    And I press the Add button
+    And I mark the bet "Label second" as "Won"
+    And I add a bet labeled "Label third" with odds "2.00" and a manual stake of "1" placed at "2026-09-13T14:00"
+    When I filter the bet list by description "sequence 1"
+    Then the description "Label first @ 2.00" should be visible
+    And the description "Label second @ 2.00" should be visible
+    And the description "Label third @ 2.00" should not be visible
+    When I filter the bet list by description "bet 2"
+    Then the description "Label third @ 2.00" should be visible
+    And the description "Label first @ 2.00" should not be visible
+    And the description "Label second @ 2.00" should not be visible
+    When I filter the bet list by description "sequence 9"
+    Then the bet list should say no descriptions match
   Scenario: Filter standalone cancelled bet descriptions
     When I start a fresh ledger
     And I add a bet labeled "Cancelled 123456" with odds "1.20" placed at "2026-09-13T12:00"
