@@ -54,6 +54,41 @@ Feature: Bet management
     Given the viewport is a small phone
     Then the Add Bet button should be right-aligned with the sequence filter controls
 
+  Scenario: Bet and sequence card actions use accessible icons
+    When I start a fresh ledger
+    And I add a bet labeled "Icon action first" with odds "2.00" and a manual stake of "1" placed at "2026-09-13T12:00"
+    And I mark the bet "Icon action first" as "Lost"
+    Then the Edit and Delete actions for bet "Icon action first" should be icon-only
+    When I press the plus button for the sequence containing the bet "Icon action first"
+    And I input the label "Icon action second"
+    And I input the date and time "2026-09-13T13:00"
+    And I input "2.00" in the odds field
+    And I input "1" in the Manual Stake field
+    And I press the Add button
+    And I mark the bet "Icon action second" as "Lost"
+    Then the Delete action for the sequence containing bet "Icon action second" should be icon-only
+    And the Edit and Delete actions for bet "Icon action first" should be icon-only
+    When I press the plus button for the sequence containing the bet "Icon action second"
+    And I input the label "Icon action closing win"
+    And I input the date and time "2026-09-13T14:00"
+    And I input "2.00" in the odds field
+    And I input "1" in the Manual Stake field
+    And I press the Add button
+    And I mark the bet "Icon action closing win" as "Won"
+    Then the Delete action for the sequence containing bet "Icon action first" should be icon-only
+    And I toggle the sequence summary for bet "Icon action first"
+    Then the Delete action for the sequence containing bet "Icon action first" should be icon-only
+    And the Edit and Delete actions for bet "Icon action second" should be icon-only
+    And the Edit and Delete actions for bet "Icon action first" should be icon-only
+    When I request deletion of bet "Icon action first"
+    Then the Confirm deletion action for bet "Icon action first" should be icon-only
+    When I cancel deletion by clicking outside its button
+    Then the Edit and Delete actions for bet "Icon action first" should be icon-only
+    And the bet "Icon action first" should be "Lost"
+    When I add a bet labeled "Icon cancelled bet" with odds "2.00" and a manual stake of "1" placed at "2026-09-13T15:00"
+    And I mark the bet "Icon cancelled bet" as "Cancelled"
+    Then the Edit and Delete actions for bet "Icon cancelled bet" should be icon-only
+
   Scenario: Sequence actions use icons and the summary toggles details
     When I start a fresh ledger
     And I add a bet labeled "Icon sequence first" with odds "2.00" and a manual stake of "1" placed at "2026-09-13T12:00"

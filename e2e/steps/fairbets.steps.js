@@ -392,6 +392,75 @@ When(
   },
 );
 
+When("I request deletion of bet {string}", async function (label) {
+  await revealBet(this.page, label);
+  await betCard(this.page, label)
+    .getByRole("button", { name: "Delete", exact: true })
+    .click();
+});
+
+When("I cancel deletion by clicking outside its button", async function () {
+  await this.page.locator(".sequence-page > .section-title h2").click();
+});
+
+Then(
+  "the Edit and Delete actions for bet {string} should be icon-only",
+  async function (label) {
+    await revealBet(this.page, label);
+    const card = betCard(this.page, label);
+    await expectIconOnlyAction(
+      card.getByRole("button", { name: "Edit", exact: true }),
+      "Edit",
+    );
+    await expectIconOnlyAction(
+      card.getByRole("button", { name: "Delete", exact: true }),
+      "Delete",
+    );
+  },
+);
+
+Then(
+  "the Delete action for bet {string} should be icon-only",
+  async function (label) {
+    await revealBet(this.page, label);
+    await expectIconOnlyAction(
+      betCard(this.page, label).getByRole("button", { name: "Delete", exact: true }),
+      "Delete",
+    );
+  },
+);
+
+Then(
+  "the Delete action for the sequence containing bet {string} should be icon-only",
+  async function (label) {
+    const sequence = this.page
+      .locator(".sequence-card, details.compact-sequence-card, .single-bet-card:not(.nested-sequence-bet)")
+      .filter({ has: this.page.getByText(label, { exact: true }) })
+      .first();
+    const actionGroup = sequence
+      .locator(".sequence-card-actions, .compact-sequence-actions")
+      .first();
+    await expectIconOnlyAction(
+      actionGroup.getByRole("button", { name: "Delete", exact: true }),
+      "Delete",
+    );
+  },
+);
+
+Then(
+  "the Confirm deletion action for bet {string} should be icon-only",
+  async function (label) {
+    await revealBet(this.page, label);
+    await expectIconOnlyAction(
+      betCard(this.page, label).getByRole("button", {
+        name: "Confirm deletion",
+        exact: true,
+      }),
+      "Confirm deletion",
+    );
+  },
+);
+
 When("I toggle the sequence summary for bet {string}", async function (label) {
   const sequence = this.page.locator("details.compact-sequence-card").filter({
     has: this.page.getByText(label, { exact: true }),
@@ -876,6 +945,14 @@ function betCard(page, label) {
     .locator(".single-bet-card")
     .filter({ has: page.getByText(label, { exact: true }) })
     .first();
+}
+
+async function expectIconOnlyAction(button, name) {
+  await expect(button).toBeVisible();
+  await expect(button.locator("svg[aria-hidden='true']")).toHaveCount(1);
+  await expect(button).toHaveAttribute("aria-label", name);
+  await expect(button).toHaveAttribute("title", name);
+  expect((await button.innerText()).trim()).toBe("");
 }
 
 async function revealBet(page, label) {
