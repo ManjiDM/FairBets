@@ -1189,3 +1189,42 @@ Then(
     expect(bounds.y - (number.y + number.height)).toBeLessThanOrEqual(12);
   },
 );
+
+async function cardButtonBounds(page, label, names) {
+  const card = page
+    .locator(".sequence-card, .single-bet-card")
+    .filter({ has: page.getByText(label, { exact: true }) })
+    .first();
+  const bounds = [];
+  for (const name of names.split(",").map((value) => value.trim())) {
+    const box = await card.getByRole("button", { name, exact: true }).first().boundingBox();
+    expect(box, `${name} button should be visible`).not.toBeNull();
+    bounds.push(box);
+  }
+  return bounds;
+}
+
+Then(
+  "the buttons {string} in the card containing the bet {string} should have the same size",
+  async function (names, label) {
+    const bounds = await cardButtonBounds(this.page, label, names);
+    for (const box of bounds) {
+      expect(Math.abs(box.width - bounds[0].width)).toBeLessThanOrEqual(1);
+      expect(Math.abs(box.height - bounds[0].height)).toBeLessThanOrEqual(1);
+    }
+  },
+);
+
+Then(
+  "the buttons {string} in the card containing the bet {string} should be nested without gaps",
+  async function (names, label) {
+    const bounds = (await cardButtonBounds(this.page, label, names)).sort(
+      (left, right) => left.x - right.x,
+    );
+    for (let index = 1; index < bounds.length; index += 1) {
+      const previous = bounds[index - 1];
+      expect(Math.abs(bounds[index].x - (previous.x + previous.width))).toBeLessThanOrEqual(1.5);
+      expect(Math.abs(bounds[index].y - previous.y)).toBeLessThanOrEqual(1);
+    }
+  },
+);

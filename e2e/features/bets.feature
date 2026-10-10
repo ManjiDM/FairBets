@@ -490,3 +490,22 @@ Feature: Bet management
     And I mark the bet "Tag second" as "Lost"
     Then the sequence card containing the bet "Tag first" should not show "In progress"
     And the Active tag of the sequence containing the bet "Tag first" should be directly below its number
+  Scenario: Outcome buttons match the size of Edit and Delete and are nested
+    When I start a fresh ledger
+    And I add a bet labeled "Grouped open" with odds "2.00" and a manual stake of "1" placed at "2026-09-13T12:00"
+    Then the buttons "Won, Lost, Cancelled, Edit, Delete" in the card containing the bet "Grouped open" should have the same size
+    And the buttons "Won, Lost, Cancelled" in the card containing the bet "Grouped open" should be nested without gaps
+
+  Scenario: Sequence buttons match the size of Edit and Delete and are nested
+    When I start a fresh ledger
+    And I add a bet labeled "Grouped first" with odds "2.00" and a manual stake of "1" placed at "2026-09-13T12:00"
+    And I mark the bet "Grouped first" as "Lost"
+    And I press the plus button for the sequence containing the bet "Grouped first"
+    And I input the label "Grouped second"
+    And I input the date and time "2026-09-13T13:00"
+    And I input "2.00" in the odds field
+    And I input "1" in the Manual Stake field
+    And I press the Add button
+    And I mark the bet "Grouped second" as "Lost"
+    Then the buttons "Close sequence, Add bet to sequence 1, Delete" in the card containing the bet "Grouped first" should have the same size
+    And the buttons "Close sequence, Add bet to sequence 1, Delete" in the card containing the bet "Grouped first" should be nested without gaps
