@@ -53,6 +53,16 @@ Write for a reader who does not know the codebase. Describe user outcomes, busin
 rules, and acceptance scenarios. **No file paths, no function names, no code, no
 library choices.** Mark every open question with `[NEEDS CLARIFICATION: question]`.
 
+Use **exactly one commit per stage**: draft spec first; amend that commit for any spec
+clarifications before starting the plan stage; then make one plan/tasks commit, one docs
+commit when applicable, one acceptance/regression-test commit, and one implementation
+commit. Amend the current stage's commit for further edits instead of creating another
+commit for that stage. Complete each stage before moving on; do not rewrite an earlier
+stage after later-stage commits exist. Never combine test and implementation stages. If
+a commit is blocked, stop and report the blocker. Before declaring the work complete,
+inspect `git log` to confirm the stage commits and `git status --short` to confirm there
+are no uncommitted changes.
+
 Prompt: `.github/prompts/specify.prompt.md`
 
 Every later commit for this change — clarification, plan, tasks, implementation, tests,

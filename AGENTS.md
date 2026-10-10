@@ -66,6 +66,16 @@ Short version:
    `FB-NNN` ID in every follow-up commit for this change.
 7. **Verify** — lint, build, E2E, plus each acceptance scenario in the spec.
 
+**Use exactly one commit per stage:** create the draft-spec commit first. If the spec
+changes during clarification, amend that spec commit before starting the plan stage.
+Likewise, make one plan/tasks commit, one docs commit when applicable, one acceptance or
+regression-test commit, and one implementation commit; revise files within the current
+stage by amending its commit, not by creating another commit for that stage. Finish and
+amend a stage before moving to the next; never rewrite an earlier stage after later-stage
+commits exist. In particular, never combine tests with implementation. Before saying the
+work is complete, check `git log` for the expected stage commits and `git status --short`
+for a clean worktree. If a commit is blocked, stop and report the blocker.
+
 Slash-style prompts for each stage are in `.github/prompts/`. The reusable skill is in
 `.agents/skills/spec-driven-development/`.
 

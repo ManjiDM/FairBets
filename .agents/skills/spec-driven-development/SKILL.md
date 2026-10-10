@@ -68,6 +68,11 @@ principles that most often decide a design:
    50-character subject limit and this first commit limited to the new spec. If Git
    blocks the commit, stop and report the blocker. Use the same ID for every later commit
    in the work item.
+6. Use exactly one commit per stage: draft spec; plan and tasks; docs when applicable;
+   acceptance/regression tests; implementation. Amend the spec commit for clarifications
+   before starting the plan stage, and amend the current stage commit for further edits.
+   Finish each stage before moving on; never rewrite an earlier stage after later-stage
+   commits exist. Never combine test and implementation files in one commit.
 
 ### Step 2 — Clarify
 
@@ -98,8 +103,8 @@ principles that most often decide a design:
 2. Run each task's verification before moving on.
 3. Build only what the spec requires; new ideas go to "Out of scope for now".
 4. If the plan proves wrong, update `plan.md` and `tasks.md`, then continue.
-5. Commit work iteratively with single-line messages and no commit body, always retaining
-   the spec's `FB-NNN` ID. Do not push unless asked.
+5. Keep exactly one single-line commit per stage, amend that commit for revisions made
+   before moving on, and retain the spec's `FB-NNN` ID. Do not push unless asked.
 
 ### Step 6 — Verify
 
@@ -111,6 +116,9 @@ pnpm test:e2e      # when UI behaviour changed
 
 Then confirm each acceptance scenario and each `FR-n`, re-run the constitution check
 against the code as built, and check an existing saved ledger still loads correctly.
+Before reporting completion, inspect `git log` for the required stage commits and
+`git status --short` to verify the worktree is clean. If any required commit was blocked,
+stop and report the blocker; do not claim that stage is complete.
 
 ---
 
