@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | ID | `FB-031-multi-ledger-lifecycle` |
-| Status | Clarified |
+| Status | Shipped |
 | Created | 2026-10-10 |
 | Related | Follows the v1.0.0 release; groundwork for a larger refactor |
 

@@ -10,6 +10,7 @@ import {
   Plus,
   Trash2,
   TriangleAlert,
+  Wallet,
   X,
 } from "lucide-react";
 import "./App.css";
@@ -32,6 +33,15 @@ import {
   type UnstampedBet,
   suggestStakeForOdds,
 } from "./domain/ledger";
+import {
+  addInvestment,
+  closeLedger,
+  fundsOverview,
+  historyEvents,
+  migrateToPortfolio,
+  startLedger,
+  type Portfolio,
+} from "./domain/portfolio";
 import { importWorkbook } from "./domain/workbookImport";
 import {
   getCloudSession,
@@ -96,6 +106,7 @@ interface LoadedLedger {
 
 const STORAGE_KEY = "fairbets-ledger-state-v2";
 const LEGACY_STORAGE_KEY = "series-ledger-state-v1";
+const PORTFOLIO_KEY = "fairbets-portfolio-v1";
 const CLOUD_LINK_USER_KEY = "fairbets-cloud-user-v2";
 const CLOUD_LINK_LEDGER_KEY = "fairbets-cloud-ledger-v2";
 const LEGACY_CLOUD_LINK_USER_KEY = "series-ledger-cloud-user-v1";
@@ -343,6 +354,56 @@ function readStrategyDraft(draft: BetStrategyDraft): BetStrategy | string {  con
   return { baseStake, threshold, recoveryWeight, stakeRounding, maxStake };
 }
 
+const NEW_LEDGER_FIELDS: {
+  key: Exclude<keyof StrategySettings, "currency">;
+  label: string;
+  step: string;
+  percent?: boolean;
+}[] = [
+  { key: "startingBalance", label: "Starting balance", step: "0.01" },
+  { key: "baseStake", label: "Base stake", step: "0.01" },
+  { key: "goalRate", label: "Goal rate (%)", step: "1", percent: true },
+  { key: "threshold", label: "Threshold", step: "0.01" },
+  { key: "recoveryWeight", label: "Recovery weight (%)", step: "1", percent: true },
+  { key: "stakeRounding", label: "Stake rounding", step: "1" },
+  { key: "maxStake", label: "Max stake", step: "0.01" },
+  { key: "maxOpenExposure", label: "Max open exposure", step: "0.01" },
+];
+function isPortfolio(value: unknown): value is Portfolio {
+  return (
+    isRecord(value) &&
+    (value.activeOpenedAt === null || typeof value.activeOpenedAt === "string") &&
+    Array.isArray(value.investments) &&
+    Array.isArray(value.closedLedgers)
+  );
+}
+
+function loadPortfolio(ledger: LedgerState): Portfolio {
+  try {
+    const stored = window.localStorage.getItem(PORTFOLIO_KEY);
+    if (stored) {
+      const parsed = JSON.parse(stored) as unknown;
+      if (isPortfolio(parsed)) {
+        return parsed;
+      }
+    }
+  } catch (error) {
+    console.error("Unable to read the saved ledger history.", error);
+  }
+  const migrated = migrateToPortfolio(ledger, new Date().toISOString(), createBetId());
+  try {
+    window.localStorage.setItem(PORTFOLIO_KEY, JSON.stringify(migrated));
+  } catch (error) {
+    console.error("Unable to save the ledger history.", error);
+  }
+  return migrated;
+}
+
+function formatTimestamp(value: string): string {
+  return new Intl.DateTimeFormat("en-GB", { dateStyle: "medium", timeStyle: "short" }).format(
+    new Date(value),
+  );
+}
 function createBetId(): string {
   if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
     return crypto.randomUUID();
@@ -1180,6 +1241,13 @@ function ActiveSequenceCard({
 function App() {
   const [loadedLedger] = useState<LoadedLedger>(loadLedger);
   const [tracker, setTracker] = useState<LedgerState>(loadedLedger.state);
+  const [portfolio, setPortfolio] = useState<Portfolio>(() => loadPortfolio(loadedLedger.state));
+  const [ledgersOpen, setLedgersOpen] = useState(false);
+  const [ledgerMessage, setLedgerMessage] = useState<string | null>(null);
+  const [closeConfirm, setCloseConfirm] = useState(false);
+  const [investmentDraft, setInvestmentDraft] = useState("");
+  const [newLedgerName, setNewLedgerName] = useState("New FairBets ledger");
+  const [newLedgerSettings, setNewLedgerSettings] = useState<StrategySettings>(loadedLedger.state.settings);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [dismissedRiskKey, setDismissedRiskKey] = useState<string | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -1871,6 +1939,102 @@ function App() {
     setSettingsOpen(false);
   }
 
+  const hasActiveLedger = portfolio.activeOpenedAt !== null;
+  const funds = fundsOverview(portfolio, tracker.settings.startingBalance);
+  const ledgerHistory = historyEvents(portfolio, tracker.ledgerName);
+
+  function commitPortfolio(nextPortfolio: Portfolio) {
+    setPortfolio(nextPortfolio);
+    try {
+      window.localStorage.setItem(PORTFOLIO_KEY, JSON.stringify(nextPortfolio));
+    } catch (error) {
+      console.error("Unable to save the ledger history.", error);
+      setFeedback({
+        tone: "error",
+        text: "Ledger history is visible but could not be saved in this browser.",
+      });
+    }
+  }
+
+  function toggleLedgers() {
+    setLedgersOpen((open) => !open);
+    setLedgerMessage(null);
+    setCloseConfirm(false);
+  }
+
+  function handleAddInvestment(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const result = addInvestment(
+      portfolio,
+      Number(investmentDraft),
+      new Date().toISOString(),
+      createBetId(),
+    );
+    if (!result.ok) {
+      setLedgerMessage(result.error);
+      return;
+    }
+    commitPortfolio(result.portfolio);
+    setInvestmentDraft("");
+    setLedgerMessage(null);
+  }
+
+  function requestCloseLedger() {
+    const preview = closeLedger(portfolio, tracker, new Date().toISOString(), "preview");
+    if (!preview.ok) {
+      setLedgerMessage(preview.error);
+      setCloseConfirm(false);
+      return;
+    }
+    setLedgerMessage(null);
+    setCloseConfirm(true);
+  }
+
+  function confirmCloseLedger() {
+    const result = closeLedger(portfolio, tracker, new Date().toISOString(), createBetId());
+    if (!result.ok) {
+      setLedgerMessage(result.error);
+      setCloseConfirm(false);
+      return;
+    }
+    commitPortfolio(result.portfolio);
+    const placeholder: LedgerState = {
+      ledgerName: "No active ledger",
+      settings: tracker.settings,
+      bets: [],
+    };
+    commitTracker(placeholder, false);
+    setSettingsDraft(placeholder.settings);
+    setLedgerNameDraft(placeholder.ledgerName);
+    setNewLedgerSettings(tracker.settings);
+    setNewLedgerName("New FairBets ledger");
+    setCloseConfirm(false);
+    setLedgerMessage(null);
+  }
+
+  function handleStartLedger(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const result = startLedger(
+      portfolio,
+      newLedgerName,
+      newLedgerSettings,
+      new Date().toISOString(),
+    );
+    if (!result.ok) {
+      setLedgerMessage(result.error);
+      return;
+    }
+    commitPortfolio(result.portfolio);
+    replaceTracker(result.ledger, {
+      tone: "success",
+      text: `${result.ledger.ledgerName} is now the active ledger.`,
+    });
+    setLedgerMessage(null);
+  }
+
+  function updateNewLedgerSetting(key: keyof StrategySettings, value: number) {
+    setNewLedgerSettings((current) => ({ ...current, [key]: value }));
+  }
   function toggleSettings() {
     setSettingsOpen((open) => !open);
     setDrawerOpen(false);
@@ -1895,6 +2059,16 @@ function App() {
         </button>
 
         <div className="topbar-actions">
+          <button
+            type="button"
+            className="ledgers-toggle"
+            onClick={toggleLedgers}
+            aria-expanded={ledgersOpen}
+            aria-label={ledgersOpen ? "Close ledgers" : "Open ledgers"}
+            title="Ledgers and funds"
+          >
+            <Wallet className="sidebar-icon" aria-hidden="true" focusable="false" strokeWidth={1.8} />
+          </button>
           <button
             type="button"
             className="drawer-toggle"
@@ -1931,6 +2105,12 @@ function App() {
             <button type="button" onClick={() => setFeedback(null)} aria-label="Dismiss message">
               Dismiss
             </button>
+          </div>
+        )}
+
+        {!hasActiveLedger && (
+          <div className="notice no-ledger-notice" role="status">
+            <span>No active ledger. Open Ledgers to start a new one.</span>
           </div>
         )}
 
@@ -2055,6 +2235,7 @@ function App() {
                   className="button button-primary icon-only-button"
                   aria-label="Add bet"
                   title="Add bet"
+                  disabled={!hasActiveLedger}
                   onClick={openNewBetForm}
                 >
                   <ActionIcon name="add" />
@@ -2542,6 +2723,207 @@ function App() {
         </aside>
       </main>
 
+      {ledgersOpen && (
+        <div className="modal-backdrop" role="presentation">
+          <section
+            className="bet-modal ledgers-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="ledgers-title"
+          >
+            <div className="modal-heading">
+              <div>
+                <p className="eyebrow">Investments and results</p>
+                <h2 id="ledgers-title">Ledgers and funds</h2>
+              </div>
+            </div>
+
+            {ledgerMessage && (
+              <p className="form-error" role="alert">
+                {ledgerMessage}
+              </p>
+            )}
+
+            <div className="funds-summary">
+              <div>
+                <span>Total invested</span>
+                <strong>{formatMoney(funds.totalInvested, tracker.settings.currency)}</strong>
+              </div>
+              <div>
+                <span>Realised result</span>
+                <strong>{formatSignedMoney(funds.realisedResult, tracker.settings.currency)}</strong>
+              </div>
+              <div>
+                <span>Available funds</span>
+                <strong>{formatMoney(funds.availableFunds, tracker.settings.currency)}</strong>
+              </div>
+            </div>
+
+            <form className="ledger-section investment-form" onSubmit={handleAddInvestment} noValidate>
+              <h3>Add investment</h3>
+              <div className="ledger-inline-form">
+                <label className="form-field">
+                  <span>Investment amount</span>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={investmentDraft}
+                    onChange={(event) => setInvestmentDraft(event.target.value)}
+                  />
+                </label>
+                <button type="submit" className="button button-secondary">
+                  Add investment
+                </button>
+              </div>
+            </form>
+
+            <div className="ledger-section">
+              <h3>Active ledger</h3>
+              {hasActiveLedger ? (
+                <div className="ledger-inline-form">
+                  <p>
+                    <strong>{tracker.ledgerName}</strong>
+                    <br />
+                    <small>
+                      Opened{" "}
+                      <time dateTime={portfolio.activeOpenedAt ?? undefined}>
+                        {portfolio.activeOpenedAt ? formatTimestamp(portfolio.activeOpenedAt) : ""}
+                      </time>
+                    </small>
+                  </p>
+                  <div className="ledger-actions">
+                    <button type="button" className="button button-secondary" onClick={requestCloseLedger}>
+                      Close ledger
+                    </button>
+                    {closeConfirm && (
+                      <button type="button" className="button button-primary" onClick={confirmCloseLedger}>
+                        Confirm close
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <p>No active ledger</p>
+              )}
+              {hasActiveLedger && (
+                <p className="ledger-hint">Close the active ledger before starting another.</p>
+              )}
+            </div>
+
+            {!hasActiveLedger && (
+              <form className="ledger-section start-ledger-form" onSubmit={handleStartLedger} noValidate>
+                <h3>Start a new ledger</h3>
+                <div className="form-grid">
+                  <label className="form-field form-field-wide">
+                    <span>Ledger name</span>
+                    <input
+                      value={newLedgerName}
+                      maxLength={60}
+                      onChange={(event) => setNewLedgerName(event.target.value)}
+                    />
+                  </label>
+                  {NEW_LEDGER_FIELDS.map((field) => (
+                    <label className="form-field" key={field.key}>
+                      <span>{field.label}</span>
+                      <input
+                        type="number"
+                        step={field.step}
+                        value={
+                          field.percent
+                            ? Math.round(newLedgerSettings[field.key] * 100)
+                            : newLedgerSettings[field.key]
+                        }
+                        onChange={(event) =>
+                          updateNewLedgerSetting(
+                            field.key,
+                            field.percent ? Number(event.target.value) / 100 : Number(event.target.value),
+                          )
+                        }
+                      />
+                    </label>
+                  ))}
+                </div>
+                <button type="submit" className="button button-primary">
+                  Start ledger
+                </button>
+              </form>
+            )}
+
+            <div className="ledger-section">
+              <h3>Closed ledgers</h3>
+              {portfolio.closedLedgers.length === 0 ? (
+                <p className="ledger-hint">No closed ledgers yet.</p>
+              ) : (
+                <ul className="closed-ledgers">
+                  {[...portfolio.closedLedgers].reverse().map((closed) => (
+                    <li className="closed-ledger" key={closed.id}>
+                      <strong>{closed.ledger.ledgerName}</strong>
+                      <small>
+                        {formatTimestamp(closed.openedAt)} to {formatTimestamp(closed.closedAt)}
+                      </small>
+                      <div className="closed-ledger-stats">
+                        <div>
+                          <span>Starting balance</span>
+                          <strong>{formatMoney(closed.stats.startingBalance, closed.ledger.settings.currency)}</strong>
+                        </div>
+                        <div>
+                          <span>Final balance</span>
+                          <strong>{formatMoney(closed.stats.finalBalance, closed.ledger.settings.currency)}</strong>
+                        </div>
+                        <div>
+                          <span>Net result</span>
+                          <strong>{formatSignedMoney(closed.stats.netResult, closed.ledger.settings.currency)}</strong>
+                        </div>
+                        <div>
+                          <span>Total staked</span>
+                          <strong>{formatMoney(closed.stats.totalStaked, closed.ledger.settings.currency)}</strong>
+                        </div>
+                        <div>
+                          <span>Wins</span>
+                          <strong>{closed.stats.wins}</strong>
+                        </div>
+                        <div>
+                          <span>Losses</span>
+                          <strong>{closed.stats.losses}</strong>
+                        </div>
+                        <div>
+                          <span>Win rate</span>
+                          <strong>{formatPercent(closed.stats.winRate)}</strong>
+                        </div>
+                        <div>
+                          <span>Closed sequences</span>
+                          <strong>{closed.stats.closedSequences}</strong>
+                        </div>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+
+            <div className="ledger-section">
+              <h3>History</h3>
+              <ol className="ledger-history">
+                {ledgerHistory.map((event) => (
+                  <li key={event.id}>
+                    <span>{event.title}</span>
+                    {event.amount !== undefined && (
+                      <strong>{formatMoney(event.amount, tracker.settings.currency)}</strong>
+                    )}
+                    <time dateTime={event.at}>{formatTimestamp(event.at)}</time>
+                  </li>
+                ))}
+              </ol>
+            </div>
+
+            <div className="modal-actions">
+              <button type="button" className="button button-secondary" onClick={toggleLedgers}>
+                Done
+              </button>
+            </div>
+          </section>
+        </div>
+      )}
       {isFormOpen && (
         <div className="modal-backdrop" role="presentation">
           <section className="bet-modal" role="dialog" aria-modal="true" aria-labelledby="bet-form-title">
