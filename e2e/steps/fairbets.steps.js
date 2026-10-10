@@ -1270,3 +1270,27 @@ Then("the Add Bet button should not be lifted", async function () {
     this.page.getByRole("button", { name: "Add bet", exact: true }),
   ).toHaveCSS("transform", "none");
 });
+
+When("I turn the {string} switch {word}", async function (name, state) {
+  const toggle = this.page.getByRole("switch", { name, exact: true });
+  const wanted = state === "on" ? "true" : "false";
+  if ((await toggle.getAttribute("aria-checked")) !== wanted) {
+    await toggle.click();
+  }
+});
+
+Then("the {string} switch should be {word}", async function (name, state) {
+  await expect(this.page.getByRole("switch", { name, exact: true })).toHaveAttribute(
+    "aria-checked",
+    state === "on" ? "true" : "false",
+  );
+});
+
+Then("the {string} switch should be inside the filter input", async function (name) {
+  const input = await this.page.getByLabel("Filter by bet description").boundingBox();
+  const toggle = await this.page.getByRole("switch", { name, exact: true }).boundingBox();
+  expect(toggle.x).toBeGreaterThanOrEqual(input.x);
+  expect(toggle.x + toggle.width).toBeLessThanOrEqual(input.x + input.width);
+  expect(toggle.y).toBeGreaterThanOrEqual(input.y);
+  expect(toggle.y + toggle.height).toBeLessThanOrEqual(input.y + input.height);
+});

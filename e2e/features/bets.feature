@@ -543,3 +543,29 @@ Feature: Bet management
     When I hover over the Add Bet button
     Then the Add Bet button should have no drop shadow
     And the Add Bet button should not be lifted
+  Scenario: The filter scope switch is on by default and inside the input
+    When I navigate to the Sequences view
+    Then the "Show whole sequences" switch should be on
+    And the "Show whole sequences" switch should be inside the filter input
+
+  Scenario: Turning the filter scope switch off shows only matching bets
+    When I start a fresh ledger
+    And I add a bet labeled "Scope 123456" with odds "1.50" and a manual stake of "1" placed at "2026-09-13T12:00"
+    And I mark the bet "Scope 123456" as "Lost"
+    And I press the plus button for the sequence containing the bet "Scope 123456"
+    And I input the label "Scope other"
+    And I input the date and time "2026-09-13T13:00"
+    And I input "1.50" in the odds field
+    And I press the Add button
+    And I filter the bet list by description "1234"
+    Then the description "Scope 123456 @ 1.50" should be visible
+    And the description "Scope other @ 1.50" should be visible
+    When I turn the "Show whole sequences" switch off
+    Then the "Show whole sequences" switch should be off
+    And the description "Scope 123456 @ 1.50" should be visible
+    And the description "Scope other @ 1.50" should not be visible
+    When I filter the bet list by description "sequence 1"
+    Then the description "Scope other @ 1.50" should be visible
+    When I filter the bet list by description "1234"
+    And I turn the "Show whole sequences" switch on
+    Then the description "Scope other @ 1.50" should be visible
