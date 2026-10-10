@@ -569,3 +569,35 @@ Feature: Bet management
     When I filter the bet list by description "1234"
     And I turn the "Show whole sequences" switch on
     Then the description "Scope other @ 1.50" should be visible
+  Scenario: The new bet dialog is simplified
+    When I navigate to the Sequences view
+    And I press the Add Bet button
+    Then I see the new bet dialog
+    And "Date and time" should be listed before "Label" in the bet dialog
+    And the "Date and time" field in the bet dialog should be read-only
+    And the bet dialog should not have a "Result" field
+    And the bet dialog should not have a "Close" button
+    And the bet dialog should have a "Odd" field
+    And the bet dialog should have a "Stake" field
+    And the bet dialog should not have a "Decimal odds" field
+    And the "Odd" and "Stake" fields should share a row in the bet dialog
+
+  Scenario: Odd and Stake share a row on mobile
+    Given the viewport is a small phone
+    When I press the Add Bet button
+    Then I see the new bet dialog
+    And the "Odd" and "Stake" fields should share a row in the bet dialog
+
+  Scenario: A new bet is added as open
+    When I start a fresh ledger
+    And I add a bet labeled "Added open" with odds "2.00"
+    Then the bet "Added open" should be "Open"
+
+  Scenario: Editing a bet keeps its date and result editable
+    When I start a fresh ledger
+    And I add a bet labeled "Edit keeps fields" with odds "2.00"
+    And I open the edit form for bet "Edit keeps fields"
+    Then the "Date and time" field in the bet dialog should be editable
+    And the bet dialog should have a "Result" field
+    And the bet dialog should not have a "Close" button
+    And the bet dialog should have a "Odd" field

@@ -19,7 +19,11 @@ When("I reload the app", async function () {
 });
 
 When("I freeze the browser clock at {string}", async function (dateTime) {
-  await this.page.clock.install({ time: new Date(dateTime) });
+  try {
+    await this.page.clock.install({ time: new Date(dateTime) });
+  } catch {
+    await this.page.clock.setFixedTime(new Date(dateTime));
+  }
 });
 
 When("I remove recording timestamps from saved bets and reload", async function () {
@@ -192,8 +196,8 @@ When(
   async function (label, odds, stake) {
     await this.page.getByRole("button", { name: "Add bet", exact: true }).click();
     await this.page.getByLabel("Label").fill(label);
-    await this.page.getByLabel("Decimal odds").fill(odds);
-    await this.page.getByLabel("Manual stake (optional)").fill(stake);
+    await this.page.getByLabel("Odd", { exact: true }).fill(odds);
+    await this.page.getByLabel("Stake", { exact: true }).fill(stake);
     await this.page.getByRole("button", { name: "Add bet", exact: true }).last().click();
     await expect(this.page.getByRole("dialog")).toHaveCount(0);
   },
@@ -204,9 +208,9 @@ When(
   async function (label, odds, stake, placedAt) {
     await this.page.getByRole("button", { name: "Add bet", exact: true }).click();
     await this.page.getByLabel("Label").fill(label);
-    await this.page.getByLabel("Date and time").fill(placedAt);
-    await this.page.getByLabel("Decimal odds").fill(odds);
-    await this.page.getByLabel("Manual stake (optional)").fill(stake);
+    await enterPlacementTime(this.page, placedAt);
+    await this.page.getByLabel("Odd", { exact: true }).fill(odds);
+    await this.page.getByLabel("Stake", { exact: true }).fill(stake);
     await this.page.getByRole("button", { name: "Add bet", exact: true }).last().click();
     await expect(this.page.getByRole("dialog")).toHaveCount(0);
   },
@@ -499,19 +503,19 @@ When("I input the label {string}", async function (label) {
 });
 
 When("I input the date and time {string}", async function (dateTime) {
-  await this.page.getByLabel("Date and time").fill(dateTime);
+  await enterPlacementTime(this.page, dateTime);
 });
 
 When("I input {string} in the odds field", async function (odds) {
-  await this.page.getByLabel("Decimal odds").fill(odds);
+  await this.page.getByLabel("Odd", { exact: true }).fill(odds);
 });
 
 When("I input {string} in the Odds field", async function (odds) {
-  await this.page.getByLabel("Decimal odds").fill(odds);
+  await this.page.getByLabel("Odd", { exact: true }).fill(odds);
 });
 
 When("I input {string} in the Manual Stake field", async function (stake) {
-  await this.page.getByLabel("Manual stake (optional)").fill(stake);
+  await this.page.getByLabel("Stake", { exact: true }).fill(stake);
 });
 
 When("I press the Add button", async function () {
@@ -521,14 +525,14 @@ When("I press the Add button", async function () {
 When("I add a bet labeled {string} with odds {string}", async function (label, odds) {
   await this.page.getByRole("button", { name: "Add bet", exact: true }).click();
   await this.page.getByLabel("Label").fill(label);
-  await this.page.getByLabel("Decimal odds").fill(odds);
+  await this.page.getByLabel("Odd", { exact: true }).fill(odds);
   await this.page.getByRole("button", { name: "Add bet", exact: true }).last().click();
 });
 
 When("I prepare a bet labeled {string} with odds {string}", async function (label, odds) {
   await this.page.getByRole("button", { name: "Add bet", exact: true }).click();
   await this.page.getByLabel("Label").fill(label);
-  await this.page.getByLabel("Decimal odds").fill(odds);
+  await this.page.getByLabel("Odd", { exact: true }).fill(odds);
 });
 
 When(
@@ -536,8 +540,8 @@ When(
   async function (label, odds, placedAt) {
     await this.page.getByRole("button", { name: "Add bet", exact: true }).click();
     await this.page.getByLabel("Label").fill(label);
-    await this.page.getByLabel("Date and time").fill(placedAt);
-    await this.page.getByLabel("Decimal odds").fill(odds);
+    await enterPlacementTime(this.page, placedAt);
+    await this.page.getByLabel("Odd", { exact: true }).fill(odds);
   },
 );
 
@@ -605,7 +609,7 @@ Then("the date and time field should contain {string}", async function (dateTime
 });
 
 When("I edit the placement time to {string}", async function (dateTime) {
-  await this.page.getByLabel("Date and time").fill(dateTime);
+  await enterPlacementTime(this.page, dateTime);
   await this.page.getByRole("button", { name: "Save changes" }).click();
   await expect(this.page.getByRole("dialog")).toHaveCount(0);
 });
@@ -703,7 +707,7 @@ Then("the prominent title should show {string}", async function (title) {
 When("I update the odds for the generated-title bet to {string}", async function (odds) {
   const card = this.page.locator(".sequence-list > article").first();
   await card.getByRole("button", { name: "Edit", exact: true }).click();
-  await this.page.getByLabel("Decimal odds").fill(odds);
+  await this.page.getByLabel("Odd", { exact: true }).fill(odds);
   await this.page.getByRole("button", { name: "Save changes" }).click();
   await expect(this.page.getByRole("dialog")).toHaveCount(0);
 });
@@ -1104,8 +1108,8 @@ When(
     await expect(addButton).toBeEnabled();
     await addButton.click();
     await this.page.getByLabel("Label").fill(label);
-    await this.page.getByLabel("Date and time").fill(placedAt);
-    await this.page.getByLabel("Decimal odds").fill(odds);
+    await enterPlacementTime(this.page, placedAt);
+    await this.page.getByLabel("Odd", { exact: true }).fill(odds);
     await this.page.getByRole("button", { name: "Add bet", exact: true }).last().click();
     await expect(this.page.getByRole("dialog")).toHaveCount(0);
   },
@@ -1122,7 +1126,7 @@ When("I rename the bet {string} to {string}", async function (label, newLabel) {
 
 When("I update the odds for {string} to {string}", async function (label, odds) {
   await openBetEditor(this.page, label);
-  await this.page.getByLabel("Decimal odds").fill(odds);
+  await this.page.getByLabel("Odd", { exact: true }).fill(odds);
   await this.page.getByRole("button", { name: "Save changes" }).click();
   await expect(this.page.getByRole("dialog")).toHaveCount(0);
 });
@@ -1293,4 +1297,61 @@ Then("the {string} switch should be inside the filter input", async function (na
   expect(toggle.x + toggle.width).toBeLessThanOrEqual(input.x + input.width);
   expect(toggle.y).toBeGreaterThanOrEqual(input.y);
   expect(toggle.y + toggle.height).toBeLessThanOrEqual(input.y + input.height);
+});
+
+// A new bet's placement time is read-only and taken from the clock when it is added,
+// so entering a time on the new bet form moves the browser clock; editing types it.
+async function enterPlacementTime(page, value) {
+  const field = page.getByLabel("Date and time");
+  if (await field.evaluate((element) => element.readOnly)) {
+    await page.clock.setFixedTime(new Date(value));
+    return;
+  }
+  await field.fill(value);
+}
+
+function newBetDialog(page) {
+  return page.getByRole("dialog");
+}
+
+Then("{string} should be listed before {string} in the bet dialog", async function (first, second) {
+  const firstBox = await newBetDialog(this.page).getByLabel(first, { exact: true }).boundingBox();
+  const secondBox = await newBetDialog(this.page).getByLabel(second, { exact: true }).boundingBox();
+  expect(firstBox.y).toBeLessThan(secondBox.y);
+});
+
+Then("the {string} field in the bet dialog should be read-only", async function (name) {
+  await expect(newBetDialog(this.page).getByLabel(name, { exact: true })).toHaveJSProperty(
+    "readOnly",
+    true,
+  );
+});
+
+Then("the {string} field in the bet dialog should be editable", async function (name) {
+  const field = newBetDialog(this.page).getByLabel(name, { exact: true });
+  await expect(field).toHaveJSProperty("readOnly", false);
+  await expect(field).toBeEnabled();
+});
+
+// A select's accessible label includes its option text, so match the label's start.
+function dialogField(page, name) {
+  return newBetDialog(page).getByLabel(new RegExp(`^${name}`));
+}
+
+Then("the bet dialog should have a {string} field", async function (name) {
+  await expect(dialogField(this.page, name)).toHaveCount(1);
+});
+
+Then("the bet dialog should not have a {string} field", async function (name) {
+  await expect(dialogField(this.page, name)).toHaveCount(0);
+});
+Then("the bet dialog should not have a {string} button", async function (name) {
+  await expect(newBetDialog(this.page).getByRole("button", { name, exact: true })).toHaveCount(0);
+});
+
+Then("the {string} and {string} fields should share a row in the bet dialog", async function (left, right) {
+  const leftBox = await newBetDialog(this.page).getByLabel(left, { exact: true }).boundingBox();
+  const rightBox = await newBetDialog(this.page).getByLabel(right, { exact: true }).boundingBox();
+  expect(Math.abs(leftBox.y - rightBox.y)).toBeLessThanOrEqual(1);
+  expect(rightBox.x).toBeGreaterThan(leftBox.x + leftBox.width - 1);
 });
