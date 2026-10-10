@@ -20,6 +20,23 @@ as an overlay above the sequences and close back to them. Guardrail breaches app
 a dismissible banner at the top of the sequences view; the banner returns when the set
 of breached guardrails changes or the app is reloaded.
 
+## Ledgers and funds
+
+One ledger is active at a time. The **Ledgers** button in the top bar opens a dialog with:
+
+- **Funds:** total invested, realised result of closed ledgers, and available funds
+  (invested + realised result − the active ledger's starting balance).
+- **Investments:** add money at any time; each investment is timestamped.
+- **Close ledger:** allowed once every bet is settled. A closed ledger is kept with its
+  final statistics (starting and final balance, net result, staked, wins, losses, win
+  rate, closed sequences) and its opening and closing times.
+- **Start a new ledger:** available when none is active. Settings are pre-filled from the
+  previous ledger, and the starting balance cannot exceed the available funds.
+- **History:** investments and ledger openings and closings, newest first.
+
+The ledger history is stored locally under `fairbets-portfolio-v1`; data saved by earlier
+versions becomes the first active ledger with an initial investment equal to its starting
+balance. Cloud backup still covers the active ledger only.
 ## Publish on GitHub Pages
 
 The repository includes a GitHub Actions workflow at
