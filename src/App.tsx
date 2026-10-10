@@ -1,6 +1,15 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { ChangeEvent, FormEvent, ReactNode } from "react";
 import type { Session } from "@supabase/supabase-js";
+import {
+  Archive,
+  Ban,
+  Check,
+  PanelLeft,
+  Plus,
+  TriangleAlert,
+  X,
+} from "lucide-react";
 import "./App.css";
 import {
   calculateLedger,
@@ -467,35 +476,23 @@ function outcomeLabel(outcome: Outcome): string {
 
 type ActionIconName = "add" | "won" | "lost" | "cancelled" | "close-sequence";
 
+const actionIcons = {
+  add: Plus,
+  won: Check,
+  lost: X,
+  cancelled: Ban,
+  "close-sequence": Archive,
+};
+
 function ActionIcon({ name }: { name: ActionIconName }) {
+  const Icon = actionIcons[name];
   return (
-    <svg
+    <Icon
       className="action-icon"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
       aria-hidden="true"
       focusable="false"
-    >
-      {name === "add" ? <path d="M12 5v14M5 12h14" /> : null}
-      {name === "won" ? <path d="m5 12 4 4L19 6" /> : null}
-      {name === "lost" ? <path d="m6 6 12 12M18 6 6 18" /> : null}
-      {name === "cancelled" ? (
-        <>
-          <circle cx="12" cy="12" r="9" />
-          <path d="m5.6 5.6 12.8 12.8" />
-        </>
-      ) : null}
-      {name === "close-sequence" ? (
-        <>
-          <path d="M4 7h16v13H4zM3 4h18v3H3z" />
-          <path d="m8 13 2.5 2.5L16 10" />
-        </>
-      ) : null}
-    </svg>
+      strokeWidth={2}
+    />
   );
 }
 
@@ -1827,15 +1824,12 @@ function App() {
             aria-expanded={drawerOpen}
             aria-label={drawerOpen ? "Close summary" : "Open summary"}
           >
-            <svg
+            <PanelLeft
               className="sidebar-icon"
-              viewBox="0 0 24 24"
               aria-hidden="true"
               focusable="false"
-            >
-              <rect x="3.5" y="4.5" width="17" height="15" rx="2" />
-              <path d="M9 5v14M13 9h4M13 12h4M13 15h4" />
-            </svg>
+              strokeWidth={1.8}
+            />
           </button>
         </div>
 
@@ -1866,7 +1860,14 @@ function App() {
                   <p className="eyebrow">Guardrails</p>
                   <ul className="risk-list">
                     {calculation.riskFlags.map((flag) => (
-                      <li key={flag}>{flag}</li>
+                      <li key={flag}>
+                        <TriangleAlert
+                          className="risk-list-icon"
+                          aria-hidden="true"
+                          focusable="false"
+                        />
+                        <span>{flag}</span>
+                      </li>
                     ))}
                   </ul>
                 </div>

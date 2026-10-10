@@ -530,23 +530,20 @@ h3 {
 }
 
 .risk-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
   color: #76500c;
   font-size: 13px;
   line-height: 1.45;
 }
 
-.risk-list li::before {
-  content: "!";
-  display: inline-grid;
+.risk-list-icon {
+  flex: 0 0 16px;
   width: 16px;
   height: 16px;
-  margin-right: 7px;
-  place-items: center;
-  border-radius: 50%;
-  color: #fff;
-  background: var(--amber);
-  font-size: 11px;
-  font-weight: 900;
+  margin-top: 1px;
+  color: var(--amber);
 }
 
 .risk-banner {
@@ -798,25 +795,6 @@ h3 {
   color: var(--ink);
   font-size: 13px;
   text-transform: none;
-}
-
-.compact-sequence-toggle {
-  color: var(--forest-light);
-  font-size: 11px;
-  font-weight: 850;
-  white-space: nowrap;
-}
-
-.compact-sequence-toggle::after {
-  content: "+";
-  display: inline-block;
-  margin-left: 5px;
-  font-size: 14px;
-  line-height: 0;
-}
-
-.compact-sequence-card[open] .compact-sequence-toggle::after {
-  content: "-";
 }
 
 .compact-sequence-details {
@@ -1772,10 +1750,6 @@ h3 {
 
   .compact-sequence-pnl {
     grid-area: pnl;
-  }
-
-  .compact-sequence-toggle {
-    grid-area: toggle;
   }
 
   .compact-sequence-actions {
