@@ -601,3 +601,21 @@ Feature: Bet management
     And the bet dialog should have a "Result" field
     And the bet dialog should not have a "Close" button
     And the bet dialog should have a "Odd" field
+
+  Scenario: The new bet dialog starts below the toolbar
+    When I navigate to the Sequences view
+    And I press the Add Bet button
+    Then the dialog should start below the toolbar
+
+  Scenario: The new bet dialog starts below the toolbar on mobile
+    Given the viewport is a small phone
+    When I press the Add Bet button
+    Then the dialog should start below the toolbar
+
+  Scenario: The filter input is half the row on desktop
+    When I navigate to the Sequences view
+    Then the description filter should be about half the width of the filter row
+
+  Scenario: The filter input is full width on mobile
+    Given the viewport is a small phone
+    Then the description filter should be the full width of the filter row

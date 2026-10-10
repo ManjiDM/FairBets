@@ -1355,3 +1355,25 @@ Then("the {string} and {string} fields should share a row in the bet dialog", as
   expect(Math.abs(leftBox.y - rightBox.y)).toBeLessThanOrEqual(1);
   expect(rightBox.x).toBeGreaterThan(leftBox.x + leftBox.width - 1);
 });
+
+Then("the dialog should start below the toolbar", async function () {
+  const dialog = await this.page.getByRole("dialog").boundingBox();
+  const toolbar = await this.page.locator(".topbar").boundingBox();
+  expect(dialog.y).toBeGreaterThanOrEqual(toolbar.y + toolbar.height - 1);
+});
+
+async function filterGeometry(page) {
+  const input = await page.locator(".description-filter").boundingBox();
+  const row = await page.locator(".sequence-filter-controls").boundingBox();
+  return { input, row };
+}
+
+Then("the description filter should be about half the width of the filter row", async function () {
+  const { input, row } = await filterGeometry(this.page);
+  expect(Math.abs(input.width / row.width - 0.5)).toBeLessThan(0.03);
+});
+
+Then("the description filter should be the full width of the filter row", async function () {
+  const { input, row } = await filterGeometry(this.page);
+  expect(Math.abs(input.width - row.width)).toBeLessThanOrEqual(1);
+});
