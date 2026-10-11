@@ -35,7 +35,7 @@ sequences, the default) and **Ledgers**. On mobile the tabs are docked in a tool
   previous ledger, and the starting balance cannot exceed the available funds.
 - **Ledger cards:** every ledger, newest first, numbered by opening order. Like a sequence
   card, it shows an id label ("LEDGER 2") with its status (Open or Closed) below it, the
-  name and dates, and the net result and profit percentage (net result ÷ starting balance).
+  name and dates (from the creation of its first bet to the ledger's closing; "Started ..." while active), and the net result and profit percentage (net result ÷ starting balance).
   Click a card to expand the remaining statistics. The active ledger's card shows live
   figures. A closed ledger has a Delete button (with inline confirmation) that removes it
   and its result from the totals; it is refused if that would make the available funds
