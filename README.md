@@ -22,7 +22,8 @@ of breached guardrails changes or the app is reloaded.
 
 ## Ledgers and funds
 
-One ledger is active at a time. The **Ledgers** button in the top bar opens a dialog with:
+One ledger is active at a time. The app has two tabs: **Sequences** (the active ledger's
+sequences, the default) and **Ledgers**, which shows:
 
 - **Funds:** total invested, realised result of closed ledgers, and available funds
   (invested + realised result − the active ledger's starting balance).
@@ -32,6 +33,10 @@ One ledger is active at a time. The **Ledgers** button in the top bar opens a di
   rate, closed sequences) and its opening and closing times.
 - **Start a new ledger:** available when none is active. Settings are pre-filled from the
   previous ledger, and the starting balance cannot exceed the available funds.
+- **Ledger cards:** every ledger, newest first, numbered by opening order ("Ledger 1",
+  "Ledger 2", ...). A card shows the name, net result and profit percentage (net result ÷
+  starting balance); click it to expand the remaining statistics. The active ledger's card
+  shows live figures.
 - **History:** investments and ledger openings and closings, newest first.
 
 The ledger history is stored locally under `fairbets-portfolio-v1`; data saved by earlier
