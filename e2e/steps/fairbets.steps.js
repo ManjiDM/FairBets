@@ -1553,3 +1553,33 @@ When("I remove the saved ledger history and reload", async function () {
   await this.page.evaluate(() => window.localStorage.removeItem("fairbets-portfolio-v1"));
   await this.page.reload({ waitUntil: "domcontentloaded" });
 });
+Then("the bottom toolbar should show the Sequences and Ledgers tabs", async function () {
+  await expect(this.page.getByRole("tab", { name: "Sequences", exact: true })).toBeVisible();
+  await expect(this.page.getByRole("tab", { name: "Ledgers", exact: true })).toBeVisible();
+});
+
+Then("the bottom toolbar should be docked to the bottom of the screen", async function () {
+  const tabs = this.page.getByRole("tablist");
+  await expect(tabs).toHaveCSS("position", "fixed");
+  const box = await tabs.boundingBox();
+  const viewport = this.page.viewportSize();
+  expect(box.y + box.height).toBeCloseTo(viewport.height, 0);
+  expect(box.width).toBeCloseTo(viewport.width, 0);
+});
+
+When("I scroll the page to the bottom", async function () {
+  await this.page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+});
+
+Then("the top toolbar should still be visible", async function () {
+  const box = await this.page.locator(".topbar").boundingBox();
+  expect(box.y).toBeCloseTo(0, 0);
+});
+
+Then("the tabs should be shown above the content", async function () {
+  const tabs = this.page.getByRole("tablist");
+  await expect(tabs).not.toHaveCSS("position", "fixed");
+  const tabsBox = await tabs.boundingBox();
+  const workspace = await this.page.locator(".workspace").boundingBox();
+  expect(tabsBox.y + tabsBox.height).toBeLessThanOrEqual(workspace.y);
+});
