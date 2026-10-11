@@ -1049,7 +1049,7 @@ Then("the bet {string} should have a stake of {string}", async function (label, 
 });
 
 Then("the suggested stake should be {string}", async function (stake) {
-  await expect(this.page.locator(".suggestion-preview strong").first()).toHaveText(stake);
+  await expect(this.page.getByLabel("Stake", { exact: true })).toHaveAttribute("placeholder", stake);
 });
 
 Then("the settled P&L should be {string}", async function (profit) {
@@ -1303,7 +1303,7 @@ Then("the {string} switch should be inside the filter input", async function (na
 // so entering a time on the new bet form moves the browser clock; editing types it.
 async function enterPlacementTime(page, value) {
   const field = page.getByLabel("Date and time");
-  if (await field.evaluate((element) => element.readOnly)) {
+  if ((await field.count()) === 0) {
     await page.clock.setFixedTime(new Date(value));
     return;
   }
@@ -1641,4 +1641,25 @@ Then("the ledger cards should be as wide as the page content", async function ()
 
 Then("the {string} button should be disabled", async function (name) {
   await expect(this.page.getByRole("button", { name, exact: true })).toBeDisabled();
+});
+
+Then("the placement time should be shown below the {string} heading", async function (title) {
+  const dialog = newBetDialog(this.page);
+  const heading = await dialog.getByRole("heading", { name: title, exact: true }).boundingBox();
+  const stamp = dialog.locator(".modal-timestamp");
+  await expect(stamp).toBeVisible();
+  await expect(stamp).toHaveText(/^\d{2} \w{3}, \d{2}:\d{2}:\d{2}$/);
+  const box = await stamp.boundingBox();
+  expect(box.y).toBeGreaterThanOrEqual(heading.y + heading.height - 1);
+});
+
+Then("the bet dialog should not show a suggestion box", async function () {
+  await expect(newBetDialog(this.page).locator(".suggestion-preview")).toHaveCount(0);
+});
+
+Then("the {string} field should be as wide as the dialog form", async function (name) {
+  const dialog = newBetDialog(this.page);
+  const field = await dialog.getByLabel(name, { exact: true }).boundingBox();
+  const form = await dialog.locator("form").boundingBox();
+  expect(field.width).toBeGreaterThanOrEqual(form.width - 2);
 });

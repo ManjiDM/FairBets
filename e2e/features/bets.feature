@@ -573,8 +573,9 @@ Feature: Bet management
     When I navigate to the Sequences view
     And I press the Add Bet button
     Then I see the new bet dialog
-    And "Date and time" should be listed before "Label" in the bet dialog
-    And the "Date and time" field in the bet dialog should be read-only
+    And the placement time should be shown below the "Add a bet" heading
+    And the bet dialog should not have a "Date and time" field
+    And the bet dialog should not show a suggestion box
     And the bet dialog should not have a "Result" field
     And the bet dialog should not have a "Close" button
     And the bet dialog should have a "Odd" field
@@ -619,3 +620,15 @@ Feature: Bet management
   Scenario: The filter input is full width on mobile
     Given the viewport is a small phone
     Then the description filter should be the full width of the filter row
+
+  Scenario: The Label field takes the whole row on mobile
+    Given the viewport is a small phone
+    When I press the Add Bet button
+    Then I see the new bet dialog
+    And the "Label" field should be as wide as the dialog form
+
+  Scenario: The edit dialog has no suggestion box
+    When I start a fresh ledger
+    And I add a bet labeled "Edit no box" with odds "2.00"
+    And I open the edit form for bet "Edit no box"
+    Then the bet dialog should not show a suggestion box
