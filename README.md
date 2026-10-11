@@ -23,7 +23,7 @@ of breached guardrails changes or the app is reloaded.
 ## Ledgers and funds
 
 One ledger is active at a time. The app has two tabs: **Sequences** (the active ledger's
-sequences, the default) and **Ledgers**. On mobile the tabs are docked in a toolbar fixed to the bottom of the screen, always visible while the list scrolls; on wider screens they sit above the content. The Ledgers tab shows:
+sequences, the default) and **Ledgers**. On mobile the tabs are docked in a toolbar fixed to the bottom of the screen, always visible while the list scrolls; on wider screens they sit above the content. The Ledgers tab uses the same dark design as Sequences (funds as pills, green ledger cards at full width) and shows:
 
 - **Funds:** total invested, realised result of closed ledgers, and available funds
   (invested + realised result − the active ledger's starting balance).
