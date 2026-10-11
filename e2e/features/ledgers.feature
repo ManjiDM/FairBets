@@ -271,3 +271,30 @@ Feature: Ledger lifecycle with investments and closing statistics
     Then the dates of the card "Ledger 1" should read "No bets yet"
     When I close the active ledger
     Then the dates of the card "Ledger 1" should read "No bets recorded"
+
+  Scenario: Primary buttons are flat like the Add bet button
+    Given the FairBets app is available
+    When I start a fresh ledger
+    And I open the Ledgers tab
+    And I press Close ledger
+    Then the "Confirm close" button should be flat
+    When I confirm closing the ledger
+    Then the "Start ledger" button should be flat
+    When I open the Sequences tab
+    Then the "Add the first bet" button should be flat
+
+  Scenario: Confirm close replaces the Close ledger button
+    Given the FairBets app is available
+    When I open the Ledgers tab
+    And I press Close ledger
+    Then the "Confirm close" button should be shown
+    And the "Close ledger" button should not be shown
+
+  Scenario: A refused close keeps the Close ledger button
+    Given the FairBets app is available
+    When I start a fresh ledger
+    And I add a bet labeled "Still open" with odds "2.00"
+    And I open the Ledgers tab
+    And I press Close ledger
+    Then the "Close ledger" button should be shown
+    And the "Confirm close" button should not be shown

@@ -1852,3 +1852,26 @@ When("the browser clock is set to {string}", async function (time) {
 Then("the dates of the card {string} should read {string}", async function (name, text) {
   await expect(ledgerCard(this.page, name).locator(".ledger-card-dates")).toHaveText(text);
 });
+
+When("I press Close ledger", async function () {
+  await ledgersDialog(this.page).getByRole("button", { name: "Close ledger", exact: true }).click();
+});
+
+Then("the {string} button should be flat", async function (name) {
+  const button = this.page.getByRole("button", { name, exact: true });
+  await button.hover();
+  await expect(button).toHaveCSS("box-shadow", "none");
+  await expect(button).toHaveCSS("transform", "none");
+});
+
+Then("the {string} button should be shown", async function (name) {
+  await expect(this.page.getByRole("button", { name, exact: true })).toBeVisible();
+});
+
+Then("the {string} button should not be shown", async function (name) {
+  await expect(this.page.getByRole("button", { name, exact: true })).toHaveCount(0);
+});
+
+When("I confirm closing the ledger", async function () {
+  await ledgersDialog(this.page).getByRole("button", { name: "Confirm close", exact: true }).click();
+});
