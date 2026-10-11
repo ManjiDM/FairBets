@@ -11,6 +11,8 @@ import {
   Trash2,
   TriangleAlert,
   ChevronDown,
+  List,
+  Wallet,
   X,
 } from "lucide-react";
 import "./App.css";
@@ -2129,7 +2131,8 @@ function App() {
             className={`main-tab ${activeTab === "sequences" ? "active" : ""}`}
             onClick={() => selectTab("sequences")}
           >
-            Sequences
+            <List className="main-tab-icon" aria-hidden="true" focusable="false" strokeWidth={1.8} />
+            <span>Sequences</span>
           </button>
           <button
             type="button"
@@ -2138,7 +2141,8 @@ function App() {
             className={`main-tab ${activeTab === "ledgers" ? "active" : ""}`}
             onClick={() => selectTab("ledgers")}
           >
-            Ledgers
+            <Wallet className="main-tab-icon" aria-hidden="true" focusable="false" strokeWidth={1.8} />
+            <span>Ledgers</span>
           </button>
         </div>
 

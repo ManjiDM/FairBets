@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | ID | `FB-033-mobile-bottom-bar` |
-| Status | Clarified |
+| Status | Shipped |
 | Created | 2026-10-11 |
 | Related | Builds on the tabs from FB-032 |
 
