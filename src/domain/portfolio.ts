@@ -352,3 +352,15 @@ export function deleteClosedLedger(
   }
   return { ok: true, portfolio: next };
 }
+
+export function newLedgerDefaults(
+  previous: StrategySettings,
+  availableFunds: number,
+): StrategySettings {
+  return {
+    ...previous,
+    goalRate: 1,
+    recoveryWeight: 1,
+    startingBalance: roundMoney(Math.max(availableFunds, 0)),
+  };
+}

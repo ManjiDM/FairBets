@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | ID | `FB-042-new-ledger-defaults` |
-| Status | Clarified |
+| Status | Shipped |
 | Created | 2026-10-11 |
 | Related | Ledger lifecycle FB-031 |
 

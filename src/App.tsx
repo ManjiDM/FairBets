@@ -43,6 +43,7 @@ import {
   historyEvents,
   ledgerCards,
   migrateToPortfolio,
+  newLedgerDefaults,
   startLedger,
   type Portfolio,
 } from "./domain/portfolio";
@@ -1261,8 +1262,11 @@ function App() {
   const [ledgerMessage, setLedgerMessage] = useState<string | null>(null);
   const [closeConfirm, setCloseConfirm] = useState(false);
   const [investmentDraft, setInvestmentDraft] = useState("");
-  const [newLedgerName, setNewLedgerName] = useState("New FairBets ledger");
-  const [newLedgerSettings, setNewLedgerSettings] = useState<StrategySettings>(loadedLedger.state.settings);
+  const [newLedgerName, setNewLedgerName] = useState("");
+  const [newLedgerEdits, setNewLedgerSettings] = useState<StrategySettings>(() =>
+    newLedgerDefaults(loadedLedger.state.settings, 0),
+  );
+  const [newLedgerBalanceEdited, setNewLedgerBalanceEdited] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [freshOpen, setFreshOpen] = useState(false);
   const [freshClearSequences, setFreshClearSequences] = useState(true);
@@ -2064,11 +2068,19 @@ function App() {
     commitTracker(placeholder, false);
     setSettingsDraft(placeholder.settings);
     setLedgerNameDraft(placeholder.ledgerName);
-    setNewLedgerSettings(tracker.settings);
-    setNewLedgerName("New FairBets ledger");
+    setNewLedgerSettings(newLedgerDefaults(tracker.settings, fundsOverview(result.portfolio, 0).availableFunds));
+    setNewLedgerBalanceEdited(false);
+    setNewLedgerName("");
     setCloseConfirm(false);
     setLedgerMessage(null);
   }
+
+  const newLedgerSettings = newLedgerBalanceEdited
+    ? newLedgerEdits
+    : {
+        ...newLedgerEdits,
+        startingBalance: newLedgerDefaults(newLedgerEdits, funds.availableFunds).startingBalance,
+      };
 
   function handleStartLedger(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -2091,6 +2103,9 @@ function App() {
   }
 
   function updateNewLedgerSetting(key: keyof StrategySettings, value: number) {
+    if (key === "startingBalance") {
+      setNewLedgerBalanceEdited(true);
+    }
     setNewLedgerSettings((current) => ({ ...current, [key]: value }));
   }
   function toggleSettings() {
