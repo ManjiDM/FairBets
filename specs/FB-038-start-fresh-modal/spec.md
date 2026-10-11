@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | ID | `FB-038-start-fresh-modal` |
-| Status | Clarified |
+| Status | Shipped |
 | Created | 2026-10-11 |
 | Related | Reworks "Start fresh" in Settings; ledger history from FB-031 |
 

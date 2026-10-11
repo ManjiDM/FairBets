@@ -306,3 +306,14 @@ export function migrateToPortfolio(
     closedLedgers: [],
   };
 }
+
+export function clearLedgerHistory(
+  portfolio: Portfolio,
+  activeLedger: LedgerState,
+  investmentId: string,
+): Portfolio {
+  if (portfolio.activeOpenedAt === null) {
+    return { activeOpenedAt: null, investments: [], closedLedgers: [] };
+  }
+  return migrateToPortfolio(activeLedger, portfolio.activeOpenedAt, investmentId);
+}

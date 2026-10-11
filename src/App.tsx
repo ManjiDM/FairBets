@@ -37,6 +37,7 @@ import {
 } from "./domain/ledger";
 import {
   addInvestment,
+  clearLedgerHistory,
   closeLedger,
   fundsOverview,
   historyEvents,
@@ -1263,6 +1264,9 @@ function App() {
   const [newLedgerName, setNewLedgerName] = useState("New FairBets ledger");
   const [newLedgerSettings, setNewLedgerSettings] = useState<StrategySettings>(loadedLedger.state.settings);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [freshOpen, setFreshOpen] = useState(false);
+  const [freshClearSequences, setFreshClearSequences] = useState(true);
+  const [freshClearLedgers, setFreshClearLedgers] = useState(false);
   const [dismissedRiskKey, setDismissedRiskKey] = useState<string | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [historyFilter, setHistoryFilter] = useState<HistoryFilter>("all");
@@ -1943,13 +1947,32 @@ function App() {
   }
 
   function startFresh() {
-    if (!window.confirm("Remove all bets and start a new empty FairBets ledger?")) {
+    setFreshClearSequences(true);
+    setFreshClearLedgers(false);
+    setFreshOpen(true);
+  }
+
+  function confirmStartFresh() {
+    if (!freshClearSequences && !freshClearLedgers) {
       return;
     }
-    replaceTracker(createBlankLedger(), {
-      tone: "success",
-      text: "A new empty FairBets ledger is ready.",
-    });
+    const nextLedger = freshClearSequences ? createBlankLedger() : tracker;
+    if (freshClearSequences) {
+      replaceTracker(nextLedger, { tone: "success", text: "A new empty FairBets ledger is ready." });
+    }
+    if (freshClearLedgers) {
+      const nextPortfolio = freshClearSequences
+        ? migrateToPortfolio(nextLedger, new Date().toISOString(), createBetId())
+        : clearLedgerHistory(portfolio, nextLedger, createBetId());
+      commitPortfolio(nextPortfolio);
+      setFeedback({
+        tone: "success",
+        text: freshClearSequences
+          ? "Sequences and ledgers cleared. A new empty FairBets ledger is ready."
+          : "Ledger history cleared. Your sequences were kept.",
+      });
+    }
+    setFreshOpen(false);
     setSettingsOpen(false);
   }
 
@@ -2974,6 +2997,58 @@ function App() {
             </div>
         </aside>
       </main>
+
+      {freshOpen && (
+        <div className="modal-backdrop" role="presentation">
+          <section className="bet-modal fresh-modal" role="dialog" aria-modal="true" aria-labelledby="fresh-title">
+            <div className="modal-heading">
+              <h2 id="fresh-title">Start fresh</h2>
+            </div>
+            {[
+              {
+                label: "Clear sequences",
+                hint: "Remove every bet and open a new empty ledger.",
+                checked: freshClearSequences,
+                set: setFreshClearSequences,
+              },
+              {
+                label: "Clear ledgers",
+                hint: "Delete closed ledgers, investments and history.",
+                checked: freshClearLedgers,
+                set: setFreshClearLedgers,
+              },
+            ].map((option) => (
+              <div className="fresh-option" key={option.label}>
+                <div>
+                  <strong>{option.label}</strong>
+                  <p>{option.hint}</p>
+                </div>
+                <button
+                  type="button"
+                  role="switch"
+                  className="scope-switch"
+                  aria-checked={option.checked}
+                  aria-label={option.label}
+                  onClick={() => option.set(!option.checked)}
+                />
+              </div>
+            ))}
+            <div className="modal-actions">
+              <button type="button" className="text-button" onClick={() => setFreshOpen(false)}>
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="text-button text-button-danger"
+                disabled={!freshClearSequences && !freshClearLedgers}
+                onClick={confirmStartFresh}
+              >
+                Confirm
+              </button>
+            </div>
+          </section>
+        </div>
+      )}
 
       {isFormOpen && (
         <div className="modal-backdrop" role="presentation">
