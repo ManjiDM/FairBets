@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | ID | `FB-032-ledgers-tab` |
-| Status | Clarified |
+| Status | Shipped |
 | Created | 2026-10-11 |
 | Related | Replaces the Ledgers dialog from FB-031 |
 

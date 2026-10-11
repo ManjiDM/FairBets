@@ -10,7 +10,7 @@ import {
   Plus,
   Trash2,
   TriangleAlert,
-  Wallet,
+  ChevronDown,
   X,
 } from "lucide-react";
 import "./App.css";
@@ -38,6 +38,7 @@ import {
   closeLedger,
   fundsOverview,
   historyEvents,
+  ledgerCards,
   migrateToPortfolio,
   startLedger,
   type Portfolio,
@@ -510,6 +511,14 @@ function BetDescription({ bet }: { bet: Bet }) {
       ) : null}
     </div>
   );
+}
+
+function formatSignedPercent(ratio: number): string {
+  const percent = ratio * 100;
+  const text = Math.abs(percent).toFixed(2);
+  if (percent > 0) return `+${text}%`;
+  if (percent < 0) return `-${text}%`;
+  return `${text}%`;
 }
 
 function formatPercent(value: number): string {
@@ -1242,7 +1251,8 @@ function App() {
   const [loadedLedger] = useState<LoadedLedger>(loadLedger);
   const [tracker, setTracker] = useState<LedgerState>(loadedLedger.state);
   const [portfolio, setPortfolio] = useState<Portfolio>(() => loadPortfolio(loadedLedger.state));
-  const [ledgersOpen, setLedgersOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<"sequences" | "ledgers">("sequences");
+  const [expandedCards, setExpandedCards] = useState<string[]>([]);
   const [ledgerMessage, setLedgerMessage] = useState<string | null>(null);
   const [closeConfirm, setCloseConfirm] = useState(false);
   const [investmentDraft, setInvestmentDraft] = useState("");
@@ -1942,6 +1952,7 @@ function App() {
   const hasActiveLedger = portfolio.activeOpenedAt !== null;
   const funds = fundsOverview(portfolio, tracker.settings.startingBalance);
   const ledgerHistory = historyEvents(portfolio, tracker.ledgerName);
+  const cards = ledgerCards(portfolio, tracker);
 
   function commitPortfolio(nextPortfolio: Portfolio) {
     setPortfolio(nextPortfolio);
@@ -1956,10 +1967,16 @@ function App() {
     }
   }
 
-  function toggleLedgers() {
-    setLedgersOpen((open) => !open);
+  function selectTab(tab: "sequences" | "ledgers") {
+    setActiveTab(tab);
     setLedgerMessage(null);
     setCloseConfirm(false);
+  }
+
+  function toggleCard(id: string) {
+    setExpandedCards((current) =>
+      current.includes(id) ? current.filter((item) => item !== id) : [...current, id],
+    );
   }
 
   function handleAddInvestment(event: FormEvent<HTMLFormElement>) {
@@ -2061,16 +2078,6 @@ function App() {
         <div className="topbar-actions">
           <button
             type="button"
-            className="ledgers-toggle"
-            onClick={toggleLedgers}
-            aria-expanded={ledgersOpen}
-            aria-label={ledgersOpen ? "Close ledgers" : "Open ledgers"}
-            title="Ledgers and funds"
-          >
-            <Wallet className="sidebar-icon" aria-hidden="true" focusable="false" strokeWidth={1.8} />
-          </button>
-          <button
-            type="button"
             className="drawer-toggle"
             onClick={() => {
               setDrawerOpen((open) => !open);
@@ -2110,11 +2117,33 @@ function App() {
 
         {!hasActiveLedger && (
           <div className="notice no-ledger-notice" role="status">
-            <span>No active ledger. Open Ledgers to start a new one.</span>
+            <span>No active ledger. Open the Ledgers tab to start a new one.</span>
           </div>
         )}
 
+        <div className="main-tabs" role="tablist" aria-label="Views">
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === "sequences"}
+            className={`main-tab ${activeTab === "sequences" ? "active" : ""}`}
+            onClick={() => selectTab("sequences")}
+          >
+            Sequences
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === "ledgers"}
+            className={`main-tab ${activeTab === "ledgers" ? "active" : ""}`}
+            onClick={() => selectTab("ledgers")}
+          >
+            Ledgers
+          </button>
+        </div>
+
         <div className={`workspace ${settingsOpen ? "settings-open" : ""}`}>
+          {activeTab === "sequences" && (
             <section className="sequence-page">
             {showRiskBanner && (
               <div className="risk-banner" role="alert">
@@ -2378,6 +2407,222 @@ function App() {
               </section>
             ) : null}
             </section>
+          )}
+      {activeTab === "ledgers" && (
+        <section className="ledgers-page" aria-labelledby="ledgers-title">
+          <div className="section-title">
+            <div>
+              <p className="eyebrow">Investments and results</p>
+              <h2 id="ledgers-title">Ledgers and funds</h2>
+            </div>
+          </div>
+
+          {ledgerMessage && (
+            <p className="form-error" role="alert">
+              {ledgerMessage}
+            </p>
+          )}
+
+          <div className="funds-summary">
+            <div>
+              <span>Total invested</span>
+              <strong>{formatMoney(funds.totalInvested, tracker.settings.currency)}</strong>
+            </div>
+            <div>
+              <span>Realised result</span>
+              <strong>{formatSignedMoney(funds.realisedResult, tracker.settings.currency)}</strong>
+            </div>
+            <div>
+              <span>Available funds</span>
+              <strong>{formatMoney(funds.availableFunds, tracker.settings.currency)}</strong>
+            </div>
+          </div>
+
+          <form className="ledger-section investment-form" onSubmit={handleAddInvestment} noValidate>
+            <h3>Add investment</h3>
+            <div className="ledger-inline-form">
+              <label className="form-field">
+                <span>Investment amount</span>
+                <input
+                  type="number"
+                  step="0.01"
+                  value={investmentDraft}
+                  onChange={(event) => setInvestmentDraft(event.target.value)}
+                />
+              </label>
+              <button type="submit" className="button button-secondary">
+                Add investment
+              </button>
+            </div>
+          </form>
+
+          <div className="ledger-section">
+            <h3>Active ledger</h3>
+            {hasActiveLedger ? (
+              <div className="ledger-inline-form">
+                <p>
+                  <strong>{tracker.ledgerName}</strong>
+                  <br />
+                  <small>
+                    Opened{" "}
+                    <time dateTime={portfolio.activeOpenedAt ?? undefined}>
+                      {portfolio.activeOpenedAt ? formatTimestamp(portfolio.activeOpenedAt) : ""}
+                    </time>
+                  </small>
+                </p>
+                <div className="ledger-actions">
+                  <button type="button" className="button button-secondary" onClick={requestCloseLedger}>
+                    Close ledger
+                  </button>
+                  {closeConfirm && (
+                    <button type="button" className="button button-primary" onClick={confirmCloseLedger}>
+                      Confirm close
+                    </button>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <p>No active ledger</p>
+            )}
+            {hasActiveLedger && (
+              <p className="ledger-hint">Close the active ledger before starting another.</p>
+            )}
+          </div>
+
+          {!hasActiveLedger && (
+            <form className="ledger-section start-ledger-form" onSubmit={handleStartLedger} noValidate>
+              <h3>Start a new ledger</h3>
+              <div className="form-grid">
+                <label className="form-field form-field-wide">
+                  <span>Ledger name</span>
+                  <input
+                    value={newLedgerName}
+                    maxLength={60}
+                    onChange={(event) => setNewLedgerName(event.target.value)}
+                  />
+                </label>
+                {NEW_LEDGER_FIELDS.map((field) => (
+                  <label className="form-field" key={field.key}>
+                    <span>{field.label}</span>
+                    <input
+                      type="number"
+                      step={field.step}
+                      value={
+                        field.percent
+                          ? Math.round(newLedgerSettings[field.key] * 100)
+                          : newLedgerSettings[field.key]
+                      }
+                      onChange={(event) =>
+                        updateNewLedgerSetting(
+                          field.key,
+                          field.percent ? Number(event.target.value) / 100 : Number(event.target.value),
+                        )
+                      }
+                    />
+                  </label>
+                ))}
+              </div>
+              <button type="submit" className="button button-primary">
+                Start ledger
+              </button>
+            </form>
+          )}
+
+          <div className="ledger-section">
+            <h3>Ledgers</h3>
+            {cards.length === 0 ? (
+              <p className="ledger-hint">No ledgers yet.</p>
+            ) : (
+              <ul className="closed-ledgers">
+                {cards.map((card) => {
+                  const expanded = expandedCards.includes(card.id);
+                  return (
+                    <li className="ledger-card" key={card.id}>
+                      <button
+                        type="button"
+                        className="ledger-card-header"
+                        aria-expanded={expanded}
+                        onClick={() => toggleCard(card.id)}
+                      >
+                        <span className="ledger-card-title">{`Ledger ${card.number} ${card.name}`}</span>
+                        <span className="ledger-card-net">
+                          {formatSignedMoney(card.stats.netResult, card.currency)}
+                        </span>
+                        <span className="ledger-card-profit">
+                          {formatSignedPercent(card.profitPercent)}
+                        </span>
+                        <ChevronDown
+                          className="ledger-card-chevron"
+                          aria-hidden="true"
+                          focusable="false"
+                          strokeWidth={1.8}
+                        />
+                      </button>
+                      {expanded && (
+                        <>
+                          <small>
+                            {formatTimestamp(card.openedAt)}
+                            {card.closedAt ? ` to ${formatTimestamp(card.closedAt)}` : " (active)"}
+                          </small>
+                          <div className="closed-ledger-stats">
+                            <div>
+                              <span>Starting balance</span>
+                              <strong>{formatMoney(card.stats.startingBalance, card.currency)}</strong>
+                            </div>
+                            <div>
+                              <span>Final balance</span>
+                              <strong>{formatMoney(card.stats.finalBalance, card.currency)}</strong>
+                            </div>
+                            <div>
+                              <span>Net result</span>
+                              <strong>{formatSignedMoney(card.stats.netResult, card.currency)}</strong>
+                            </div>
+                            <div>
+                              <span>Total staked</span>
+                              <strong>{formatMoney(card.stats.totalStaked, card.currency)}</strong>
+                            </div>
+                            <div>
+                              <span>Wins</span>
+                              <strong>{card.stats.wins}</strong>
+                            </div>
+                            <div>
+                              <span>Losses</span>
+                              <strong>{card.stats.losses}</strong>
+                            </div>
+                            <div>
+                              <span>Win rate</span>
+                              <strong>{formatPercent(card.stats.winRate)}</strong>
+                            </div>
+                            <div>
+                              <span>Closed sequences</span>
+                              <strong>{card.stats.closedSequences}</strong>
+                            </div>
+                          </div>
+                        </>
+                      )}
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </div>
+
+          <div className="ledger-section">
+            <h3>History</h3>
+            <ol className="ledger-history">
+              {ledgerHistory.map((event) => (
+                <li key={event.id}>
+                  <span>{event.title}</span>
+                  {event.amount !== undefined && (
+                    <strong>{formatMoney(event.amount, tracker.settings.currency)}</strong>
+                  )}
+                  <time dateTime={event.at}>{formatTimestamp(event.at)}</time>
+                </li>
+              ))}
+            </ol>
+          </div>
+        </section>
+      )}
 
             <aside
               id="summary-sidebar"
@@ -2723,207 +2968,6 @@ function App() {
         </aside>
       </main>
 
-      {ledgersOpen && (
-        <div className="modal-backdrop" role="presentation">
-          <section
-            className="bet-modal ledgers-modal"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="ledgers-title"
-          >
-            <div className="modal-heading">
-              <div>
-                <p className="eyebrow">Investments and results</p>
-                <h2 id="ledgers-title">Ledgers and funds</h2>
-              </div>
-            </div>
-
-            {ledgerMessage && (
-              <p className="form-error" role="alert">
-                {ledgerMessage}
-              </p>
-            )}
-
-            <div className="funds-summary">
-              <div>
-                <span>Total invested</span>
-                <strong>{formatMoney(funds.totalInvested, tracker.settings.currency)}</strong>
-              </div>
-              <div>
-                <span>Realised result</span>
-                <strong>{formatSignedMoney(funds.realisedResult, tracker.settings.currency)}</strong>
-              </div>
-              <div>
-                <span>Available funds</span>
-                <strong>{formatMoney(funds.availableFunds, tracker.settings.currency)}</strong>
-              </div>
-            </div>
-
-            <form className="ledger-section investment-form" onSubmit={handleAddInvestment} noValidate>
-              <h3>Add investment</h3>
-              <div className="ledger-inline-form">
-                <label className="form-field">
-                  <span>Investment amount</span>
-                  <input
-                    type="number"
-                    step="0.01"
-                    value={investmentDraft}
-                    onChange={(event) => setInvestmentDraft(event.target.value)}
-                  />
-                </label>
-                <button type="submit" className="button button-secondary">
-                  Add investment
-                </button>
-              </div>
-            </form>
-
-            <div className="ledger-section">
-              <h3>Active ledger</h3>
-              {hasActiveLedger ? (
-                <div className="ledger-inline-form">
-                  <p>
-                    <strong>{tracker.ledgerName}</strong>
-                    <br />
-                    <small>
-                      Opened{" "}
-                      <time dateTime={portfolio.activeOpenedAt ?? undefined}>
-                        {portfolio.activeOpenedAt ? formatTimestamp(portfolio.activeOpenedAt) : ""}
-                      </time>
-                    </small>
-                  </p>
-                  <div className="ledger-actions">
-                    <button type="button" className="button button-secondary" onClick={requestCloseLedger}>
-                      Close ledger
-                    </button>
-                    {closeConfirm && (
-                      <button type="button" className="button button-primary" onClick={confirmCloseLedger}>
-                        Confirm close
-                      </button>
-                    )}
-                  </div>
-                </div>
-              ) : (
-                <p>No active ledger</p>
-              )}
-              {hasActiveLedger && (
-                <p className="ledger-hint">Close the active ledger before starting another.</p>
-              )}
-            </div>
-
-            {!hasActiveLedger && (
-              <form className="ledger-section start-ledger-form" onSubmit={handleStartLedger} noValidate>
-                <h3>Start a new ledger</h3>
-                <div className="form-grid">
-                  <label className="form-field form-field-wide">
-                    <span>Ledger name</span>
-                    <input
-                      value={newLedgerName}
-                      maxLength={60}
-                      onChange={(event) => setNewLedgerName(event.target.value)}
-                    />
-                  </label>
-                  {NEW_LEDGER_FIELDS.map((field) => (
-                    <label className="form-field" key={field.key}>
-                      <span>{field.label}</span>
-                      <input
-                        type="number"
-                        step={field.step}
-                        value={
-                          field.percent
-                            ? Math.round(newLedgerSettings[field.key] * 100)
-                            : newLedgerSettings[field.key]
-                        }
-                        onChange={(event) =>
-                          updateNewLedgerSetting(
-                            field.key,
-                            field.percent ? Number(event.target.value) / 100 : Number(event.target.value),
-                          )
-                        }
-                      />
-                    </label>
-                  ))}
-                </div>
-                <button type="submit" className="button button-primary">
-                  Start ledger
-                </button>
-              </form>
-            )}
-
-            <div className="ledger-section">
-              <h3>Closed ledgers</h3>
-              {portfolio.closedLedgers.length === 0 ? (
-                <p className="ledger-hint">No closed ledgers yet.</p>
-              ) : (
-                <ul className="closed-ledgers">
-                  {[...portfolio.closedLedgers].reverse().map((closed) => (
-                    <li className="closed-ledger" key={closed.id}>
-                      <strong>{closed.ledger.ledgerName}</strong>
-                      <small>
-                        {formatTimestamp(closed.openedAt)} to {formatTimestamp(closed.closedAt)}
-                      </small>
-                      <div className="closed-ledger-stats">
-                        <div>
-                          <span>Starting balance</span>
-                          <strong>{formatMoney(closed.stats.startingBalance, closed.ledger.settings.currency)}</strong>
-                        </div>
-                        <div>
-                          <span>Final balance</span>
-                          <strong>{formatMoney(closed.stats.finalBalance, closed.ledger.settings.currency)}</strong>
-                        </div>
-                        <div>
-                          <span>Net result</span>
-                          <strong>{formatSignedMoney(closed.stats.netResult, closed.ledger.settings.currency)}</strong>
-                        </div>
-                        <div>
-                          <span>Total staked</span>
-                          <strong>{formatMoney(closed.stats.totalStaked, closed.ledger.settings.currency)}</strong>
-                        </div>
-                        <div>
-                          <span>Wins</span>
-                          <strong>{closed.stats.wins}</strong>
-                        </div>
-                        <div>
-                          <span>Losses</span>
-                          <strong>{closed.stats.losses}</strong>
-                        </div>
-                        <div>
-                          <span>Win rate</span>
-                          <strong>{formatPercent(closed.stats.winRate)}</strong>
-                        </div>
-                        <div>
-                          <span>Closed sequences</span>
-                          <strong>{closed.stats.closedSequences}</strong>
-                        </div>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-
-            <div className="ledger-section">
-              <h3>History</h3>
-              <ol className="ledger-history">
-                {ledgerHistory.map((event) => (
-                  <li key={event.id}>
-                    <span>{event.title}</span>
-                    {event.amount !== undefined && (
-                      <strong>{formatMoney(event.amount, tracker.settings.currency)}</strong>
-                    )}
-                    <time dateTime={event.at}>{formatTimestamp(event.at)}</time>
-                  </li>
-                ))}
-              </ol>
-            </div>
-
-            <div className="modal-actions">
-              <button type="button" className="button button-secondary" onClick={toggleLedgers}>
-                Done
-              </button>
-            </div>
-          </section>
-        </div>
-      )}
       {isFormOpen && (
         <div className="modal-backdrop" role="presentation">
           <section className="bet-modal" role="dialog" aria-modal="true" aria-labelledby="bet-form-title">

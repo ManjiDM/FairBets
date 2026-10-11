@@ -77,6 +77,49 @@ export function summariseLedger(ledger: LedgerState): ClosedLedgerStats {
   };
 }
 
+export interface LedgerCard {
+  id: string;
+  number: number;
+  name: string;
+  currency: StrategySettings["currency"];
+  openedAt: string;
+  closedAt: string | null;
+  stats: ClosedLedgerStats;
+  profitPercent: number;
+}
+
+export function profitPercent(netResult: number, startingBalance: number): number {
+  if (startingBalance <= 0) return 0;
+  return Math.round((netResult / startingBalance) * 10000) / 10000;
+}
+
+export function ledgerCards(portfolio: Portfolio, activeLedger: LedgerState): LedgerCard[] {
+  const cards: LedgerCard[] = portfolio.closedLedgers.map((closed, index) => ({
+    id: closed.id,
+    number: index + 1,
+    name: closed.ledger.ledgerName,
+    currency: closed.ledger.settings.currency,
+    openedAt: closed.openedAt,
+    closedAt: closed.closedAt,
+    stats: closed.stats,
+    profitPercent: profitPercent(closed.stats.netResult, closed.stats.startingBalance),
+  }));
+  if (portfolio.activeOpenedAt !== null) {
+    const stats = summariseLedger(activeLedger);
+    cards.push({
+      id: "active-ledger",
+      number: portfolio.closedLedgers.length + 1,
+      name: activeLedger.ledgerName,
+      currency: activeLedger.settings.currency,
+      openedAt: portfolio.activeOpenedAt,
+      closedAt: null,
+      stats,
+      profitPercent: profitPercent(stats.netResult, stats.startingBalance),
+    });
+  }
+  return cards.sort((a, b) => b.openedAt.localeCompare(a.openedAt));
+}
+
 export function fundsOverview(
   portfolio: Portfolio,
   activeStartingBalance: number,
