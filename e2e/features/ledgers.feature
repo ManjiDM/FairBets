@@ -244,3 +244,30 @@ Feature: Ledger lifecycle with investments and closing statistics
     And I delete the card "Ledger 1"
     Then the ledgers message should read "Ledger 1 cannot be deleted: its result funds the active ledger."
     And the card "Ledger 1" should show the status "Closed"
+
+  Scenario: A closed ledger runs from its first bet to its closing
+    Given the FairBets app is available
+    When I start a fresh ledger
+    And the browser clock is set to "2026-10-13T09:30:00"
+    And I add a bet labeled "Dated round" with odds "2.00"
+    And I mark the bet "Dated round" as "Won"
+    And the browser clock is set to "2026-10-14T18:45:00"
+    And I open the Ledgers tab
+    And I close the active ledger
+    Then the dates of the card "Ledger 1" should read "13 Oct 2026, 09:30 to 14 Oct 2026, 18:45"
+
+  Scenario: The active ledger shows when its first bet was created
+    Given the FairBets app is available
+    When I start a fresh ledger
+    And the browser clock is set to "2026-10-13T09:30:00"
+    And I add a bet labeled "Dated round" with odds "2.00"
+    And I open the Ledgers tab
+    Then the dates of the card "Ledger 1" should read "Started 13 Oct 2026, 09:30"
+
+  Scenario: A ledger without bets has no first-bet date
+    Given the FairBets app is available
+    When I start a fresh ledger
+    And I open the Ledgers tab
+    Then the dates of the card "Ledger 1" should read "No bets yet"
+    When I close the active ledger
+    Then the dates of the card "Ledger 1" should read "No bets recorded"

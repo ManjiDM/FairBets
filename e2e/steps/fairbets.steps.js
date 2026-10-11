@@ -1844,3 +1844,11 @@ When("I delete the card {string}", async function (name) {
   await card.getByRole("button", { name: "Delete", exact: true }).click();
   await card.getByRole("button", { name: "Confirm deletion", exact: true }).click();
 });
+
+When("the browser clock is set to {string}", async function (time) {
+  await this.page.clock.setFixedTime(new Date(time));
+});
+
+Then("the dates of the card {string} should read {string}", async function (name, text) {
+  await expect(ledgerCard(this.page, name).locator(".ledger-card-dates")).toHaveText(text);
+});
