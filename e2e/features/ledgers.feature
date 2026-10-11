@@ -168,3 +168,24 @@ Feature: Ledger lifecycle with investments and closing statistics
     Given the FairBets app is available
     When I open the Ledgers tab
     Then the Ledgers page headings and labels should have readable contrast
+
+  Scenario: Funds are shown as pills on the dark background
+    Given the FairBets app is available
+    When I open the Ledgers tab
+    Then the funds should be shown as pills
+    And the Ledgers page sections should have no white panel
+
+  Scenario: Ledger cards use the full page width
+    Given the FairBets app is available
+    When I start a fresh ledger
+    And I open the Ledgers tab
+    And I close the active ledger
+    Then the ledger cards should be as wide as the page content
+
+  Scenario: The first bet button is disabled with no active ledger
+    Given the FairBets app is available
+    When I start a fresh ledger
+    And I open the Ledgers tab
+    And I close the active ledger
+    And I open the Sequences tab
+    Then the "Add the first bet" button should be disabled

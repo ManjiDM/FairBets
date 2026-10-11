@@ -1616,3 +1616,29 @@ Then("the Ledgers page headings and labels should have readable contrast", async
   });
   expect(failures).toEqual([]);
 });
+
+Then("the funds should be shown as pills", async function () {
+  const pills = this.page.locator(".ledgers-page .funds-summary > div");
+  await expect(pills).toHaveCount(3);
+  for (const pill of await pills.all()) {
+    await expect(pill).toHaveCSS("border-radius", "999px");
+  }
+});
+
+Then("the Ledgers page sections should have no white panel", async function () {
+  const sections = this.page.locator(".ledgers-page .ledger-section");
+  expect(await sections.count()).toBeGreaterThan(0);
+  for (const section of await sections.all()) {
+    await expect(section).toHaveCSS("background-color", "rgba(0, 0, 0, 0)");
+  }
+});
+
+Then("the ledger cards should be as wide as the page content", async function () {
+  const page = await this.page.locator(".ledgers-page").boundingBox();
+  const card = await this.page.locator(".ledger-card").first().boundingBox();
+  expect(card.width).toBeGreaterThanOrEqual(page.width - 2);
+});
+
+Then("the {string} button should be disabled", async function (name) {
+  await expect(this.page.getByRole("button", { name, exact: true })).toBeDisabled();
+});
