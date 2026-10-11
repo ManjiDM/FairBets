@@ -1013,9 +1013,8 @@ When("I set the starting balance to {string}", async function (value) {
 
 When("I start a fresh ledger", async function () {
   await this.page.getByRole("button", { name: "Open settings", exact: true }).click();
-  const confirmation = this.page.waitForEvent("dialog").then((dialog) => dialog.accept());
-  await this.page.getByRole("button", { name: "Start fresh" }).click();
-  await confirmation;
+  await this.page.getByRole("button", { name: "Start fresh", exact: true }).click();
+  await freshDialog(this.page).getByRole("button", { name: "Confirm", exact: true }).click();
   await expect(this.page.locator("h1")).toHaveText("New FairBets ledger");
 });
 
@@ -1691,3 +1690,90 @@ Then(
     expect(button.x + button.width).toBeLessThanOrEqual(form.x + form.width + 1);
   },
 );
+function freshDialog(page) {
+  return page.getByRole("dialog", { name: "Start fresh" });
+}
+
+When("I press Start fresh in the settings", async function () {
+  this.nativeDialogs = 0;
+  this.page.on("dialog", (dialog) => {
+    this.nativeDialogs += 1;
+    dialog.dismiss();
+  });
+  await this.page.getByRole("button", { name: "Open settings", exact: true }).click();
+  await this.page.getByRole("button", { name: "Start fresh", exact: true }).click();
+});
+
+Then("the {string} dialog should be shown", async function (name) {
+  await expect(this.page.getByRole("dialog", { name })).toBeVisible();
+});
+
+Then("the {string} dialog should be closed", async function (name) {
+  await expect(this.page.getByRole("dialog", { name })).toHaveCount(0);
+});
+
+Then("{string} should be switched on", async function (name) {
+  await expect(freshDialog(this.page).getByRole("switch", { name })).toHaveAttribute(
+    "aria-checked",
+    "true",
+  );
+});
+
+Then("{string} should be switched off", async function (name) {
+  await expect(freshDialog(this.page).getByRole("switch", { name })).toHaveAttribute(
+    "aria-checked",
+    "false",
+  );
+});
+
+Then("the {string} dialog should have Confirm and Cancel buttons", async function (name) {
+  const dialog = this.page.getByRole("dialog", { name });
+  await expect(dialog.getByRole("button", { name: "Confirm", exact: true })).toBeVisible();
+  await expect(dialog.getByRole("button", { name: "Cancel", exact: true })).toBeVisible();
+});
+
+Then("no system dialog should have been shown", async function () {
+  expect(this.nativeDialogs).toBe(0);
+});
+
+When("I cancel the Start fresh dialog", async function () {
+  await freshDialog(this.page).getByRole("button", { name: "Cancel", exact: true }).click();
+});
+
+When("I confirm the Start fresh dialog", async function () {
+  await freshDialog(this.page).getByRole("button", { name: "Confirm", exact: true }).click();
+});
+
+When("I switch {string} off", async function (name) {
+  const option = freshDialog(this.page).getByRole("switch", { name });
+  if ((await option.getAttribute("aria-checked")) === "true") await option.click();
+});
+
+When("I switch {string} on", async function (name) {
+  const option = freshDialog(this.page).getByRole("switch", { name });
+  if ((await option.getAttribute("aria-checked")) === "false") await option.click();
+});
+
+Then("the Start fresh Confirm button should be disabled", async function () {
+  await expect(
+    freshDialog(this.page).getByRole("button", { name: "Confirm", exact: true }),
+  ).toBeDisabled();
+});
+
+When("I add an investment of {string} on the Ledgers tab", async function (amount) {
+  await this.page.getByRole("tab", { name: "Ledgers" }).click();
+  const dialog = ledgersDialog(this.page);
+  await dialog.getByLabel("Investment amount", { exact: true }).fill(amount);
+  await dialog.getByRole("button", { name: "Add investment", exact: true }).click();
+});
+
+Then("the ledger should have no bets", async function () {
+  await this.page.getByRole("tab", { name: "Sequences" }).click();
+  await expect(this.page.locator(".sequence-list article")).toHaveCount(0);
+});
+
+Then("{string} should be the only ledger card", async function (title) {
+  await expect(ledgersDialog(this.page).locator(".ledger-card .ledger-card-title")).toHaveText([
+    title,
+  ]);
+});
