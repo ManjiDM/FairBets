@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | ID | `FB-039-ledger-card-redesign` |
-| Status | Clarified |
+| Status | Shipped |
 | Created | 2026-10-11 |
 | Related | Ledger cards from FB-032 and FB-035; Start fresh modal FB-038 |
 

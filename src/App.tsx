@@ -10,7 +10,6 @@ import {
   Plus,
   Trash2,
   TriangleAlert,
-  ChevronDown,
   List,
   Wallet,
   X,
@@ -39,6 +38,7 @@ import {
   addInvestment,
   clearLedgerHistory,
   closeLedger,
+  deleteClosedLedger,
   fundsOverview,
   historyEvents,
   ledgerCards,
@@ -1994,6 +1994,20 @@ function App() {
     }
   }
 
+  function confirmDeleteLedger(key: string, number: number) {
+    if (pendingDeleteKey !== key) {
+      return;
+    }
+    const result = deleteClosedLedger(portfolio, key.slice("ledger:".length), tracker.settings.startingBalance);
+    setPendingDeleteKey(null);
+    if (!result.ok) {
+      setLedgerMessage(`Ledger ${number} cannot be deleted: ${result.error}`);
+      return;
+    }
+    setLedgerMessage(null);
+    commitPortfolio(result.portfolio);
+  }
+
   function selectTab(tab: "sequences" | "ledgers") {
     setActiveTab(tab);
     setLedgerMessage(null);
@@ -2567,33 +2581,58 @@ function App() {
                 {cards.map((card) => {
                   const expanded = expandedCards.includes(card.id);
                   return (
-                    <li className="ledger-card" key={card.id}>
-                      <button
-                        type="button"
-                        className="ledger-card-header"
-                        aria-expanded={expanded}
-                        onClick={() => toggleCard(card.id)}
-                      >
-                        <span className="ledger-card-title">{`Ledger ${card.number} ${card.name}`}</span>
-                        <span className="ledger-card-net">
-                          {formatSignedMoney(card.stats.netResult, card.currency)}
-                        </span>
-                        <span className="ledger-card-profit">
-                          {formatSignedPercent(card.profitPercent)}
-                        </span>
-                        <ChevronDown
-                          className="ledger-card-chevron"
-                          aria-hidden="true"
-                          focusable="false"
-                          strokeWidth={1.8}
-                        />
-                      </button>
+                    <li className={`ledger-card${card.closedAt ? "" : " ledger-card-active"}`} key={card.id}>
+                      <div className="ledger-card-row">
+                        <button
+                          type="button"
+                          className="ledger-card-header"
+                          aria-expanded={expanded}
+                          onClick={() => toggleCard(card.id)}
+                        >
+                          <span className="ledger-card-state">
+                            <strong className="ledger-card-id">{`Ledger ${card.number}`}</strong>
+                            <span
+                              className={`status-badge ledger-card-status status-${card.closedAt ? "closed" : "open"}`}
+                            >
+                              {card.closedAt ? "Closed" : "Open"}
+                            </span>
+                          </span>
+                          <span className="ledger-card-info">
+                            <strong className="ledger-card-title">{card.name}</strong>
+                            <span>
+                              {card.closedAt
+                                ? `${formatTimestamp(card.openedAt)} to ${formatTimestamp(card.closedAt)}`
+                                : `Opened ${formatTimestamp(card.openedAt)}`}
+                            </span>
+                          </span>
+                          <span className="ledger-card-figure">
+                            Net result
+                            <strong
+                              className={`ledger-card-net ${card.stats.netResult < 0 ? "amount-negative" : "amount-positive"}`}
+                            >
+                              {formatSignedMoney(card.stats.netResult, card.currency)}
+                            </strong>
+                          </span>
+                          <span className="ledger-card-figure">
+                            Profit
+                            <strong
+                              className={`ledger-card-profit ${card.profitPercent < 0 ? "amount-negative" : "amount-positive"}`}
+                            >
+                              {formatSignedPercent(card.profitPercent)}
+                            </strong>
+                          </span>
+                        </button>
+                        {card.closedAt && (
+                          <InlineDeleteAction
+                            label="Delete"
+                            pending={pendingDeleteKey === `ledger:${card.id}`}
+                            onRequest={() => requestDelete(`ledger:${card.id}`)}
+                            onConfirm={() => confirmDeleteLedger(`ledger:${card.id}`, card.number)}
+                          />
+                        )}
+                      </div>
                       {expanded && (
                         <>
-                          <small>
-                            {formatTimestamp(card.openedAt)}
-                            {card.closedAt ? ` to ${formatTimestamp(card.closedAt)}` : " (active)"}
-                          </small>
                           <div className="closed-ledger-stats">
                             <div>
                               <span>Starting balance</span>

@@ -317,3 +317,21 @@ export function clearLedgerHistory(
   }
   return migrateToPortfolio(activeLedger, portfolio.activeOpenedAt, investmentId);
 }
+
+export function deleteClosedLedger(
+  portfolio: Portfolio,
+  ledgerId: string,
+  activeStartingBalance: number,
+): PortfolioResult {
+  if (!portfolio.closedLedgers.some((closed) => closed.id === ledgerId)) {
+    return { ok: false, error: "that ledger is not closed." };
+  }
+  const next: Portfolio = {
+    ...portfolio,
+    closedLedgers: portfolio.closedLedgers.filter((closed) => closed.id !== ledgerId),
+  };
+  if (fundsOverview(next, activeStartingBalance).availableFunds < 0) {
+    return { ok: false, error: "its result funds the active ledger." };
+  }
+  return { ok: true, portfolio: next };
+}

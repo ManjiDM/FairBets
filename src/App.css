@@ -1944,23 +1944,32 @@ h3 {
 
 .ledger-card {
   display: grid;
-  gap: 10px;
-  padding: 14px 16px;
-  border: 1px solid var(--line);
-  border-radius: 16px;
+  gap: 12px;
+  padding: 13px 16px;
+  border: 1px solid #bdddea;
+  border-radius: 14px;
   color: var(--ink);
-  background: var(--closed-surface);
+  background: var(--closed-sequence-surface);
+}
+
+.ledger-card-active {
+  border-color: #e3ad7f;
+  background: var(--active-sequence-surface);
+}
+
+.ledger-card-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 .ledger-card-header {
   display: grid;
-  grid-template-areas:
-    "title chevron"
-    "net chevron"
-    "profit chevron";
-  grid-template-columns: 1fr auto;
+  flex: 1;
+  grid-template-columns: 82px minmax(0, 1fr) auto auto;
   align-items: center;
-  gap: 4px 12px;
+  gap: 14px;
+  min-width: 0;
   padding: 0;
   border: 0;
   color: inherit;
@@ -1970,53 +1979,97 @@ h3 {
   cursor: pointer;
 }
 
+.ledger-card-state {
+  display: grid;
+  gap: 5px;
+}
+
+.ledger-card-id {
+  color: var(--lime-dark);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.ledger-card-state .status-badge {
+  justify-self: start;
+  min-width: auto;
+  padding: 3px 6px;
+  font-size: 10px;
+}
+
+.ledger-card-info {
+  min-width: 0;
+}
+
+.ledger-card-info strong,
+.ledger-card-info span {
+  display: block;
+}
+
 .ledger-card-title {
-  grid-area: title;
-  font-size: 16px;
+  margin-bottom: 3px;
+  font-size: 13px;
+}
+
+.ledger-card-info span {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.ledger-card-figure {
+  display: grid;
+  gap: 2px;
+  color: var(--muted);
+  font-size: 11px;
   font-weight: 800;
+  text-align: right;
+  text-transform: uppercase;
 }
 
 .ledger-card-net,
 .ledger-card-profit {
   font-size: 15px;
-  font-weight: 800;
   font-variant-numeric: tabular-nums;
 }
 
-.ledger-card-net {
-  grid-area: net;
+.ledger-card .closed-ledger-stats {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px 18px;
 }
 
-.ledger-card-profit {
-  grid-area: profit;
+.ledger-card .closed-ledger-stats > div {
+  padding: 0;
+  border: 0;
+  background: none;
 }
 
-.ledger-card-profit::before,
-.ledger-card-net::before {
-  display: inline-block;
-  min-width: 76px;
-  color: var(--muted);
+.ledger-card .closed-ledger-stats span {
+  color: var(--lime-dark);
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
-.ledger-card-net::before {
-  content: "Net result";
+.ledger-card .closed-ledger-stats strong {
+  font-size: 18px;
+  font-weight: 850;
 }
 
-.ledger-card-profit::before {
-  content: "Profit";
-}
+@media (max-width: 680px) {
+  .ledger-card-header {
+    grid-template-columns: 70px minmax(0, 1fr) auto;
+  }
 
-.ledger-card-chevron {
-  grid-area: chevron;
-  width: 18px;
-  height: 18px;
-  transition: transform 0.15s;
-}
+  .ledger-card-info {
+    grid-column: 2 / -1;
+  }
 
-.ledger-card-header[aria-expanded="true"] .ledger-card-chevron {
-  transform: rotate(180deg);
+  .ledger-card-figure:nth-of-type(1) {
+    grid-column: 2;
+    text-align: left;
+  }
 }
 .ledgers-page > .section-title {
   margin-bottom: 0;
@@ -2274,4 +2327,12 @@ h3 {
 
 .fresh-option .scope-switch {
   right: 0;
+}
+
+.ledger-card-active .amount-positive {
+  color: #0b4a2c !important;
+}
+
+.ledger-card-active .amount-negative {
+  color: #8a2a22 !important;
 }
