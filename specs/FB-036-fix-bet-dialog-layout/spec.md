@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | ID | `FB-036-fix-bet-dialog-layout` |
-| Status | Reproducing |
+| Status | Verified |
 | Severity | Cosmetic |
 | Created | 2026-10-11 |
 | Related | FB-029 (simplified bet form), FB-030 |

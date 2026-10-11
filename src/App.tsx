@@ -2980,24 +2980,31 @@ function App() {
               <div>
                 <p className="eyebrow">{editingBetId ? "Edit record" : "New record"}</p>
                 <h2 id="bet-form-title">{editingBetId ? "Update bet" : "Add a bet"}</h2>
+                {!editingBetId && (
+                  <time className="modal-timestamp" dateTime={draft.placedAt}>
+                    {formatDateTime(draft.placedAt)}
+                  </time>
+                )}
               </div>
             </div>
 
             <form onSubmit={saveBet}>
               <div className="form-grid">
-                <label className="form-field form-field-wide">
-                  <span>Date and time</span>
-                  <input
-                    type="datetime-local"
-                    step="1"
-                    value={draft.placedAt}
-                    readOnly={!editingBetId}
-                    onChange={(event) =>
-                      setDraft((current) => ({ ...current, placedAt: event.target.value }))
-                    }
-                    required
-                  />
-                </label>
+                {editingBetId && (
+                  <label className="form-field form-field-wide">
+                    <span>Date and time</span>
+                    <input
+                      type="datetime-local"
+                      step="1"
+                      value={draft.placedAt}
+                      readOnly={!editingBetId}
+                      onChange={(event) =>
+                        setDraft((current) => ({ ...current, placedAt: event.target.value }))
+                      }
+                      required
+                    />
+                  </label>
+                )}
                 <label className="form-field form-field-wide">
                   <span>Label</span>
                   <input
@@ -3053,26 +3060,6 @@ function App() {
                     </select>
                   </label>
                 )}
-              </div>
-
-              <div className="suggestion-preview">
-                <div>
-                  <span>Suggested stake</span>
-                  <strong>{formatMoney(draftSuggestion.amount, tracker.settings.currency)}</strong>
-                </div>
-                <div>
-                  <span>Recovery offset</span>
-                  <strong>{formatMoney(draftSuggestion.recoveryOffset, tracker.settings.currency)}</strong>
-                </div>
-                <p>
-                  This bet will be added to{" "}
-                  {editingBet
-                    ? `sequence ${editingCalculatedBet?.sequenceNumber}`
-                    : targetSequence
-                      ? `sequence ${targetSequence.number}`
-                      : "a new sequence"}
-                  . A win closes that sequence.
-                </p>
               </div>
 
               <details className="recorded-strategy">
