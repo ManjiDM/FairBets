@@ -1944,18 +1944,23 @@ h3 {
 
 .ledger-card {
   display: grid;
-  gap: 8px;
-  padding: 12px 14px;
+  gap: 10px;
+  padding: 14px 16px;
   border: 1px solid var(--line);
-  border-radius: 14px;
-  background: #fff;
+  border-radius: 16px;
+  color: var(--ink);
+  background: var(--closed-surface);
 }
 
 .ledger-card-header {
   display: grid;
-  grid-template-columns: 1fr auto auto auto;
+  grid-template-areas:
+    "title chevron"
+    "net chevron"
+    "profit chevron";
+  grid-template-columns: 1fr auto;
   align-items: center;
-  gap: 12px;
+  gap: 4px 12px;
   padding: 0;
   border: 0;
   color: inherit;
@@ -1966,16 +1971,45 @@ h3 {
 }
 
 .ledger-card-title {
+  grid-area: title;
+  font-size: 16px;
   font-weight: 800;
 }
 
 .ledger-card-net,
 .ledger-card-profit {
+  font-size: 15px;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
 }
 
+.ledger-card-net {
+  grid-area: net;
+}
+
+.ledger-card-profit {
+  grid-area: profit;
+}
+
+.ledger-card-profit::before,
+.ledger-card-net::before {
+  display: inline-block;
+  min-width: 76px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.ledger-card-net::before {
+  content: "Net result";
+}
+
+.ledger-card-profit::before {
+  content: "Profit";
+}
+
 .ledger-card-chevron {
+  grid-area: chevron;
   width: 18px;
   height: 18px;
   transition: transform 0.15s;
@@ -1984,11 +2018,27 @@ h3 {
 .ledger-card-header[aria-expanded="true"] .ledger-card-chevron {
   transform: rotate(180deg);
 }
+.ledgers-page > .section-title {
+  margin-bottom: 0;
+}
+
+.ledgers-page > .section-title h2 {
+  color: #f4fbf6;
+}
+
+.ledgers-page > .section-title .eyebrow {
+  color: var(--lime);
+}
+
 .ledger-section {
   display: grid;
-  gap: 10px;
-  padding-top: 14px;
-  border-top: 1px solid var(--line);
+  gap: 12px;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  color: var(--ink);
+  background: var(--panel);
+  box-shadow: var(--shadow);
 }
 
 .ledger-section h3 {

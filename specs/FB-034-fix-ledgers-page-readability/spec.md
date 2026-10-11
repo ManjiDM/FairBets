@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | ID | `FB-034-fix-ledgers-page-readability` |
-| Status | Reproducing |
+| Status | Verified |
 | Severity | Cosmetic |
 | Created | 2026-10-11 |
 | Related | FB-032 (Ledgers tab) |
