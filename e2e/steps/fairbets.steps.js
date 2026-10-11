@@ -1875,3 +1875,8 @@ Then("the {string} button should not be shown", async function (name) {
 When("I confirm closing the ledger", async function () {
   await ledgersDialog(this.page).getByRole("button", { name: "Confirm close", exact: true }).click();
 });
+
+When("I start a ledger with no name", async function () {
+  const form = ledgersDialog(this.page).locator("form.start-ledger-form");
+  await form.getByRole("button", { name: "Start ledger", exact: true }).click();
+});

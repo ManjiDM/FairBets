@@ -298,3 +298,31 @@ Feature: Ledger lifecycle with investments and closing statistics
     And I press Close ledger
     Then the "Close ledger" button should be shown
     And the "Confirm close" button should not be shown
+
+  Scenario: The new ledger name starts empty and is mandatory
+    Given the FairBets app is available
+    When I start a fresh ledger
+    And I open the Ledgers tab
+    And I close the active ledger
+    Then the new ledger form should have "Ledger name" set to ""
+    When I start a ledger with no name
+    Then the ledgers message should read "Give the new ledger a name."
+
+  Scenario: The new ledger starting balance defaults to the available funds
+    Given the FairBets app is available
+    When I start a fresh ledger
+    And I add a bet labeled "Closing round" with odds "2.00"
+    And I mark the bet "Closing round" as "Won"
+    And I open the Ledgers tab
+    And I close the active ledger
+    Then the new ledger form should have "Starting balance" set to "38.02"
+    When I add an investment of "20"
+    Then the new ledger form should have "Starting balance" set to "58.02"
+
+  Scenario: The new ledger goal rate and recovery weight default to 100
+    Given the FairBets app is available
+    When I start a fresh ledger
+    And I open the Ledgers tab
+    And I close the active ledger
+    Then the new ledger form should have "Goal rate (%)" set to "100"
+    And the new ledger form should have "Recovery weight (%)" set to "100"
