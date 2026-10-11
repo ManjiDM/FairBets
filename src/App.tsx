@@ -2599,10 +2599,14 @@ function App() {
                           </span>
                           <span className="ledger-card-info">
                             <strong className="ledger-card-title">{card.name}</strong>
-                            <span>
-                              {card.closedAt
-                                ? `${formatTimestamp(card.openedAt)} to ${formatTimestamp(card.closedAt)}`
-                                : `Opened ${formatTimestamp(card.openedAt)}`}
+                            <span className="ledger-card-dates">
+                              {card.firstBetAt
+                                ? card.closedAt
+                                  ? `${formatTimestamp(card.firstBetAt)} to ${formatTimestamp(card.closedAt)}`
+                                  : `Started ${formatTimestamp(card.firstBetAt)}`
+                                : card.closedAt
+                                  ? "No bets recorded"
+                                  : "No bets yet"}
                             </span>
                           </span>
                           <span className="ledger-card-figure">

@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | ID | `FB-040-ledger-card-dates` |
-| Status | Clarified |
+| Status | Shipped |
 | Created | 2026-10-11 |
 | Related | Ledger cards FB-032 and FB-039 |
 

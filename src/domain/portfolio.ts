@@ -84,8 +84,23 @@ export interface LedgerCard {
   currency: StrategySettings["currency"];
   openedAt: string;
   closedAt: string | null;
+  firstBetAt: string | null;
   stats: ClosedLedgerStats;
   profitPercent: number;
+}
+
+export function firstBetCreatedAt(ledger: LedgerState): string | null {
+  let earliest: string | null = null;
+  let earliestTime = Number.POSITIVE_INFINITY;
+  for (const bet of ledger.bets) {
+    const stamp = bet.createdAt ?? bet.placedAt;
+    const time = Date.parse(stamp);
+    if (Number.isFinite(time) && time < earliestTime) {
+      earliest = stamp;
+      earliestTime = time;
+    }
+  }
+  return earliest;
 }
 
 export function profitPercent(netResult: number, startingBalance: number): number {
@@ -101,6 +116,7 @@ export function ledgerCards(portfolio: Portfolio, activeLedger: LedgerState): Le
     currency: closed.ledger.settings.currency,
     openedAt: closed.openedAt,
     closedAt: closed.closedAt,
+    firstBetAt: firstBetCreatedAt(closed.ledger),
     stats: closed.stats,
     profitPercent: profitPercent(closed.stats.netResult, closed.stats.startingBalance),
   }));
@@ -113,6 +129,7 @@ export function ledgerCards(portfolio: Portfolio, activeLedger: LedgerState): Le
       currency: activeLedger.settings.currency,
       openedAt: portfolio.activeOpenedAt,
       closedAt: null,
+      firstBetAt: firstBetCreatedAt(activeLedger),
       stats,
       profitPercent: profitPercent(stats.netResult, stats.startingBalance),
     });
