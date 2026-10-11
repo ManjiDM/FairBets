@@ -1139,7 +1139,7 @@ Then(
       has: this.page.getByText("Recorded base stake", { exact: true }),
     });
     await expect(field.locator("input")).toHaveValue(value);
-    await this.page.getByRole("button", { name: "Cancel", exact: true }).click();
+    await newBetDialog(this.page).getByRole("button", { name: "Close", exact: true }).click();
     await expect(this.page.getByRole("dialog")).toHaveCount(0);
   },
 );
@@ -1161,7 +1161,7 @@ Then("the bet form should show a validation message", async function () {
 });
 
 When("I cancel the bet form", async function () {
-  await this.page.getByRole("button", { name: "Cancel", exact: true }).click();
+  await newBetDialog(this.page).getByRole("button", { name: "Close", exact: true }).click();
   await expect(this.page.getByRole("dialog")).toHaveCount(0);
 });
 
@@ -1663,3 +1663,31 @@ Then("the {string} field should be as wide as the dialog form", async function (
   const form = await dialog.locator("form").boundingBox();
   expect(field.width).toBeGreaterThanOrEqual(form.width - 2);
 });
+
+Then("the bet dialog should have a {string} button", async function (name) {
+  await expect(newBetDialog(this.page).getByRole("button", { name, exact: true })).toHaveCount(1);
+});
+
+When("I close the bet dialog", async function () {
+  await newBetDialog(this.page).getByRole("button", { name: "Close", exact: true }).click();
+});
+
+Then("the new bet dialog is closed", async function () {
+  await expect(this.page.getByRole("dialog")).toHaveCount(0);
+});
+
+Then(
+  "the {string}, {string} fields and the {string} button should share a row in the bet dialog",
+  async function (left, right, buttonName) {
+    const dialog = newBetDialog(this.page);
+    const a = await dialog.getByLabel(left, { exact: true }).boundingBox();
+    const b = await dialog.getByLabel(right, { exact: true }).boundingBox();
+    const button = await dialog.getByRole("button", { name: buttonName, exact: true }).boundingBox();
+    const form = await dialog.locator("form").boundingBox();
+    expect(Math.abs(a.y - b.y)).toBeLessThanOrEqual(1);
+    expect(button.y + button.height).toBeGreaterThan(a.y);
+    expect(button.y).toBeLessThan(a.y + a.height);
+    expect(button.x).toBeGreaterThan(b.x + b.width - 1);
+    expect(button.x + button.width).toBeLessThanOrEqual(form.x + form.width + 1);
+  },
+);

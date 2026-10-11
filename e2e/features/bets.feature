@@ -577,7 +577,7 @@ Feature: Bet management
     And the bet dialog should not have a "Date and time" field
     And the bet dialog should not show a suggestion box
     And the bet dialog should not have a "Result" field
-    And the bet dialog should not have a "Close" button
+    And the bet dialog should have a "Close" button
     And the bet dialog should have a "Odd" field
     And the bet dialog should have a "Stake" field
     And the bet dialog should not have a "Decimal odds" field
@@ -600,7 +600,7 @@ Feature: Bet management
     And I open the edit form for bet "Edit keeps fields"
     Then the "Date and time" field in the bet dialog should be editable
     And the bet dialog should have a "Result" field
-    And the bet dialog should not have a "Close" button
+    And the bet dialog should have a "Close" button
     And the bet dialog should have a "Odd" field
 
   Scenario: The new bet dialog starts below the toolbar
@@ -632,3 +632,18 @@ Feature: Bet management
     And I add a bet labeled "Edit no box" with odds "2.00"
     And I open the edit form for bet "Edit no box"
     Then the bet dialog should not show a suggestion box
+
+  Scenario: Close dismisses the bet dialog
+    When I press the Add Bet button
+    Then I see the new bet dialog
+    When I close the bet dialog
+    Then the new bet dialog is closed
+
+  Scenario: Add bet shares the row with Odd and Stake
+    When I press the Add Bet button
+    Then the "Odd", "Stake" fields and the "Add bet" button should share a row in the bet dialog
+
+  Scenario: Add bet shares the row with Odd and Stake on mobile
+    Given the viewport is a small phone
+    When I press the Add Bet button
+    Then the "Odd", "Stake" fields and the "Add bet" button should share a row in the bet dialog
