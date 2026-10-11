@@ -38,6 +38,11 @@ sequences, the default) and **Ledgers**. On mobile the tabs are docked in a tool
   starting balance); click it to expand the remaining statistics. The active ledger's card
   shows live figures.
 - **History:** investments and ledger openings and closings, newest first.
+- **Start fresh** (Settings): opens a confirmation modal with two switches. **Clear sequences**
+  (on by default) removes every bet and opens a new empty ledger; **Clear ledgers** (off by
+  default) deletes closed ledgers, investments and history, leaving the active ledger as the
+  only one with its starting balance as the single investment. Confirm is disabled while both
+  are off.
 
 The ledger history is stored locally under `fairbets-portfolio-v1`; data saved by earlier
 versions becomes the first active ledger with an initial investment equal to its starting
