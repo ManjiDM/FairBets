@@ -189,3 +189,58 @@ Feature: Ledger lifecycle with investments and closing statistics
     And I close the active ledger
     And I open the Sequences tab
     Then the "Add the first bet" button should be disabled
+
+  Scenario: A card shows its id and status
+    Given the FairBets app is available
+    When I start a fresh ledger
+    And I open the Ledgers tab
+    And I close the active ledger
+    And I start a new ledger named "Second round" with a starting balance of "10"
+    Then the card "Ledger 1" should show the status "Closed"
+    And the card "Ledger 2" should show the status "Open"
+    And the card ids should be uppercase
+
+  Scenario: The ledger card has no chevron
+    Given the FairBets app is available
+    When I open the Ledgers tab
+    Then no ledger card should have an expand chevron
+
+  Scenario: Expanded statistics use two columns with uppercase labels
+    Given the FairBets app is available
+    When I open the Ledgers tab
+    And I click the card "Ledger 1"
+    Then the statistics of the card "Ledger 1" should be in 2 columns with uppercase labels
+
+  Scenario: Only closed ledgers can be deleted
+    Given the FairBets app is available
+    When I start a fresh ledger
+    And I open the Ledgers tab
+    And I close the active ledger
+    And I start a new ledger named "Second round" with a starting balance of "10"
+    Then the card "Ledger 1" should have a Delete button
+    And the card "Ledger 2" should not have a Delete button
+
+  Scenario: Deleting a closed ledger removes its result
+    Given the FairBets app is available
+    When I start a fresh ledger
+    And I add a bet labeled "Closing round" with odds "2.00"
+    And I mark the bet "Closing round" as "Won"
+    And I open the Ledgers tab
+    And I close the active ledger
+    And I start a new ledger named "Second round" with a starting balance of "10"
+    Then the "Realised result" figure should be "+€0.10"
+    When I delete the card "Ledger 1"
+    Then the ledger cards should be listed as "Ledger 1 Second round"
+    And the "Realised result" figure should be "€0.00"
+
+  Scenario: Deleting is refused when the funds are committed
+    Given the FairBets app is available
+    When I start a fresh ledger
+    And I add a bet labeled "Closing round" with odds "2.00"
+    And I mark the bet "Closing round" as "Won"
+    And I open the Ledgers tab
+    And I close the active ledger
+    And I start a new ledger named "Second round" with a starting balance of "38.02"
+    And I delete the card "Ledger 1"
+    Then the ledgers message should read "Ledger 1 cannot be deleted: its result funds the active ledger."
+    And the card "Ledger 1" should show the status "Closed"

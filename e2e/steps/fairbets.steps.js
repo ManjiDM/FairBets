@@ -1415,9 +1415,14 @@ function ledgerCard(page, text) {
   return page.locator(".ledger-card").filter({ hasText: text }).first();
 }
 
+Then("the ledger cards should be listed as {string}",
+  async function (first) {
+    await expectLedgerCardNames(this.page, [first]);
+  },
+);
+
 Then("the ledger cards should be listed as {string}, {string}", async function (first, second) {
-  const cards = ledgersDialog(this.page).locator(".ledger-card .ledger-card-title");
-  await expect(cards).toHaveText([first, second]);
+  await expectLedgerCardNames(this.page, [first, second]);
 });
 
 Then(
@@ -1773,7 +1778,69 @@ Then("the ledger should have no bets", async function () {
 });
 
 Then("{string} should be the only ledger card", async function (title) {
-  await expect(ledgersDialog(this.page).locator(".ledger-card .ledger-card-title")).toHaveText([
-    title,
-  ]);
+  await expectLedgerCardNames(this.page, [title]);
+});
+
+async function expectLedgerCardNames(page, expected) {
+  await expect
+    .poll(() =>
+      page.locator(".ledger-card").evaluateAll((nodes) =>
+        nodes.map((node) => {
+          const id = node.querySelector(".ledger-card-id")?.textContent ?? "";
+          const title = node.querySelector(".ledger-card-title")?.textContent ?? "";
+          return `${id} ${title}`.trim();
+        }),
+      ),
+    )
+    .toEqual(expected);
+}
+
+Then("the card {string} should show the status {string}", async function (name, status) {
+  await expect(ledgerCard(this.page, name).locator(".ledger-card-status")).toHaveText(status);
+});
+
+Then("the card ids should be uppercase", async function () {
+  const transforms = await this.page
+    .locator(".ledger-card-id")
+    .evaluateAll((nodes) => nodes.map((node) => getComputedStyle(node).textTransform));
+  expect(transforms.length).toBeGreaterThan(0);
+  for (const transform of transforms) expect(transform).toBe("uppercase");
+});
+
+Then("no ledger card should have an expand chevron", async function () {
+  await expect(this.page.locator(".ledger-card").first()).toBeVisible();
+  await expect(this.page.locator(".ledger-card-chevron")).toHaveCount(0);
+});
+
+Then(
+  "the statistics of the card {string} should be in {int} columns with uppercase labels",
+  async function (name, columns) {
+    const stats = ledgerCard(this.page, name).locator(".closed-ledger-stats");
+    await expect(stats).toBeVisible();
+    const layout = await stats.evaluate((node) => ({
+      columns: getComputedStyle(node).gridTemplateColumns.split(" ").length,
+      label: getComputedStyle(node.querySelector("span")).textTransform,
+    }));
+    expect(layout.columns).toBe(columns);
+    expect(layout.label).toBe("uppercase");
+  },
+);
+
+Then("the card {string} should have a Delete button", async function (name) {
+  await expect(
+    ledgerCard(this.page, name).getByRole("button", { name: "Delete", exact: true }),
+  ).toBeVisible();
+});
+
+Then("the card {string} should not have a Delete button", async function (name) {
+  await expect(ledgerCard(this.page, name)).toBeVisible();
+  await expect(
+    ledgerCard(this.page, name).getByRole("button", { name: "Delete", exact: true }),
+  ).toHaveCount(0);
+});
+
+When("I delete the card {string}", async function (name) {
+  const card = ledgerCard(this.page, name);
+  await card.getByRole("button", { name: "Delete", exact: true }).click();
+  await card.getByRole("button", { name: "Confirm deletion", exact: true }).click();
 });
