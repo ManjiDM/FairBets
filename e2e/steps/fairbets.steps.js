@@ -1583,3 +1583,36 @@ Then("the tabs should be shown above the content", async function () {
   const workspace = await this.page.locator(".workspace").boundingBox();
   expect(tabsBox.y + tabsBox.height).toBeLessThanOrEqual(workspace.y);
 });
+
+
+Then("the Ledgers page headings and labels should have readable contrast", async function () {
+  const failures = await this.page.evaluate(() => {
+    const parse = (value) => (value.match(/[\d.]+/g) ?? []).map(Number);
+    const luminance = ([r, g, b]) => {
+      const [lr, lg, lb] = [r, g, b].map((channel) => {
+        const c = channel / 255;
+        return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+      });
+      return 0.2126 * lr + 0.7152 * lg + 0.0722 * lb;
+    };
+    const backgroundOf = (element) => {
+      for (let node = element; node; node = node.parentElement) {
+        const [r, g, b, a = 1] = parse(getComputedStyle(node).backgroundColor);
+        if (a > 0.9) return [r, g, b];
+      }
+      return [255, 255, 255];
+    };
+    const selector =
+      ".ledgers-page h2, .ledgers-page h3, .ledgers-page .eyebrow, .ledgers-page label span, .ledgers-page .ledger-hint, .ledgers-page .ledger-card-title, .ledgers-page .ledger-card-net, .ledgers-page .ledger-card-profit, .ledgers-page .funds-summary span, .ledgers-page .ledger-inline-form p, .ledgers-page .ledger-history li";
+    return [...document.querySelectorAll(selector)]
+      .map((element) => {
+        const [r, g, b] = parse(getComputedStyle(element).color);
+        const l1 = luminance([r, g, b]);
+        const l2 = luminance(backgroundOf(element));
+        const ratio = (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05);
+        return { text: element.textContent.trim().slice(0, 30), ratio: Number(ratio.toFixed(2)) };
+      })
+      .filter((item) => item.ratio < 4.5);
+  });
+  expect(failures).toEqual([]);
+});

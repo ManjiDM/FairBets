@@ -163,3 +163,8 @@ Feature: Ledger lifecycle with investments and closing statistics
     Given the FairBets app is available
     When I open the Ledgers tab
     Then the collapsed card "Ledger 1" should show net result "+€0.15" and profit "+0.40%"
+
+  Scenario: Ledgers page text is readable
+    Given the FairBets app is available
+    When I open the Ledgers tab
+    Then the Ledgers page headings and labels should have readable contrast
