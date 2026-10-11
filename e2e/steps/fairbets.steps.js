@@ -1379,19 +1379,72 @@ Then("the description filter should be the full width of the filter row", async 
 });
 
 function ledgersDialog(page) {
-  return page.getByRole("dialog", { name: "Ledgers and funds" });
+  return page.locator(".ledgers-page");
 }
 
-When("I open the ledgers dialog", async function () {
-  await this.page.getByRole("button", { name: "Open ledgers", exact: true }).click();
+When("I open the Ledgers tab", async function () {
+  await this.page.getByRole("tab", { name: "Ledgers", exact: true }).click();
   await expect(ledgersDialog(this.page)).toBeVisible();
 });
 
-When("I close the ledgers dialog", async function () {
-  await ledgersDialog(this.page).getByRole("button", { name: "Done", exact: true }).click();
+When("I open the Sequences tab", async function () {
+  await this.page.getByRole("tab", { name: "Sequences", exact: true }).click();
   await expect(ledgersDialog(this.page)).toHaveCount(0);
 });
 
+Then("the {string} tab should be selected", async function (name) {
+  await expect(this.page.getByRole("tab", { name, exact: true })).toHaveAttribute(
+    "aria-selected",
+    "true",
+  );
+});
+
+Then("I should see the sequences list", async function () {
+  await expect(this.page.locator(".sequence-page")).toBeVisible();
+});
+
+Then("I should not see the sequences list", async function () {
+  await expect(this.page.locator(".sequence-page")).toHaveCount(0);
+});
+
+Then("I should not see a ledgers dialog", async function () {
+  await expect(this.page.getByRole("dialog")).toHaveCount(0);
+  await expect(this.page.getByRole("button", { name: "Open ledgers", exact: true })).toHaveCount(0);
+});
+
+function ledgerCard(page, text) {
+  return page.locator(".ledger-card").filter({ hasText: text }).first();
+}
+
+Then("the ledger cards should be listed as {string}, {string}", async function (first, second) {
+  const cards = ledgersDialog(this.page).locator(".ledger-card .ledger-card-title");
+  await expect(cards).toHaveText([first, second]);
+});
+
+Then(
+  "the collapsed card {string} should show net result {string} and profit {string}",
+  async function (number, net, profit) {
+    const card = ledgerCard(this.page, number);
+    await expect(card.locator(".ledger-card-net")).toHaveText(net);
+    await expect(card.locator(".ledger-card-profit")).toHaveText(profit);
+  },
+);
+
+When("I click the card {string}", async function (number) {
+  await ledgerCard(this.page, number).getByRole("button").first().click();
+});
+
+Then("the card {string} should be collapsed", async function (number) {
+  const card = ledgerCard(this.page, number);
+  await expect(card.getByRole("button").first()).toHaveAttribute("aria-expanded", "false");
+  await expect(card.locator(".closed-ledger-stats")).toHaveCount(0);
+});
+
+Then("the card {string} should be expanded", async function (number) {
+  const card = ledgerCard(this.page, number);
+  await expect(card.getByRole("button").first()).toHaveAttribute("aria-expanded", "true");
+  await expect(card.locator(".closed-ledger-stats")).toBeVisible();
+});
 Then("the {string} figure should be {string}", async function (label, value) {
   await expect(
     ledgersDialog(this.page)
@@ -1453,16 +1506,22 @@ Then("I should be told there is no active ledger", async function () {
 });
 
 Then(
-  "the closed ledger {string} should show {string} as {string}",
+  "the ledger card {string} should show {string} as {string}",
   async function (name, label, value) {
-    const closed = ledgersDialog(this.page)
-      .locator(".closed-ledger")
-      .filter({ hasText: name })
-      .first();
-    await expect(closed.locator(".closed-ledger-stats > div").filter({ hasText: label }).locator("strong").first()).toHaveText(value);
+    const card = ledgerCard(this.page, name);
+    if (label === "Net result") {
+      await expect(card.locator(".ledger-card-net")).toHaveText(value);
+      return;
+    }
+    const toggle = card.getByRole("button").first();
+    if ((await toggle.getAttribute("aria-expanded")) !== "true") {
+      await toggle.click();
+    }
+    await expect(
+      card.locator(".closed-ledger-stats > div").filter({ hasText: label }).locator("strong").first(),
+    ).toHaveText(value);
   },
 );
-
 When(
   "I start a new ledger named {string} with a starting balance of {string}",
   async function (name, balance) {
