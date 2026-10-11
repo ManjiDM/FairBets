@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | ID | `FB-035-ledgers-page-design` |
-| Status | Clarified |
+| Status | Shipped |
 | Created | 2026-10-11 |
 | Related | Reworks FB-032 and FB-034; no business rule changes |
 

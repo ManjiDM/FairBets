@@ -2166,3 +2166,70 @@ h3 {
     height: 22px;
   }
 }
+
+
+.ledgers-page .sequence-header {
+  margin-bottom: 0;
+}
+
+.ledgers-page .funds-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.ledgers-page .funds-summary > div {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 6px 9px;
+  border: 1px solid rgba(217, 249, 157, 0.2);
+  border-radius: 999px;
+  color: #d9ebe1;
+  background: transparent;
+}
+
+.ledgers-page .funds-summary span,
+.ledgers-page .funds-summary strong {
+  color: #d9ebe1;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.ledgers-page .funds-summary strong {
+  color: #f4fbf6;
+}
+
+.ledgers-page .ledger-section {
+  padding: 18px 0 0;
+  border: 0;
+  border-top: 1px solid rgba(217, 249, 157, 0.14);
+  border-radius: 0;
+  color: #f4fbf6;
+  background: transparent;
+  box-shadow: none;
+}
+
+.ledgers-page .ledger-section h3 {
+  color: #f4fbf6;
+}
+
+.ledgers-page .ledger-section .form-field span,
+.ledgers-page .ledger-inline-form p,
+.ledgers-page .ledger-history li {
+  color: #d9ebe1;
+}
+
+.ledgers-page .ledger-hint,
+.ledgers-page .ledger-section small,
+.ledgers-page .ledger-history time {
+  color: #bacbc3;
+}
+
+.ledgers-page .form-error {
+  color: #ffb4a9;
+}
+
+.ledgers-page .ledger-card small {
+  color: var(--muted);
+}

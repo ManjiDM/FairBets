@@ -2351,6 +2351,7 @@ function App() {
                       type="button"
                       className="button button-primary"
                       onClick={openNewBetForm}
+                      disabled={!hasActiveLedger}
                     >
                       Add the first bet
                     </button>
@@ -2414,10 +2415,10 @@ function App() {
           )}
       {activeTab === "ledgers" && (
         <section className="ledgers-page" aria-labelledby="ledgers-title">
-          <div className="section-title">
-            <div>
+          <div className="sequence-header">
+            <div className="sequence-header-copy">
               <p className="eyebrow">Investments and results</p>
-              <h2 id="ledgers-title">Ledgers and funds</h2>
+              <h1 id="ledgers-title">Ledgers and funds</h1>
             </div>
           </div>
 
