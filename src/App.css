@@ -152,27 +152,12 @@ button:disabled {
   transition: transform 160ms ease, box-shadow 160ms ease, background 160ms ease;
 }
 
-.button:hover:not(:disabled) {
-  transform: translateY(-1px);
-}
-
 .button-primary {
   color: var(--forest);
   background: var(--lime);
-  box-shadow: 0 4px 0 #abc96f;
 }
 
 .button-primary:hover:not(:disabled) {
-  box-shadow: 0 6px 0 #abc96f;
-}
-
-.button-primary.icon-only-button,
-.button-primary.icon-only-button:hover:not(:disabled) {
-  transform: none;
-  box-shadow: none;
-}
-
-.button-primary.icon-only-button:hover:not(:disabled) {
   background: #cde58a;
 }
 

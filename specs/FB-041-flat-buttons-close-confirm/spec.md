@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | ID | `FB-041-flat-buttons-close-confirm` |
-| Status | Clarified |
+| Status | Shipped |
 | Created | 2026-10-11 |
 | Related | Add bet button look (FB-021, FB-022); ledger lifecycle FB-031 |
 

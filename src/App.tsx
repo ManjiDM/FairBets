@@ -2515,12 +2515,13 @@ function App() {
                   </small>
                 </p>
                 <div className="ledger-actions">
-                  <button type="button" className="button button-secondary" onClick={requestCloseLedger}>
-                    Close ledger
-                  </button>
-                  {closeConfirm && (
+                  {closeConfirm ? (
                     <button type="button" className="button button-primary" onClick={confirmCloseLedger}>
                       Confirm close
+                    </button>
+                  ) : (
+                    <button type="button" className="button button-secondary" onClick={requestCloseLedger}>
+                      Close ledger
                     </button>
                   )}
                 </div>
