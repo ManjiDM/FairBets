@@ -33,10 +33,13 @@ sequences, the default) and **Ledgers**. On mobile the tabs are docked in a tool
   rate, closed sequences) and its opening and closing times.
 - **Start a new ledger:** available when none is active. Settings are pre-filled from the
   previous ledger, and the starting balance cannot exceed the available funds.
-- **Ledger cards:** every ledger, newest first, numbered by opening order ("Ledger 1",
-  "Ledger 2", ...). A card shows the name, net result and profit percentage (net result ÷
-  starting balance); click it to expand the remaining statistics. The active ledger's card
-  shows live figures.
+- **Ledger cards:** every ledger, newest first, numbered by opening order. Like a sequence
+  card, it shows an id label ("LEDGER 2") with its status (Open or Closed) below it, the
+  name and dates, and the net result and profit percentage (net result ÷ starting balance).
+  Click a card to expand the remaining statistics. The active ledger's card shows live
+  figures. A closed ledger has a Delete button (with inline confirmation) that removes it
+  and its result from the totals; it is refused if that would make the available funds
+  negative. Later ledgers move up one number after a deletion.
 - **History:** investments and ledger openings and closings, newest first.
 - **Start fresh** (Settings): opens a confirmation modal with two switches. **Clear sequences**
   (on by default) removes every bet and opens a new empty ledger; **Clear ledgers** (off by
