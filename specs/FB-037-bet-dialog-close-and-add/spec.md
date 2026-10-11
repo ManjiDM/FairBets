@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | ID | `FB-037-bet-dialog-close-and-add` |
-| Status | Clarified |
+| Status | Shipped |
 | Created | 2026-10-11 |
 | Related | Reverses the Close/Cancel decision of FB-029; builds on FB-036 |
 

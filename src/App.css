@@ -2246,3 +2246,15 @@ h3 {
     grid-column: auto;
   }
 }
+
+.form-field-pair.with-action {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+  align-items: end;
+}
+
+@media (max-width: 680px) {
+  .form-field-pair.with-action {
+    grid-column: 1 / -1;
+    gap: 10px;
+  }
+}

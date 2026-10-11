@@ -577,7 +577,8 @@ type ActionIconName =
   | "close-sequence"
   | "edit"
   | "delete"
-  | "confirm-delete";
+  | "confirm-delete"
+  | "close";
 
 const actionIcons = {
   add: Plus,
@@ -588,6 +589,7 @@ const actionIcons = {
   edit: Pencil,
   delete: Trash2,
   "confirm-delete": Check,
+  close: X,
 };
 
 function ActionIcon({ name }: { name: ActionIconName }) {
@@ -2986,6 +2988,15 @@ function App() {
                   </time>
                 )}
               </div>
+              <button
+                type="button"
+                className="button button-quiet icon-only-button modal-close"
+                aria-label="Close"
+                title="Close"
+                onClick={closeBetForm}
+              >
+                <ActionIcon name="close" />
+              </button>
             </div>
 
             <form onSubmit={saveBet}>
@@ -3014,7 +3025,7 @@ function App() {
                     placeholder="Optional — leave blank to show odds"
                   />
                 </label>
-                <div className="form-field-pair">
+                <div className={`form-field-pair ${editingBetId ? "" : "with-action"}`}>
                 <label className="form-field">
                   <span>Odd</span>
                   <input
@@ -3040,6 +3051,16 @@ function App() {
                     placeholder={formatMoney(draftSuggestion.amount, tracker.settings.currency)}
                   />
                 </label>
+                {!editingBetId && (
+                  <button
+                    type="submit"
+                    className="button button-primary icon-only-button pair-action"
+                    aria-label="Add bet"
+                    title="Add bet"
+                  >
+                    <ActionIcon name="add" />
+                  </button>
+                )}
                 </div>
                 {editingBetId && (
                   <label className="form-field form-field-wide">
@@ -3112,19 +3133,13 @@ function App() {
 
               {formError && <p className="form-error">{formError}</p>}
 
-              <div className="modal-actions">
-                <button type="button" className="button button-quiet" onClick={closeBetForm}>
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className={`button button-primary ${editingBetId ? "" : "icon-only-button"}`}
-                  aria-label={editingBetId ? undefined : "Add bet"}
-                  title={editingBetId ? undefined : "Add bet"}
-                >
-                  {editingBetId ? "Save changes" : <ActionIcon name="add" />}
-                </button>
-              </div>
+              {editingBetId && (
+                <div className="modal-actions">
+                  <button type="submit" className="button button-primary">
+                    Save changes
+                  </button>
+                </div>
+              )}
             </form>
           </section>
         </div>
