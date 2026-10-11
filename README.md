@@ -31,8 +31,10 @@ sequences, the default) and **Ledgers**. On mobile the tabs are docked in a tool
 - **Close ledger:** allowed once every bet is settled. A closed ledger is kept with its
   final statistics (starting and final balance, net result, staked, wins, losses, win
   rate, closed sequences) and its opening and closing times.
-- **Start a new ledger:** available when none is active. Settings are pre-filled from the
-  previous ledger, and the starting balance cannot exceed the available funds.
+- **Start a new ledger:** available when none is active. The name starts empty and is
+  required. The starting balance defaults to the available funds (and cannot exceed them),
+  the goal rate and recovery weight default to 100%, and the other settings are pre-filled
+  from the previous ledger.
 - **Ledger cards:** every ledger, newest first, numbered by opening order. Like a sequence
   card, it shows an id label ("LEDGER 2") with its status (Open or Closed) below it, the
   name and dates (from the creation of its first bet to the ledger's closing; "Started ..." while active), and the net result and profit percentage (net result ÷ starting balance).
